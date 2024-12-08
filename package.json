@@ -1,0 +1,10 @@
+{
+  "name": "trade-hub",
+  "version": "1.0.0",
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  },
+  "scripts": {
+    "start": "concurrently \"npm run dev --prefix backend\" \"npm start --prefix frontend\""
+  }
+}
