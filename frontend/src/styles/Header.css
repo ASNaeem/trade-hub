@@ -1,33 +1,40 @@
-.header {
+.nav_bar {
+  position: relative;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 10px 20px;
-  background-color: #333;
-  color: white;
-}
+  justify-content: center;
 
-.logo {
-  font-size: 1.5rem;
-  font-weight: bold;
-}
+  h1 {
+    position: absolute;
+    top: 0;
+    left: 10px;
+    font-size: larger;
+    font-weight: 700;
+  }
 
-.nav-links {
-  display: flex;
-  list-style: none;
-  gap: 15px;
-}
+  ul {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    margin: auto;
 
-.nav-links li {
-  font-size: 1rem;
-}
+    li {
+      position: relative;
 
-.nav-links a {
-  text-decoration: none;
-  color: white;
-  transition: color 0.3s ease;
-}
+      &::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 0;
+        height: 1px;
+        background-color: #000;
+        transition: width 0.2s ease-in-out;
+      }
 
-.nav-links a:hover {
-  color: #f0a500;
+      &:hover::before {
+        width: 100%;
+      }
+    }
+  }
 }

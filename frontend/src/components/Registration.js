@@ -1,98 +1,113 @@
 import React, { useState } from 'react';
-import emailjs from 'emailjs-com';
+//import emailjs from 'emailjs-com';
+
 
 const Registration = () => {
-  const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
-  const [generatedOtp, setGeneratedOtp] = useState(null);
-  const [isOtpSent, setIsOtpSent] = useState(false);
-  const [otpVerified, setOtpVerified] = useState(false);
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    phoneNumber: '',
+    password: '',
+    confirmPassword: '',
+  });
 
-  // Function to generate a random 6-digit OTP
-  const generateOTP = () => {
-    const otp = Math.floor(100000 + Math.random() * 900000); // 6-digit OTP
-    setGeneratedOtp(otp);  // Save generated OTP
-    return otp;
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
   };
 
-  // Function to send OTP to the user's email using EmailJS
-  const sendOTPEmail = (userEmail, otp) => {
-    const serviceId = process.env.REACT_APP_EMAILJS_SERVICE_ID;
-    const templateId = process.env.REACT_APP_EMAILJS_TEMPLATE_ID;
-    const userId = process.env.REACT_APP_EMAILJS_USER_ID;
-    console.log(serviceId);
-    console.log(templateId);
-    console.log(userId);
-    emailjs.send(serviceId, templateId, {
-      to_email: userEmail,
-      otp: otp,  // OTP to be sent in the email
-    }, userId)
-      .then(response => {
-        console.log('OTP sent successfully', response);
-        setIsOtpSent(true);  // OTP has been sent
-      })
-      .catch(err => {
-        console.error('Error sending OTP', err);
-      });
-  };
-
-  // Handle form submission for registration
   const handleSubmit = (e) => {
     e.preventDefault();
-    const generatedOtp = generateOTP();  // Generate OTP
-    sendOTPEmail(email, generatedOtp);  // Send OTP email
-  };
-
-  // Handle OTP verification
-  const handleOtpVerification = (e) => {
-    e.preventDefault();
-    if (parseInt(otp) === generatedOtp) {
-      setOtpVerified(true);  // OTP matched
-      alert('OTP verified successfully!');
-    } else {
-      alert('Invalid OTP, please try again.');
+    if (formData.password !== formData.confirmPassword) {
+      alert("Passwords don't match!");
+      return;
     }
+    alert('Account created successfully!');
   };
 
   return (
-    <div className="registration-form">
-      {/* Registration Form */}
-      {!isOtpSent && !otpVerified ? (
-        <form onSubmit={handleSubmit}>
-          <h2>Register for Trade-Hub</h2>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter your email"
-            required
-          />
-          <button type="submit">Send OTP</button>
-        </form>
-      ) : null}
-
-      {/* OTP Verification Form */}
-      {isOtpSent && !otpVerified ? (
-        <form onSubmit={handleOtpVerification}>
-          <h2>Enter OTP</h2>
-          <input
-            type="number"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            placeholder="Enter OTP"
-            required
-          />
-          <button type="submit">Verify OTP</button>
-        </form>
-      ) : null}
-
-      {/* OTP Verified */}
-      {otpVerified ? (
-        <div>
-          <h2>Registration Successful!</h2>
-          <p>Welcome to Trade-Hub!</p>
+    <div className="flex justify-center items-center min-h-screen bg-gray-50">
+      <div className="bg-white shadow-md rounded-lg p-8 w-full max-w-md">
+        <div className="text-center mb-6">
+          <div className="flex justify-center items-center mb-4">
+            <div className="w-10 h-10 bg-blue-500 text-white flex justify-center items-center rounded-full">
+              <i className="fas fa-shopping-bag text-lg"></i>
+            </div>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800">Create your account</h2>
+          <p className="text-gray-500">
+            Already have an account?{' '}
+            <a href="/login" className="text-blue-500 hover:underline">
+              Sign in
+            </a>
+          </p>
         </div>
-      ) : null}
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <input
+              type="text"
+              name="fullName"
+              value={formData.fullName}
+              onChange={handleInputChange}
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Full Name"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="you@example.com"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <input
+              type="tel"
+              name="phoneNumber"
+              value={formData.phoneNumber}
+              onChange={handleInputChange}
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Phone Number"
+              pattern="^\+?\d{10,15}$"
+              title="Enter a valid phone number with 10-15 digits, optionally starting with '+'"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleInputChange}
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Password"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <input
+              type="password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleInputChange}
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Confirm Password"
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 flex justify-center items-center"
+          >
+            <i className="fas fa-user-plus mr-2"></i> Create Account
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
