@@ -5,7 +5,6 @@ import "../styles/Header.css";
 const Header = () => {
   return (
     <nav className="nav_bar">
-      <h1>Trade-Hub</h1>
       <ul>
         <li>
           <Link to="/">Home</Link>

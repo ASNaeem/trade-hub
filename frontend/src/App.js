@@ -1,37 +1,26 @@
-import React from "react";
 import "./App.css";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom"; // Use Routes instead of Switch
-import HeroSection from "./components/HeroSection";
-import CityDeals from "./components/CityDeals";
+import { React } from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+
+//#region Importing Components
+import HomePage from "./pages/Home.js";
+("./pages/Home");
 import Footer from "./components/Footer";
-import Registration from "./components/Registration"; // Import Registration form
-import TrendingCarousel from "./components/TrendingCarousel"; // Import the Carousel
-import Login from "./components/Login";
-import Header from "./components/Header.jsx";
+import Registration from "./pages/Registration.js"; // Import Registration form
+import Login from "./pages/Login";
+//#endregion
 
 const App = () => {
   return (
     <Router>
       <div className="App">
-        <Header /> {/* The header/navigation section */}
         <Routes>
-          {" "}
-          {/* Use Routes here instead of Switch */}
           {/* Home Route */}
-          <Route
-            path="/"
-            element={
-              <>
-                <HeroSection /> {/* The hero section */}
-                <TrendingCarousel /> {/* The carousel */}
-                <CityDeals /> {/* City-specific deals */}
-              </>
-            }
-          />
+          <Route path="/" element={<HomePage />} />
           {/* Registration Route */}
           <Route path="/register" element={<Registration />} />{" "}
-          {/* The registration form */}
-          <Route path="/login" element={<Login />} /> {/* The login form */}
+          {/* The login form */}
+          <Route path="/login" element={<Login />} />
         </Routes>
         <Footer /> {/* Footer with important information */}
       </div>
