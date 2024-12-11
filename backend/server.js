@@ -1,6 +1,8 @@
-const express = require('express');
-const dotenv = require('dotenv');
-const connectDB = require('./config/db'); // Assuming you have the DB connection setup
+const express = require("express");
+const dotenv = require("dotenv");
+const cors = require("cors");
+const connectDB = require("./config/db");
+const itemRoutes = require("./routes/itemRoutes");
 
 dotenv.config();
 
@@ -13,17 +15,16 @@ connectDB(); // Un-comment this if you are connecting to the DB
 app.use(express.json());
 
 // Define Routes
-app.get('/', (req, res) => {
-  res.send('Welcome to the Trade-Hub API');
+app.get("/", (req, res) => {
+  res.send("Welcome to the Trade-Hub API");
 });
 
 // User routes
-const userRoutes = require('./routes/userRoutes');
-app.use('/api/users', userRoutes);
+const userRoutes = require("./routes/userRoutes");
+app.use("/api/users", userRoutes);
 
 // Item routes
-const itemRoutes = require('./routes/itemRoutes'); // Import the item routes
-app.use('/api/items', itemRoutes); // Attach item routes to the '/api/items' endpoint
+app.use("/api/items", itemRoutes); // Attach item routes to the '/api/items' endpoint
 
 // Start the server
 const PORT = process.env.PORT || 5000;

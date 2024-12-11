@@ -1,9 +1,19 @@
-const Item = require('../models/Item'); // Import the Item model
+const Item = require("../models/Item"); // Import the Item model
 
 // Create a new item
 exports.createItem = async (req, res) => {
   try {
-    const { title, description, price, brand, category, condition, images, visibility_status, location } = req.body;
+    const {
+      title,
+      description,
+      price,
+      brand,
+      category,
+      condition,
+      images,
+      visibility_status,
+      location,
+    } = req.body;
 
     // Create a new instance of Item and save it
     const newItem = new Item({
@@ -22,12 +32,14 @@ exports.createItem = async (req, res) => {
     await newItem.save();
 
     res.status(201).json({
-      message: 'Item created successfully!',
+      message: "Item created successfully!",
       item: newItem,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Error creating item', error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error creating item", error: error.message });
   }
 };
 
@@ -38,7 +50,9 @@ exports.getItems = async (req, res) => {
     res.status(200).json(items);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Error fetching items', error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error fetching items", error: error.message });
   }
 };
 
@@ -48,12 +62,14 @@ exports.getItemById = async (req, res) => {
     const itemId = req.params.id;
     const item = await Item.findById(itemId);
     if (!item) {
-      return res.status(404).json({ message: 'Item not found' });
+      return res.status(404).json({ message: "Item not found" });
     }
     res.status(200).json(item);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Error fetching item', error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error fetching item", error: error.message });
   }
 };
 
@@ -63,18 +79,22 @@ exports.updateItem = async (req, res) => {
     const itemId = req.params.id;
     const updatedData = req.body;
 
-    const updatedItem = await Item.findByIdAndUpdate(itemId, updatedData, { new: true });
+    const updatedItem = await Item.findByIdAndUpdate(itemId, updatedData, {
+      new: true,
+    });
     if (!updatedItem) {
-      return res.status(404).json({ message: 'Item not found' });
+      return res.status(404).json({ message: "Item not found" });
     }
 
     res.status(200).json({
-      message: 'Item updated successfully!',
+      message: "Item updated successfully!",
       item: updatedItem,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Error updating item', error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error updating item", error: error.message });
   }
 };
 
@@ -84,14 +104,16 @@ exports.deleteItem = async (req, res) => {
     const itemId = req.params.id;
     const deletedItem = await Item.findByIdAndDelete(itemId);
     if (!deletedItem) {
-      return res.status(404).json({ message: 'Item not found' });
+      return res.status(404).json({ message: "Item not found" });
     }
     res.status(200).json({
-      message: 'Item deleted successfully!',
+      message: "Item deleted successfully!",
       item: deletedItem,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Error deleting item', error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error deleting item", error: error.message });
   }
 };
