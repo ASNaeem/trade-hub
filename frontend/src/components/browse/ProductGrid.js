@@ -1,6 +1,7 @@
-import React from 'react';
-import ProductCard from './ProductCard';
+import React from "react";
+import ProductCard from "./ProductCard";
 
+//#region demo data for testing
 const products = [
   {
     id: 1,
@@ -8,8 +9,9 @@ const products = [
     price: "$899",
     location: "Downtown Area",
     condition: "Like New",
-    image: "https://images.unsplash.com/photo-1632661674596-df8be070a5c5?auto=format&fit=crop&w=400&q=80",
-    date: "2 days ago"
+    image:
+      "https://images.unsplash.com/photo-1632661674596-df8be070a5c5?auto=format&fit=crop&w=400&q=80",
+    date: "2 days ago",
   },
   {
     id: 2,
@@ -17,8 +19,9 @@ const products = [
     price: "$699",
     location: "West End",
     condition: "Excellent",
-    image: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?auto=format&fit=crop&w=400&q=80",
-    date: "1 day ago"
+    image:
+      "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?auto=format&fit=crop&w=400&q=80",
+    date: "1 day ago",
   },
   {
     id: 3,
@@ -26,8 +29,9 @@ const products = [
     price: "$599",
     location: "East Side",
     condition: "Good",
-    image: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=400&q=80",
-    date: "3 hours ago"
+    image:
+      "https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=400&q=80",
+    date: "3 hours ago",
   },
   {
     id: 4,
@@ -35,8 +39,9 @@ const products = [
     price: "$549",
     location: "North Area",
     condition: "Brand New",
-    image: "https://images.unsplash.com/photo-1585060544812-6b45742d762f?auto=format&fit=crop&w=400&q=80",
-    date: "Just now"
+    image:
+      "https://images.unsplash.com/photo-1585060544812-6b45742d762f?auto=format&fit=crop&w=400&q=80",
+    date: "Just now",
   },
   {
     id: 5,
@@ -44,8 +49,9 @@ const products = [
     price: "$649",
     location: "South District",
     condition: "Excellent",
-    image: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=400&q=80",
-    date: "5 hours ago"
+    image:
+      "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=400&q=80",
+    date: "5 hours ago",
   },
   {
     id: 6,
@@ -53,12 +59,14 @@ const products = [
     price: "$399",
     location: "Central Area",
     condition: "Good",
-    image: "https://images.unsplash.com/photo-1546054454-aa26e2b734c7?auto=format&fit=crop&w=400&q=80",
-    date: "1 week ago"
-  }
+    image:
+      "https://images.unsplash.com/photo-1546054454-aa26e2b734c7?auto=format&fit=crop&w=400&q=80",
+    date: "1 week ago",
+  },
 ];
+//#endregion
 
-const ProductGrid =()=> {
+const ProductGrid = () => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {products.map((product) => (

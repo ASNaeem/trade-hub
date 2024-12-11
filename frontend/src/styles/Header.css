@@ -1,20 +1,17 @@
 .nav_bar {
   position: absolute;
   z-index: 100;
-  top: 0;
-  left: 0;
   width: 100%;
   height: 60px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  color: white;
+  justify-content: end;
+  color: #f9f9f9;
 
   ul {
     display: flex;
     flex-direction: row;
-    gap: 20px;
-    margin: auto;
+    gap: 24px;
 
     li {
       position: relative;
@@ -32,6 +29,12 @@
 
       &:hover::before {
         width: 100%;
+      }
+
+      a {
+        display: flex;
+        gap: 4px;
+        align-items: center;
       }
     }
   }

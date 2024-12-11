@@ -1,6 +1,7 @@
-import { React } from "react";
+import { React, useEffect, useState } from "react";
 import "../styles/Home.css";
 import Header from "../components/Header";
+import LoginPage from "./Login";
 import { Search } from "tabler-icons-react";
 import {
   Smartphone,
@@ -102,23 +103,46 @@ const deals = [
 //#endregion
 
 const HomePage = ({ trending_items, top_deals }) => {
+  //#region Functions
+  useEffect(() => {
+    document.addEventListener("click", (e) => {
+      if (e.target.classList.contains("login_modal")) {
+        setisModalOpen(false);
+      }
+    });
+  }, []);
+  //#endregion
+
+  //#region Variables
+  const [isModalOpen, setisModalOpen] = useState(false);
+  //#endregion
   return (
     <main>
-      <Header /> {/* The header/navigation section */}
+      <Header
+        login_clicked={() => {
+          setisModalOpen(!isModalOpen);
+        }}
+      />
+      {/* Login and registration modal */}
+      <div className={`login_modal ${isModalOpen ? "opened" : ""}`}>
+        <div className={`${isModalOpen ? "login_modal_comeup" : ""}`}>
+          {isModalOpen ? <LoginPage /> : ""}
+        </div>
+      </div>
       {/* Hero Section */}
-      <div className="relative h-[600px] bg-gradient-to-r from-purple-700 to-indigo-800">
+      <div className="relative h-[600px] bg-gradient-to-r from-[#123456] to-[#83adc2]">
         <div className="absolute inset-0">
           <img
-            src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=2000&q=80"
+            src="https://images.unsplash.com/photo-1556742111-a301076d9d18?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             alt="Shopping background"
             className="w-full h-full object-cover opacity-20"
           />
         </div>
         <div className="relative max-w-7xl mx-auto px-4 py-24 sm:px-6 lg:px-8">
           <div className="text-center pt-9">
-            <h1 className="text-4xl tracking-tight font-extrabold text-white sm:text-5xl md:text-6xl">
+            <h1 className="text-4xl tracking-tight font-extrabold text-[#F9F9F9] sm:text-5xl md:text-6xl">
               <span className="pt-8">Trade Hub</span>
-              <span className="block text-indigo-200">
+              <span className="block text-[#E0FFFF]">
                 Buy and Sell with Confidence
               </span>
             </h1>
@@ -154,8 +178,11 @@ const HomePage = ({ trending_items, top_deals }) => {
                 <button
                   key={category.name}
                   className="flex flex-col items-center p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
+                  onClick={() => {
+                    window.location.href = `/browse?category=${category.name}`;
+                  }}
                 >
-                  <Icon className="h-8 w-8 text-indigo-600 mb-2" />
+                  <Icon className="h-8 w-8 text-[#2C2C2C] mb-2" />
                   <span className="text-sm font-medium text-gray-900">
                     {category.name}
                   </span>
@@ -175,7 +202,7 @@ const HomePage = ({ trending_items, top_deals }) => {
             {items.map((item) => (
               <div
                 key={item.id}
-                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200"
+                className="cursor-pointer bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200"
               >
                 <div className="relative h-48">
                   <img
@@ -219,7 +246,7 @@ const HomePage = ({ trending_items, top_deals }) => {
             {deals.map((deal) => (
               <div
                 key={deal.id}
-                className="bg-white rounded-lg shadow-md overflow-hidden"
+                className="cursor-pointer bg-white rounded-lg shadow-md overflow-hidden"
               >
                 <div className="relative">
                   <img

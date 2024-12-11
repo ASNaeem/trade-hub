@@ -1,11 +1,15 @@
-import React from 'react';
-import { MapPin, Heart } from 'lucide-react';
+import React from "react";
+import { MapPin, Heart } from "lucide-react";
 
-function ProductCard({ title, price, location, condition, image, date }) {
+const ProductCard = ({ image, title, price, location, condition, date }) => {
   return (
     <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
       <div className="relative">
-        <img src={image} alt={title} className="w-full h-48 object-cover rounded-t-lg" />
+        <img
+          src={image}
+          alt={title}
+          className="w-full h-48 object-cover rounded-t-lg"
+        />
         <button className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow-sm hover:shadow-md transition-shadow duration-200">
           <Heart className="h-5 w-5 text-gray-400 hover:text-red-500" />
         </button>
