@@ -2,7 +2,6 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const connectDB = require("./config/db");
-const itemRoutes = require("./routes/itemRoutes");
 
 dotenv.config();
 
@@ -24,6 +23,7 @@ const userRoutes = require("./routes/userRoutes");
 app.use("/api/users", userRoutes);
 
 // Item routes
+const itemRoutes = require("./routes/itemRoutes");
 app.use("/api/items", itemRoutes); // Attach item routes to the '/api/items' endpoint
 
 // Start the server
