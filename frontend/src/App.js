@@ -8,6 +8,7 @@ import Footer from "./components/Footer";
 import Registration from "./pages/Registration"; // Import Registration form
 import Login from "./pages/Login";
 import BrowsePage from "./pages/BrowsePage";
+import UserProfile from "./pages/UserProfile";
 //#endregion
 
 const App = () => {
@@ -26,6 +27,8 @@ const App = () => {
           {/* The login form */}
 
           {/* <Route path="/login" element={<Login />} /> */}
+
+          <Route path="/user" element={<UserProfile />} />
         </Routes>
         <Footer /> {/* Footer with important information */}
       </div>

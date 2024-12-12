@@ -5,6 +5,12 @@ function LoginPage() {
   const [CurrentPage, setCurrentPage] = useState("login");
 
   //#region Login Page
+
+  const handle_login = (e) => {
+    e.preventDefault();
+    window.location.href = "/user";
+  };
+
   const Login = () => (
     <div className="w-[350px] md:w-[448px] md:h-[428px] flex items-center justify-center rounded-lg bg-gray-50">
       <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
@@ -29,7 +35,7 @@ function LoginPage() {
             </a>
           </p>
         </div>
-        <form className="mt-6">
+        <form className="mt-6" onSubmit={handle_login}>
           <div className="mb-4">
             <label
               htmlFor="email"
