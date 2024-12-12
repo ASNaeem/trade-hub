@@ -6,7 +6,7 @@ export default function EditProfileModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+    <div className="fixed inset-0 z-50 overflow-y-auto ">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
@@ -14,7 +14,7 @@ export default function EditProfileModal({ isOpen, onClose }) {
       />
 
       {/* Modal */}
-      <div className="flex min-h-full items-center justify-center p-4">
+      <div className="flex min-h-full items-center justify-center p-4 animate-[comeup_0.1s_ease-in]">
         <div className="relative w-full max-w-4xl bg-gray-50 rounded-lg shadow-xl">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200">

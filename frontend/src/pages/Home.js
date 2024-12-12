@@ -124,8 +124,8 @@ const HomePage = ({ trending_items, top_deals }) => {
         }}
       />
       {/* Login and registration modal */}
-      <div className={`login_modal ${isModalOpen ? "opened" : ""}`}>
-        <div className={`${isModalOpen ? "login_modal_comeup" : ""}`}>
+      <div className={`login_modal  ${isModalOpen ? "!flex" : ""}`}>
+        <div className={`animate-[comeup_0.1s_ease-in]`}>
           {isModalOpen ? <LoginPage /> : ""}
         </div>
       </div>
