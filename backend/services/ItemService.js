@@ -1,118 +1,196 @@
-const axios = require("axios");
-const Item = require("./Item"); // Import the class
+const ItemModel = require("../models/itemSchema"); // Mongoose schema
+const Item = require("../classes/Item"); // Custom Item class
 
-const API_BASE_URL =
-  process.env.API_BASE_URL || "http://localhost:5000/api/items";
+// Save a new item
+async function save(item) {
+  // Convert the custom Item class instance to a Mongoose document
+  const itemDocument = new ItemModel({
+    _id: item.itemId,
+    title: item.title,
+    description: item.description,
+    price: item.price,
+    brand: item.brand,
+    category: item.category,
+    condition: item.condition,
+    images: item.images,
+    visibility_status: item.visibilityStatus === "visible", // Convert string to boolean
+    created_at: item.createdAt,
+    location: item.location,
+  });
 
-class ItemService {
-  static async save(item) {
-    try {
-      if (!(item instanceof Item)) {
-        throw new Error("Invalid item object.");
-      }
-      const errors = item.validate();
-      if (errors) {
-        throw new Error(`Validation failed: ${errors.join(", ")}`);
-      }
-
-      const response = await axios.post(API_BASE_URL, {
-        item_id: item._item_id,
-        title: item.title,
-        description: item.description,
-        price: item.price,
-        brand: item.brand,
-        category: item.category,
-        condition: item.condition,
-        images: item.images,
-        visibility_status: item.visibilityStatus,
-        created_at: item.createdAt,
-        location: item.location,
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Error saving item:", error.message);
-      throw error;
-    }
-  }
-
-  static async load(item_id) {
-    try {
-      const response = await axios.get(`${API_BASE_URL}/${item_id}`);
-      const data = response.data;
-      return new Item(
-        data.item_id,
-        data.title,
-        data.description,
-        data.price,
-        data.brand,
-        data.category,
-        data.condition,
-        data.images,
-        data.visibility_status,
-        new Date(data.created_at),
-        data.location
-      );
-    } catch (error) {
-      console.error("Error loading item:", error.message);
-      throw error;
-    }
-  }
-
-  static async remove(item_id) {
-    try {
-      const response = await axios.delete(`${API_BASE_URL}/${item_id}`);
-      return response.data;
-    } catch (error) {
-      console.error("Error removing item:", error.message);
-      throw error;
-    }
-  }
-
-  static async update(item) {
-    try {
-      if (!(item instanceof Item)) {
-        throw new Error("Invalid item object.");
-      }
-      const errors = item.validate();
-      if (errors) {
-        throw new Error(`Validation failed: ${errors.join(", ")}`);
-      }
-
-      const response = await axios.put(`${API_BASE_URL}/${item._item_id}`, {
-        title: item.title,
-        description: item.description,
-        price: item.price,
-        brand: item.brand,
-        category: item.category,
-        condition: item.condition,
-        images: item.images,
-        visibility_status: item.visibilityStatus,
-        location: item.location,
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Error updating item:", error.message);
-      throw error;
-    }
-  }
-  static async getAll() {
-    try {
-      const response = await axios.get(API_BASE_URL);
-      return response.data;
-    } catch (error) {
-      console.error("Error getting all items:", error.message);
-      throw error;
-    }
-  }
-  static async getByCategory(category) {
-    try {
-      const response = await axios.get(`${API_BASE_URL}?category=${category}`);
-      return response.data;
-    } catch (error) {
-      console.error("Error getting items by category:", error.message);
-      throw error;
-    }
+  try {
+    const savedItem = await itemDocument.save();
+    return new Item(
+      savedItem._id,
+      savedItem.title,
+      savedItem.description,
+      savedItem.price,
+      savedItem.brand,
+      savedItem.category,
+      savedItem.condition,
+      savedItem.images,
+      savedItem.visibility_status ? "visible" : "hidden", // Convert boolean back to string
+      savedItem.created_at,
+      savedItem.location
+    );
+  } catch (error) {
+    throw new Error("Error saving item: " + error.message);
   }
 }
 
-module.exports = ItemService;
+// Find an item by ID
+async function findById(itemId) {
+  const itemDocument = await ItemModel.findById(itemId);
+  if (!itemDocument) {
+    throw new Error("Item not found");
+  }
+
+  // Convert the Mongoose document to an instance of the custom Item class
+  return new Item(
+    itemDocument._id,
+    itemDocument.title,
+    itemDocument.description,
+    itemDocument.price,
+    itemDocument.brand,
+    itemDocument.category,
+    itemDocument.condition,
+    itemDocument.images,
+    itemDocument.visibility_status ? "visible" : "hidden",
+    itemDocument.created_at,
+    itemDocument.location
+  );
+}
+
+// Find all items
+async function findAll() {
+  const itemDocuments = await ItemModel.find();
+  return itemDocuments.map((doc) =>
+    new Item(
+      doc._id,
+      doc.title,
+      doc.description,
+      doc.price,
+      doc.brand,
+      doc.category,
+      doc.condition,
+      doc.images,
+      doc.visibility_status ? "visible" : "hidden",
+      doc.created_at,
+      doc.location
+    )
+  );
+}
+
+// Filter items by location
+async function filterByLocation(location) {
+  const itemDocuments = await ItemModel.find({ location });
+  return itemDocuments.map((doc) =>
+    new Item(
+      doc._id,
+      doc.title,
+      doc.description,
+      doc.price,
+      doc.brand,
+      doc.category,
+      doc.condition,
+      doc.images,
+      doc.visibility_status ? "visible" : "hidden",
+      doc.created_at,
+      doc.location
+    )
+  );
+}
+
+// Filter items by category
+async function filterByCategory(category) {
+  const itemDocuments = await ItemModel.find({ category });
+  return itemDocuments.map((doc) =>
+    new Item(
+      doc._id,
+      doc.title,
+      doc.description,
+      doc.price,
+      doc.brand,
+      doc.category,
+      doc.condition,
+      doc.images,
+      doc.visibility_status ? "visible" : "hidden",
+      doc.created_at,
+      doc.location
+    )
+  );
+}
+
+// Filter items by condition
+async function filterByCondition(condition) {
+  const itemDocuments = await ItemModel.find({ condition });
+  return itemDocuments.map((doc) =>
+    new Item(
+      doc._id,
+      doc.title,
+      doc.description,
+      doc.price,
+      doc.brand,
+      doc.category,
+      doc.condition,
+      doc.images,
+      doc.visibility_status ? "visible" : "hidden",
+      doc.created_at,
+      doc.location
+    )
+  );
+}
+
+// Filter items by price range
+async function filterByPrice(minPrice, maxPrice) {
+  const itemDocuments = await ItemModel.find({
+    price: { $gte: minPrice, $lte: maxPrice },
+  });
+  return itemDocuments.map((doc) =>
+    new Item(
+      doc._id,
+      doc.title,
+      doc.description,
+      doc.price,
+      doc.brand,
+      doc.category,
+      doc.condition,
+      doc.images,
+      doc.visibility_status ? "visible" : "hidden",
+      doc.created_at,
+      doc.location
+    )
+  );
+}
+
+// Sort items
+async function sortItems(sortBy, sortOrder = "asc") {
+  const sortOrderValue = sortOrder === "desc" ? -1 : 1;
+  const itemDocuments = await ItemModel.find().sort({ [sortBy]: sortOrderValue });
+  return itemDocuments.map((doc) =>
+    new Item(
+      doc._id,
+      doc.title,
+      doc.description,
+      doc.price,
+      doc.brand,
+      doc.category,
+      doc.condition,
+      doc.images,
+      doc.visibility_status ? "visible" : "hidden",
+      doc.created_at,
+      doc.location
+    )
+  );
+}
+
+module.exports = {
+  save,
+  findById,
+  findAll,
+  filterByLocation,
+  filterByCategory,
+  filterByCondition,
+  filterByPrice,
+  sortItems,
+};

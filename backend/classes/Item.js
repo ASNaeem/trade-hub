@@ -1,5 +1,3 @@
-const axios = require("axios");
-const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:5000";
 class Item {
   constructor(
     item_id,
@@ -22,7 +20,7 @@ class Item {
     this.category = category;
     this.condition = condition;
     this.images = images;
-    this.visibilityStatus = visibility_status;
+    this.visibilityStatus = visibility_status; // String expected
     this.createdAt = created_at;
     this.location = location;
   }
@@ -119,16 +117,6 @@ class Item {
     this._images = newImages;
   }
 
-  set visibilityStatus(newStatus) {
-    const validStatuses = ["visible", "hidden"];
-    if (!validStatuses.includes(newStatus)) {
-      throw new Error(
-        `Visibility status must be one of: ${validStatuses.join(", ")}`
-      );
-    }
-    this._visibility_status = newStatus;
-  }
-
   set createdAt(newDate) {
     if (!(newDate instanceof Date)) {
       throw new Error("Created date must be a valid Date object.");
@@ -137,19 +125,32 @@ class Item {
   }
 
   set location(newLocation) {
+    if (!newLocation || typeof newLocation !== "string") {
+      throw new Error("Location must be a valid division name.");
+    }
     this._location = newLocation;
   }
+  set visibilityStatus(status) {
+    const validStatuses = ["visible", "hidden"];
+    if (!validStatuses.includes(status)) {
+      throw new Error(`Visibility status must be one of: ${validStatuses.join(", ")}`);
+    }
+    this._visibility_status = status;
+  }
 
-  // Utility Method to Validate Data
-  validate() {
-    const errors = [];
-    if (!this._title || this._title.trim().length === 0)
-      errors.push("Title is required.");
-    if (!this._price || this._price <= 0)
-      errors.push("Price must be greater than 0.");
-    if (!this._condition) errors.push("Condition is required.");
-    return errors.length > 0 ? errors : null;
+
+
+  // Set visibility from boolean
+  static fromBooleanVisibility(isVisible) {
+    return isVisible ? "visible" : "hidden";
+  }
+
+  // Convert visibility to boolean
+  static toBooleanVisibility(status) {
+    return status === "visible";
   }
 }
+
+
 
 module.exports = Item;
