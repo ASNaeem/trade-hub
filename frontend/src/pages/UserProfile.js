@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+
 import UserInfo from "../components/profile/UserInfo";
 import UserStats from "../components/profile/UserStats";
 import UserActions from "../components/profile/UserActions";
@@ -32,6 +34,15 @@ const mockStats = {
 };
 
 function UserProfile() {
+  const location = useLocation();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const l = params.get("loggedin");
+
+    if (l) {
+      setActiveTab("messages");
+    }
+  }, [location]);
   const [activeTab, setActiveTab] = useState("selling");
 
   const renderTabContent = () => {

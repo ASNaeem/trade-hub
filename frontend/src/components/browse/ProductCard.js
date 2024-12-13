@@ -13,7 +13,7 @@ const ProductCard = ({
   return (
     <div
       onClick={item_click}
-      className="cursor-pointer bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
+      className="cursor-pointer bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-200"
     >
       <div className="relative">
         <img
@@ -21,7 +21,7 @@ const ProductCard = ({
           alt={title}
           className="w-full h-48 object-cover rounded-t-lg"
         />
-        <button className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow-sm hover:shadow-md transition-shadow duration-200">
+        <button className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow-md hover:shadow-lg transition-shadow duration-200">
           <Heart className="h-5 w-5 text-gray-400 hover:text-red-500" />
         </button>
       </div>

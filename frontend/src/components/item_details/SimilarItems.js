@@ -15,7 +15,7 @@ export default function SimilarItems({ items }) {
                 className="w-full h-full object-cover group-hover:scale-105 transition"
               />
             </div>
-            <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 truncate">
+            <h3 className="font-semibold text-gray-900 truncate">
               {item.title}
             </h3>
             <p className="text-green-600 font-bold flex items-center">

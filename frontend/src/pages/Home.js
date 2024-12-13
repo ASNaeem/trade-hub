@@ -105,28 +105,45 @@ const deals = [
 const HomePage = ({ trending_items, top_deals }) => {
   //#region Functions
   useEffect(() => {
-    document.addEventListener("click", (e) => {
-      if (e.target.classList.contains("login_modal")) {
-        setisModalOpen(false);
-      }
-    });
+    localStorage.getItem("loggedin") != null
+      ? setLoggedIn(true)
+      : setLoggedIn(false);
+
+    document
+      .getElementsByClassName("login_modal")[0]
+      .addEventListener("click", (e) => {
+        if (e.target.classList.contains("login_modal")) {
+          setisModalOpen(false);
+        }
+      });
   }, []);
   //#endregion
 
   //#region Variables
+  const [LoggedIn, setLoggedIn] = useState(false);
+  const [login_from, setLoginFrom] = useState("login");
   const [isModalOpen, setisModalOpen] = useState(false);
   //#endregion
   return (
     <main>
       <Header
-        login_clicked={() => {
+        user_state={LoggedIn}
+        login_clicked={(v) => {
+          setLoginFrom(v);
           setisModalOpen(!isModalOpen);
         }}
       />
       {/* Login and registration modal */}
       <div className={`login_modal  ${isModalOpen ? "!flex" : ""}`}>
         <div className={`animate-[comeup_0.1s_ease-in]`}>
-          {isModalOpen ? <LoginPage /> : ""}
+          {isModalOpen ? (
+            <LoginPage
+              from={login_from}
+              login_success={() => setLoggedIn(true)}
+            />
+          ) : (
+            ""
+          )}
         </div>
       </div>
       {/* Hero Section */}
@@ -157,7 +174,7 @@ const HomePage = ({ trending_items, top_deals }) => {
                 </div>
                 <input
                   type="text"
-                  className="block w-full pl-10 pr-3 py-4 border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white bg-opacity-90 placeholder-gray-500"
+                  className="block w-full pl-10 pr-3 py-4 border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-[#83adc2] bg-white bg-opacity-90 placeholder-gray-500"
                   placeholder="Search for items..."
                 />
               </div>
@@ -202,7 +219,7 @@ const HomePage = ({ trending_items, top_deals }) => {
             {items.map((item) => (
               <div
                 key={item.id}
-                className="cursor-pointer bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200"
+                className="cursor-pointer bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-200"
               >
                 <div className="relative h-48">
                   <img
@@ -246,7 +263,7 @@ const HomePage = ({ trending_items, top_deals }) => {
             {deals.map((deal) => (
               <div
                 key={deal.id}
-                className="cursor-pointer bg-white rounded-lg shadow-md overflow-hidden"
+                className="cursor-pointer bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl duration-200 "
               >
                 <div className="relative">
                   <img
