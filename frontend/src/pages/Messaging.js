@@ -1,11 +1,10 @@
-import React from 'react';
+import React from "react";
+import { Messages } from "tabler-icons-react";
 
 const Messaging = () => {
   return (
     <div>
-      <h2>Messages</h2>
-      <p>Messaging feature will appear here.</p>
-      <p>Messaging feature will appear here.</p>
+      <MessagesTab />
     </div>
   );
 };

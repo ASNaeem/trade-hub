@@ -1,9 +1,20 @@
 import React from "react";
 import { MapPin, Heart } from "lucide-react";
 
-const ProductCard = ({ image, title, price, location, condition, date }) => {
+const ProductCard = ({
+  image,
+  title,
+  price,
+  location,
+  condition,
+  date,
+  item_click,
+}) => {
   return (
-    <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
+    <div
+      onClick={item_click}
+      className="cursor-pointer bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
+    >
       <div className="relative">
         <img
           src={image}

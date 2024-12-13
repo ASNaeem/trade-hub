@@ -4,7 +4,7 @@ import ProductCard from "./ProductCard";
 //#region demo data for testing
 const products = [
   {
-    id: 1,
+    id: 93797957927,
     title: "iPhone 13 Pro Max - 256GB",
     price: "$899",
     location: "Downtown Area",
@@ -70,7 +70,13 @@ const ProductGrid = () => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {products.map((product) => (
-        <ProductCard key={product.id} {...product} />
+        <ProductCard
+          key={product.id}
+          {...product}
+          item_click={() => {
+            window.location.href = `/item?id=${product.id}`;
+          }}
+        />
       ))}
     </div>
   );

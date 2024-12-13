@@ -9,6 +9,8 @@ import Registration from "./pages/Registration"; // Import Registration form
 import Login from "./pages/Login";
 import BrowsePage from "./pages/BrowsePage";
 import UserProfile from "./pages/UserProfile";
+import ItemDetailsPage from "./pages/ItemDetailsPage";
+import MessagesTab from "./components/profile/tabs/MessagesTab";
 //#endregion
 
 const App = () => {
@@ -28,7 +30,14 @@ const App = () => {
 
           {/* <Route path="/login" element={<Login />} /> */}
 
+          {/* Usesr profile page */}
           <Route path="/user" element={<UserProfile />} />
+
+          {/* Messages */}
+          <Route path="/messages" element={<MessagesTab />} />
+
+          {/* The Item Details Page */}
+          <Route path="/item" element={<ItemDetailsPage />} />
         </Routes>
         <Footer /> {/* Footer with important information */}
       </div>

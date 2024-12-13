@@ -14,7 +14,7 @@ export default function ProfileStats() {
         const Icon = stat.icon;
         return (
           <div key={stat.label} className="bg-white rounded-lg p-6 shadow-sm">
-            <div className="flex items-center">
+            <div className="flex items-center shadow-xl">
               <div className="p-2 bg-blue-50 rounded-lg">
                 <Icon className="h-6 w-6 text-blue-600" />
               </div>

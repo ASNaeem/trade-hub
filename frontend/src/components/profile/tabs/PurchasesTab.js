@@ -30,7 +30,7 @@ const PurchasesTab = () => {
       {purchases.map((purchase) => (
         <div key={purchase.id} className="bg-white rounded-lg shadow-sm p-4">
           <div className="flex items-center space-x-4">
-            <div className="flex-shrink-0 w-24 h-24">
+            <div className="flex-shrink-0 cursor-pointer w-24 h-24">
               <img
                 src={purchase.image}
                 alt={purchase.title}
@@ -38,7 +38,7 @@ const PurchasesTab = () => {
               />
             </div>
             <div className="flex-1 min-w-0">
-              <h4 className="text-lg font-medium text-gray-900">
+              <h4 className="text-lg cursor-pointer font-medium text-gray-900">
                 {purchase.title}
               </h4>
               <p className="text-sm text-gray-500">Seller: {purchase.seller}</p>

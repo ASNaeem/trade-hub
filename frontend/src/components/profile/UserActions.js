@@ -6,10 +6,10 @@ const UserActions = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   return (
     <>
-      <div className="flex flex-wrap gap-3">
+      <div className="flex mb-2">
         <button
           onClick={() => setIsEditModalOpen(true)}
-          className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+          className="inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-[#e9e9e9]"
         >
           <Settings className="h-4 w-4 mr-2" />
           Edit Profile

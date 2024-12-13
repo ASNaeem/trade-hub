@@ -18,10 +18,10 @@ const UserStats = ({ stats }) => {
       {statItems.map((stat) => {
         const Icon = stat.icon;
         return (
-          <div key={stat.label} className="bg-white rounded-lg p-4 shadow-sm">
+          <div key={stat.label} className="bg-white rounded-lg p-4 shadow-md">
             <div className="flex items-center">
               <div className="p-2 bg-blue-50 rounded-lg">
-                <Icon className="h-5 w-5 text-blue-600" />
+                <Icon className="h-5 w-5 text-[#2C2C2C]}" />
               </div>
               <div className="ml-3">
                 <p className="text-sm font-medium text-gray-600">
