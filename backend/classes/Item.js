@@ -1,6 +1,6 @@
 class Item {
   constructor(
-    item_id,
+    id,
     title,
     description,
     price,
@@ -10,23 +10,25 @@ class Item {
     images = [],
     visibility_status = "visible",
     created_at = new Date(),
-    location
+    location,
+    sellerId
   ) {
     this._item_id = item_id;
-    this.title = title;
-    this.description = description;
-    this.price = price;
-    this.brand = brand;
-    this.category = category;
-    this.condition = condition;
-    this.images = images;
-    this.visibilityStatus = visibility_status; // String expected
-    this.createdAt = created_at;
-    this.location = location;
+    this._title = title;
+    this._description = description;
+    this._price = price;
+    this._brand = brand;
+    this._category = category;
+    this._condition = condition;
+    this._images = images;
+    this._visibilityStatus = visibility_status; // String expected
+    this._createdAt = created_at;
+    this._location = location;
+    this._sellerId = sellerId;
   }
 
   // Getters
-  get itemId() {
+  get id() {
     return this._item_id;
   }
 
@@ -69,8 +71,13 @@ class Item {
   get location() {
     return this._location;
   }
-
+  get sellerId(){
+    return this.sellerId;
+  }
   // Setters with Validation
+  set id(newId){
+    this._item_id = newId;
+  }
   set title(newTitle) {
     if (!newTitle || newTitle.trim().length === 0) {
       throw new Error("Title cannot be empty.");
@@ -137,9 +144,9 @@ class Item {
     }
     this._visibility_status = status;
   }
-
-
-
+  set sellerId(newSellerId){
+    this._sellerId = newSellerId;
+  }
   // Set visibility from boolean
   static fromBooleanVisibility(isVisible) {
     return isVisible ? "visible" : "hidden";

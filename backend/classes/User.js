@@ -33,6 +33,14 @@ class User extends Person {
   removeItem(itemId) {
     this._itemsListed = this._itemsListed.filter((id) => id !== itemId);
   }
+  getSummary() {
+    return {
+      id: this.id,
+      name: this.name,
+      email: this.email,
+      phone: this.phone,
+      createdAt: this.createdAt,
+    };
+  }
 }
-
 module.exports = User;

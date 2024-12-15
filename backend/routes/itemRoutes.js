@@ -1,11 +1,26 @@
 const express = require("express");
 const router = express.Router();
 const itemController = require("../controllers/itemController");
-//const { verifyToken } = require("../middleware/auth");
+const authMiddleware = require("../middleware/authMiddleware");
+const { check, validationResult } = require("express-validator");
+
+// Validation middleware for creating/updating items
+const validateItem = [
+  check("title").notEmpty().withMessage("Title is required"),
+  check("price").isNumeric().withMessage("Price must be a valid number"),
+  check("category").notEmpty().withMessage("Category is required"),
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    next();
+  },
+];
 
 // Route to create a new item
-//router.post("/", verifyToken, itemController.createItem);
-router.post("/", itemController.createItem);
+router.post("/", authMiddleware, validateItem, itemController.createItem);
+
 // Route to get all items with optional filters (e.g., query params for filtering)
 router.get("/", itemController.getItems);
 
@@ -13,10 +28,9 @@ router.get("/", itemController.getItems);
 router.get("/:itemId", itemController.getItemById);
 
 // Route to update an item
-router.put("/:itemId", itemController.updateItem);
-//router.put("/:itemId", verifyToken, itemController.updateItem);
+router.put("/:itemId", authMiddleware, validateItem, itemController.updateItem);
+
 // Route to delete an item
-//router.delete("/:itemId", verifyToken, itemController.deleteItem);
-router.delete("/:itemId", itemController.deleteItem);
+router.delete("/:itemId", authMiddleware, itemController.deleteItem);
 
 module.exports = router;

@@ -32,7 +32,7 @@ class Person {
 
   // Getter and Setter for Password (restricted access)
   get password() {
-    return "Password access is restricted."; // Avoid direct password access
+    return this._password
   }
 
   set password(newPassword) {

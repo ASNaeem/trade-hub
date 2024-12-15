@@ -1,34 +1,30 @@
-const User = require("../models/userSchema");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-
+const userService = require("../services/userService");
+const User = require("../models/userSchema"); // Add this import
 // Register a new user
 exports.registerUser = async (req, res) => {
   try {
     const { name, email, password, phone } = req.body;
 
-    // Check if the user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+    // Check for duplicates
+    const duplicates = await userService.isDuplicate(email, phone);
+    if (duplicates.email) {
+      return res.status(400).json({ message: "Email already in use" });
     }
-
-    // Hash the password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
+    if (duplicates.phone) {
+      return res.status(400).json({ message: "Phone number already in use" });
+    }
+    if (!name || !phone) {
+    return res.status(400).json({ message: "Validation failed: name and phone are required" });
+    }
     // Create a new user
-    const newUser = new User({
-      name,
-      email,
-      password: hashedPassword,
-      phone,
-    });
+    const newUser = await userService.createUser(name, email, phone, password);
 
-    await newUser.save();
-    res.status(201).json({ message: "User registered successfully", user: newUser });
+    res.status(201).json({
+      message: "User registered successfully",
+      user: newUser.getSummary(),
+    });
   } catch (error) {
-    console.error(error);
+    console.error(`Error in ${req.originalUrl} -`, error.message);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -38,35 +34,19 @@ exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Check if the user exists
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
+    // Authenticate user
+    const { user, token } = await userService.authenticateUser(email, password);
 
-    // Compare password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
-
-    // Generate JWT token
-    const payload = { id: user.id, email: user.email };
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
-
-    res.status(200).json({
+    res.status(200).json({ 
       message: "Login successful",
       token,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        itemsListed: user.itemsListed,
-      },
+      user: user.getSummary(),
     });
   } catch (error) {
-    console.error(error);
+    console.error(`Error in ${req.originalUrl} -`, error.message);
+    if (error.message === "Invalid credentials") {
+      return res.status(400).json({ message: error.message });
+    }
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -74,8 +54,7 @@ exports.loginUser = async (req, res) => {
 // Get user profile
 exports.getUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id); // req.user should have the logged-in user ID
-
+    const user = await User.findById(req.user.id); // Ensure `user` is defined
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -85,11 +64,10 @@ exports.getUserProfile = async (req, res) => {
       name: user.name,
       email: user.email,
       phone: user.phone,
-      itemsListed: user.itemsListed,
       createdAt: user.createdAt,
     });
   } catch (error) {
-    console.error(error);
+    console.error(`Error in /api/users/profile -`, error.message);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -97,19 +75,21 @@ exports.getUserProfile = async (req, res) => {
 // Update user profile
 exports.updateUserProfile = async (req, res) => {
   try {
-    const { name, phone, password } = req.body;
     const userId = req.user.id;
+    const { name, phone, password } = req.body;
 
-    const user = await User.findById(userId);
+    const user = await User.findById(userId); // Fetch user from database
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Update user details
+    // Validate and update fields
+    if (phone && !/^\+?\d{10,14}$/.test(phone)) {
+      return res.status(400).json({ message: "Invalid phone number format" });
+    }
     if (name) user.name = name;
     if (phone) user.phone = phone;
     if (password) {
-      // Hash new password if provided
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(password, salt);
     }
@@ -117,7 +97,24 @@ exports.updateUserProfile = async (req, res) => {
     await user.save();
     res.status(200).json({ message: "Profile updated successfully", user });
   } catch (error) {
-    console.error(error);
+    console.error(`Error in /api/users/profile -`, error.message);
     res.status(500).json({ message: "Server error" });
   }
 };
+
+//delete user profile
+exports.deleteUserProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id); // req.user is added by authenticateUser middleware
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    // Delete the user
+    await user.deleteOne();
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.error(`Error in ${req.originalUrl} -`, error.message);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+

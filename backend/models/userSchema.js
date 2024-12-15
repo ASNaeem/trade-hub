@@ -1,11 +1,6 @@
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
-  id: {
-    type: String,
-    required: true,
-    unique: true,
-  },
   name: {
     type: String,
     required: true,
@@ -36,7 +31,11 @@ const userSchema = new mongoose.Schema({
     default: Date.now,
   },
 });
+userSchema.virtual("id").get(function () {
+  return this._id.toHexString();
+});
 
+userSchema.set("toJSON", { virtuals: true });
 // Create a model from the schema
 const User = mongoose.model("User", userSchema);
 
