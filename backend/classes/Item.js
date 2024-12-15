@@ -1,6 +1,6 @@
 class Item {
   constructor(
-    id,
+    item_id,
     title,
     description,
     price,
@@ -71,11 +71,11 @@ class Item {
   get location() {
     return this._location;
   }
-  get sellerId(){
+  get sellerId() {
     return this.sellerId;
   }
   // Setters with Validation
-  set id(newId){
+  set id(newId) {
     this._item_id = newId;
   }
   set title(newTitle) {
@@ -140,11 +140,13 @@ class Item {
   set visibilityStatus(status) {
     const validStatuses = ["visible", "hidden"];
     if (!validStatuses.includes(status)) {
-      throw new Error(`Visibility status must be one of: ${validStatuses.join(", ")}`);
+      throw new Error(
+        `Visibility status must be one of: ${validStatuses.join(", ")}`
+      );
     }
     this._visibility_status = status;
   }
-  set sellerId(newSellerId){
+  set sellerId(newSellerId) {
     this._sellerId = newSellerId;
   }
   // Set visibility from boolean
@@ -157,7 +159,5 @@ class Item {
     return status === "visible";
   }
 }
-
-
 
 module.exports = Item;

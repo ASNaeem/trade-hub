@@ -1,9 +1,22 @@
-const ItemModel = require("../models/itemSchema");
 const ItemClass = require("../classes/Item");
+const ItemModel = require("../models/itemSchema");
 
-async function createItem (title, description, price, brand, category, condition, images, location, sellerId){
-  const item = new ItemClass(
-    null,
+async function createItem(
+  title,
+  description,
+  price,
+  brand,
+  category,
+  condition,
+  images,
+  visibilityStatus,
+  location,
+  sellerId,
+  createdAt = new Date()
+) {
+  // Create ItemClass instance
+  const newItemClass = new ItemClass(
+    null, // ID will be assigned by MongoDB
     title,
     description,
     price,
@@ -11,100 +24,134 @@ async function createItem (title, description, price, brand, category, condition
     category,
     condition,
     images,
-    "visible",
-    new Date(),
+    visibilityStatus,
+    createdAt,
     location,
     sellerId
   );
 
-  const itemDocument = new ItemModel({
-    title: item.title,
-    description: item.description,
-    price: item.price,
-    brand: item.brand,
-    category: item.category,
-    condition: item.condition,
-    images: item.images,
-    visibility_status: item.visibilityStatus === "visible",
-    created_at: item.createdAt,
-    location: item.location,
-    sellerId: item.sellerId, // Ensure ownership
+  // Create a new item document using Mongoose
+  const newItemDocument = new ItemModel({
+    title: newItemClass.title,
+    description: newItemClass.description,
+    price: newItemClass.price,
+    brand: newItemClass.brand,
+    category: newItemClass.category,
+    condition: newItemClass.condition,
+    images: newItemClass.images,
+    visibilityStatus: newItemClass.visibilityStatus,
+    createdAt: newItemClass.createdAt,
+    location: newItemClass.location,
+    sellerId: newItemClass.sellerId,
   });
 
-  const savedItem = await itemDocument.save();
+  // Save the item document to the database
+  const savedItem = await newItemDocument.save();
+
+  // Return the created ItemClass instance
   return new ItemClass(
-    itemDoc._id,
-    itemDoc.title,
-    itemDoc.description,
-    itemDoc.price,
-    itemDoc.brand,
-    itemDoc.category,
-    itemDoc.condition,
-    itemDoc.images,
-    itemDoc.visibility_status ? "visible" : "hidden",
-    itemDoc.created_at,
-    itemDoc.location,
-    itemDoc.sellerId
+    savedItem._id,
+    savedItem.title,
+    savedItem.description,
+    savedItem.price,
+    savedItem.brand,
+    savedItem.category,
+    savedItem.condition,
+    savedItem.images,
+    savedItem.visibilityStatus,
+    savedItem.createdAt,
+    savedItem.location,
+    savedItem.sellerId
   );
 }
 
-async function getAllItems (filters){
-  const items = await ItemModel.find(filters);
-  return items.map(toItemClass);
-};
+async function findItemById(itemId) {
+  const itemDocument = await ItemModel.findById(itemId);
+  if (!itemDocument) return null;
 
-async function getItemById (itemId){
-  const item = await ItemModel.findById(itemId);
-  return item ? new ItemClass(
-    itemDoc._id,
-    itemDoc.title,
-    itemDoc.description,
-    itemDoc.price,
-    itemDoc.brand,
-    itemDoc.category,
-    itemDoc.condition,
-    itemDoc.images,
-    itemDoc.visibility_status ? "visible" : "hidden",
-    itemDoc.created_at,
-    itemDoc.location,
-    itemDoc.sellerId
-  ) : null;
-};
-
-async function updateItem (itemId, updates, userId){
-  const item = await ItemModel.findById(itemId);
-  if (!item || item.seller.toString() !== userId) return null;
-
-  Object.assign(item, updates); // Apply updates
-  const updatedItem = await item.save();
+  // Return a new instance of ItemClass with the data from MongoDB
   return new ItemClass(
-    itemDoc._id,
-    itemDoc.title,
-    itemDoc.description,
-    itemDoc.price,
-    itemDoc.brand,
-    itemDoc.category,
-    itemDoc.condition,
-    itemDoc.images,
-    itemDoc.visibility_status ? "visible" : "hidden",
-    itemDoc.created_at,
-    itemDoc.location,
-    itemDoc.sellerId
+    itemDocument._id,
+    itemDocument.title,
+    itemDocument.description,
+    itemDocument.price,
+    itemDocument.brand,
+    itemDocument.category,
+    itemDocument.condition,
+    itemDocument.images,
+    itemDocument.visibilityStatus,
+    itemDocument.createdAt,
+    itemDocument.location,
+    itemDocument.sellerId
   );
-};
+}
 
-async function deleteItem (itemId, userId){
-  const item = await ItemModel.findById(itemId);
-  if (!item || item.seller.toString() !== userId) return false;
+async function updateItem(itemId, updates) {
+  const itemDocument = await ItemModel.findById(itemId);
+  if (!itemDocument) return null;
 
-  await item.deleteOne();
-  return true;
-};
+  // Create ItemClass instance with current data
+  const itemClassInstance = new ItemClass(
+    itemDocument._id,
+    itemDocument.title,
+    itemDocument.description,
+    itemDocument.price,
+    itemDocument.brand,
+    itemDocument.category,
+    itemDocument.condition,
+    itemDocument.images,
+    itemDocument.visibilityStatus,
+    itemDocument.createdAt,
+    itemDocument.location,
+    itemDocument.sellerId
+  );
+
+  // Update properties if they exist in the `updates` object
+  if (updates.title) itemClassInstance.title = updates.title;
+  if (updates.description) itemClassInstance.description = updates.description;
+  if (updates.price) itemClassInstance.price = updates.price;
+  if (updates.brand) itemClassInstance.brand = updates.brand;
+  if (updates.category) itemClassInstance.category = updates.category;
+  if (updates.condition) itemClassInstance.condition = updates.condition;
+  if (updates.images) itemClassInstance.images = updates.images;
+  if (updates.visibilityStatus)
+    itemClassInstance.visibilityStatus = updates.visibilityStatus;
+  if (updates.createdAt) itemClassInstance.createdAt = updates.createdAt;
+  if (updates.location) itemClassInstance.location = updates.location;
+  if (updates.sellerId) itemClassInstance.sellerId = updates.sellerId;
+
+  // Apply updates to the Mongoose document
+  itemDocument.title = itemClassInstance.title;
+  itemDocument.description = itemClassInstance.description;
+  itemDocument.price = itemClassInstance.price;
+  itemDocument.brand = itemClassInstance.brand;
+  itemDocument.category = itemClassInstance.category;
+  itemDocument.condition = itemClassInstance.condition;
+  itemDocument.images = itemClassInstance.images;
+  itemDocument.visibilityStatus = itemClassInstance.visibilityStatus;
+  itemDocument.createdAt = itemClassInstance.createdAt;
+  itemDocument.location = itemClassInstance.location;
+  itemDocument.sellerId = itemClassInstance.sellerId;
+
+  // Save the updated document back to the database
+  await itemDocument.save();
+
+  // Return the updated ItemClass instance
+  return itemClassInstance;
+}
+
+async function deleteItem(itemId) {
+  const itemDocument = await ItemModel.findById(itemId);
+  if (!itemDocument) return null;
+
+  // Remove the item document from the database
+  await itemDocument.remove();
+  return { message: "Item successfully deleted" };
+}
 
 module.exports = {
   createItem,
-  getAllItems,
-  getItemById,
-  updateItem, 
-  deleteItem
+  findItemById,
+  updateItem,
+  deleteItem,
 };

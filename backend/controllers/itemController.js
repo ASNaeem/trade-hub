@@ -1,12 +1,8 @@
 const itemService = require("../services/itemService");
-const itemSchema = require("../models/itemSchema.js");
-// Create a new item
-exports.createItem = async (req, res) => {
-  try {
-    const { title, description, price, brand, category, condition, images, location } = req.body;
-    const sellerId = req.user.id; // Extract user ID from the authenticated request
 
-    const item = await itemService.createItem(
+async function createItem(req, res) {
+  try {
+    const {
       title,
       description,
       price,
@@ -14,82 +10,92 @@ exports.createItem = async (req, res) => {
       category,
       condition,
       images,
+      visibilityStatus,
+      location,
+      sellerId,
+    } = req.body;
+
+    // Validate required fields (you can improve this with better validation if needed)
+    if (!title || !price || !category || !condition || !location || !sellerId) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    // Create item via itemService
+    const newItem = await itemService.createItem(
+      title,
+      description,
+      price,
+      brand,
+      category,
+      condition,
+      images,
+      visibilityStatus,
       location,
       sellerId
     );
 
-    res.status(201).json({ message: "Item created successfully", item });
+    return res.status(201).json(newItem);
   } catch (error) {
-    console.error(`Error in /api/items -`, error.message);
-    res.status(500).json({ message: "Error creating item" });
+    console.error(error);
+    return res.status(500).json({ message: "Error creating item" });
   }
-};
+}
 
-// Get all items
-exports.getItems = async (req, res) => {
-  try {
-    const filters = req.query; // Use query params for filters
-    const items = await itemService.getAllItems(filters);
-
-    res.status(200).json(items);
-  } catch (error) {
-    console.error(`Error in /api/items -`, error.message);
-    res.status(500).json({ message: "Error fetching items" });
-  }
-};
-
-// Get item by ID
-exports.getItemById = async (req, res) => {
+async function getItemById(req, res) {
   try {
     const { itemId } = req.params;
-    const item = await itemService.getItemById(itemId);
 
+    // Fetch item by ID
+    const item = await itemService.findItemById(itemId);
     if (!item) {
       return res.status(404).json({ message: "Item not found" });
     }
 
-    res.status(200).json(item);
+    return res.status(200).json(item);
   } catch (error) {
-    console.error(`Error in /api/items/${req.params.itemId} -`, error.message);
-    res.status(500).json({ message: "Error fetching item" });
+    console.error(error);
+    return res.status(500).json({ message: "Error fetching item" });
   }
-};
+}
 
-// Update an item
-exports.updateItem = async (req, res) => {
+async function updateItem(req, res) {
   try {
     const { itemId } = req.params;
     const updates = req.body;
-    const sellerId = req.user.id;
 
-    const updatedItem = await itemService.updateItem(itemId, updates, sellerId);
-
+    // Update item via itemService
+    const updatedItem = await itemService.updateItem(itemId, updates);
     if (!updatedItem) {
-      return res.status(404).json({ message: "Item not found or unauthorized" });
+      return res.status(404).json({ message: "Item not found" });
     }
 
-    res.status(200).json({ message: "Item updated successfully", item: updatedItem });
+    return res.status(200).json(updatedItem);
   } catch (error) {
-    console.error(`Error in /api/items/${req.params.itemId} -`, error.message);
-    res.status(500).json({ message: "Error updating item" });
+    console.error(error);
+    return res.status(500).json({ message: "Error updating item" });
   }
-};
+}
 
-// Delete an item
-exports.deleteItem = async (req, res) => {
+async function deleteItem(req, res) {
   try {
     const { itemId } = req.params;
-    const sellerId = req.user.id;
 
-    const deleted = await itemService.deleteItem(itemId, sellerId);
-
-    if (!deleted) {
-      return res.status(404).json({ message: "Item not found or unauthorized" });
+    // Delete item via itemService
+    const result = await itemService.deleteItem(itemId);
+    if (!result) {
+      return res.status(404).json({ message: "Item not found" });
     }
 
-    res.status(200).json({ message: "Item deleted successfully" });
+    return res.status(200).json(result);
   } catch (error) {
-    console.error(`Error in /api/items/${req.params.itemId} -`, error.message);
-    res.status(500).json({ message: "Error deleting item" });
+    console.error(error);
+    return res.status(500).json({ message: "Error deleting item" });
   }
+}
+
+module.exports = {
+  createItem,
+  getItemById,
+  updateItem,
+  deleteItem,
 };
