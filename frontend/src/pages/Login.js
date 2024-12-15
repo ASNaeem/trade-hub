@@ -1,14 +1,18 @@
-import { React, useState } from "react";
+import { React, useState, useRef } from "react";
 import { ShoppingBag } from "lucide-react";
 
-function LoginPage() {
+function LoginPage({ from }) {
   const [CurrentPage, setCurrentPage] = useState("login");
 
   //#region Login Page
 
   const handle_login = (e) => {
     e.preventDefault();
-    window.location.href = "/user";
+    //suppose login success
+    from == "chats"
+      ? (window.location.href = "/user?loggedin=true")
+      : (window.location.href = "/user");
+    localStorage.setItem("loggedin", true); // here later will be the token instead of true
   };
 
   const Login = () => (
@@ -95,24 +99,40 @@ function LoginPage() {
   //#endregion
 
   //#region Register Page
-  const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    phoneNumber: "",
-    password: "",
-    confirmPassword: "",
-  });
+
+  const [formData, setFormData] = useState({});
+
+  //#region
+  const fullNameRef = useRef();
+  const emailRef = useRef();
+  const phoneNumberRef = useRef();
+  const passwordRef = useRef();
+  const confirmPasswordRef = useRef();
+  //#endregion
 
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState(1); // Step 1: Registration Form, Step 2: OTP Verification
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+  const handleInputChange = async (e) => {
+    // const { name, value } = e.target;
+    // setFormData({ ...formData, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const fullName = fullNameRef.current.value;
+    const email = emailRef.current.value;
+    const password = passwordRef.current.value;
+    const confirmPassword = confirmPasswordRef.current.value;
+
+    setFormData({
+      fullName: fullName,
+      email: email,
+      password: password,
+      confirmPassword: confirmPassword,
+    });
+
+    console.log(formData);
     if (formData.password !== formData.confirmPassword) {
       alert("Passwords don't match!");
       return;
@@ -176,9 +196,9 @@ function LoginPage() {
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
                 <input
+                  ref={fullNameRef}
                   type="text"
                   name="fullName"
-                  value={formData.fullName}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Full Name"
@@ -187,9 +207,9 @@ function LoginPage() {
               </div>
               <div className="mb-4">
                 <input
+                  ref={emailRef}
                   type="email"
                   name="email"
-                  value={formData.email}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="you@example.com"
@@ -198,9 +218,9 @@ function LoginPage() {
               </div>
               <div className="mb-4">
                 <input
+                  ref={phoneNumberRef}
                   type="tel"
                   name="phoneNumber"
-                  value={formData.phoneNumber}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Phone Number"
@@ -211,9 +231,9 @@ function LoginPage() {
               </div>
               <div className="mb-4">
                 <input
+                  ref={passwordRef}
                   type="password"
                   name="password"
-                  value={formData.password}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Password"
@@ -222,9 +242,9 @@ function LoginPage() {
               </div>
               <div className="mb-4">
                 <input
+                  ref={confirmPasswordRef}
                   type="password"
                   name="confirmPassword"
-                  value={formData.confirmPassword}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Confirm Password"

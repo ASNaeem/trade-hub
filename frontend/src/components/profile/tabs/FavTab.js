@@ -45,9 +45,12 @@ const FavTab = () => {
               <p className="text-lg font-semibold text-gray-900">
                 ${item.price}
               </p>
-              <button className="text-sm text-blue-600 hover:text-blue-800 flex items-center">
+              <a
+                href="/item"
+                className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
+              >
                 View <ExternalLink className="h-4 w-4 ml-1" />
-              </button>
+              </a>
             </div>
             <div className="mt-1 flex items-center text-sm text-gray-500">
               <Heart className="h-4 w-4 text-red-500 mr-1" />

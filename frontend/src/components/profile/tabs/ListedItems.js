@@ -37,11 +37,11 @@ const ListedItems = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {items.map((item) => (
           <div key={item.id} className="group">
-            <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-100">
+            <div className="relative cursor-pointer aspect-square overflow-hidden rounded-lg bg-gray-100">
               <img
                 src={item.image}
                 alt={item.title}
-                className="h-full w-full object-cover object-center group-hover:opacity-75"
+                className="h-full w-full object-cover object-center group-hover:scale-105 transition"
               />
               <div className="absolute top-2 right-2 bg-white rounded-full p-1.5 shadow-sm">
                 <Heart className="h-4 w-4 text-gray-600" />

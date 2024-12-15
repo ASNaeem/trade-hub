@@ -2,7 +2,7 @@ import React from "react";
 import { MessageSquareText, User } from "lucide-react";
 import "../styles/Header.css";
 
-const Header = ({ login_clicked }) => {
+const Header = ({ user_state, login_clicked }) => {
   return (
     <nav className="nav_bar pr-4 md:pr-[80px]">
       <a href="/">
@@ -21,25 +21,37 @@ const Header = ({ login_clicked }) => {
       </a>
 
       <ul>
-        {/* <li>
-          <a href="/profile">Profile</a>
-        </li> */}
         <li>
-          <a href="/messages">
-            <MessageSquareText style={{ width: "16px", height: "16px" }} />
-            Chat
-          </a>
-        </li>
-        <li>
-          <a className="cursor-pointer" onClick={login_clicked}>
-            <User style={{ width: "16px", height: "16px" }} />
-            Login
-          </a>
+          <a href="/browse">Browse</a>
         </li>
 
-        {/* <li>
-          <a href="/browse">Browse</a>
-        </li> */}
+        <li>
+          <div
+            onClick={() => {
+              user_state
+                ? (window.location.href = "/user?loggedin=true")
+                : login_clicked("chats");
+            }}
+            className="flex items-center gap-2 cursor-pointer"
+          >
+            <MessageSquareText style={{ width: "16px", height: "16px" }} />
+            Chats
+          </div>
+        </li>
+
+        <li>
+          <div
+            onClick={() => {
+              user_state
+                ? (window.location.href = "/user")
+                : login_clicked("login");
+            }}
+            className="flex items-center gap-2 cursor-pointer"
+          >
+            <User style={{ width: "16px", height: "16px" }} />
+            Login
+          </div>
+        </li>
       </ul>
     </nav>
   );

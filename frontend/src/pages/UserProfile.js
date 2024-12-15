@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+
 import UserInfo from "../components/profile/UserInfo";
 import UserStats from "../components/profile/UserStats";
 import UserActions from "../components/profile/UserActions";
@@ -32,6 +34,15 @@ const mockStats = {
 };
 
 function UserProfile() {
+  const location = useLocation();
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const l = params.get("loggedin");
+
+    if (l) {
+      setActiveTab("messages");
+    }
+  }, [location]);
   const [activeTab, setActiveTab] = useState("selling");
 
   const renderTabContent = () => {
@@ -51,7 +62,7 @@ function UserProfile() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-gradient-to-r from-blue-500 to-purple-600 pt-8 pb-32">
+      <div className="bg-gradient-to-r from-[#123456] to-[#83adc2] pt-8 pb-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <UserInfo user={mockUser} />
           <div className="mt-6">
