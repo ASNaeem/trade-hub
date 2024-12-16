@@ -10,7 +10,10 @@ const tabs = [
 const ProfileTabs = ({ activeTab, onTabChange }) => {
   return (
     <div className="border-b border-gray-200">
-      <nav className="-mb-px flex space-x-8" aria-label="Profile sections">
+      <nav
+        className="-mb-px flex justify-center md:justify-normal space-x-8"
+        aria-label="Profile sections"
+      >
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -25,7 +28,7 @@ const ProfileTabs = ({ activeTab, onTabChange }) => {
             `}
           >
             <tab.icon className="w-5 h-5 mr-2" />
-            {tab.label}
+            <p className="hidden md:block">{tab.label}</p>
             {tab.count && (
               <span
                 className={`ml-2 rounded-full px-2.5 py-0.5 text-xs font-medium

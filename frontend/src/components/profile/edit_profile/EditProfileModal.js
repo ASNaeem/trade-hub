@@ -9,7 +9,7 @@ export default function EditProfileModal({ isOpen, onClose }) {
     <div className="fixed inset-0 z-50 overflow-y-auto ">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+        className="fixed inset-0 bg-black bg-opacity-65 transition-opacity"
         onClick={onClose}
       />
 
@@ -17,10 +17,8 @@ export default function EditProfileModal({ isOpen, onClose }) {
       <div className="flex min-h-full items-center justify-center p-4 animate-[comeup_0.1s_ease-in]">
         <div className="relative w-full max-w-4xl bg-gray-50 rounded-lg shadow-xl">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">
-              Edit Profile
-            </h2>
+          <div className="flex items-center rounded-t-lg bg-[#244868] justify-between p-4 border-b border-gray-200">
+            <h2 className="text-xl font-semibold text-white">Edit Profile</h2>
             <button
               onClick={onClose}
               className="p-1 rounded-full hover:bg-gray-100 transition-colors"
