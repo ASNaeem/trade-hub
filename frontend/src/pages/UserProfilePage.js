@@ -6,6 +6,8 @@ import UserStats from "../components/profile/UserStats";
 import UserActions from "../components/profile/UserActions";
 import ProfileTabs from "../components/profile/ProfileTabs";
 
+import { initialItem } from "../data/mockdata_itemdetails";
+
 import ListedItems from "../components/profile/tabs/ListedItems";
 import FavoritesTab from "../components/profile/tabs/FavTab";
 import MessagesTab from "../components/profile/tabs/MessagesTab";
@@ -47,7 +49,7 @@ function UserProfile() {
   const renderTabContent = () => {
     switch (activeTab) {
       case "selling":
-        return <ListedItems />;
+        return <ListedItems items={initialItem} />;
       case "favorites":
         return <FavoritesTab />;
       case "messages":

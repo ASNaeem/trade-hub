@@ -52,3 +52,71 @@ export const similarItems = [
       "https://images.unsplash.com/photo-1494955464529-790512c65305?auto=format&fit=crop&q=80&w=800",
   },
 ];
+
+export const initialItem = [
+  {
+    id: 1,
+    title: "Vintage Leather Jacket",
+    description:
+      "Genuine leather jacket in excellent condition. Worn only a few times.",
+    price: 199.99,
+    category: "Clothing",
+    condition: "Used",
+    quantity: 1,
+    isVisible: true,
+    images: [
+      "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1551537482-f2075a1d41f2?auto=format&fit=crop&w=800&q=80",
+    ],
+  },
+  {
+    id: 2,
+    title: "Vintage Leather Jacket",
+    description:
+      "Genuine leather jacket in excellent condition. Worn only a few times.",
+    price: 199.99,
+    category: "Clothing",
+    condition: "Used",
+    quantity: 1,
+    isVisible: true,
+    images: [
+      "https://images.unsplash.com/photo-1601445638532-3c6f6c3aa1d6?w=400",
+      "https://images.unsplash.com/photo-1601445638532-3c6f6c3aa1d6?w=400",
+    ],
+  },
+  {
+    id: 3,
+    title: "Vintage Leather Jacket",
+    description:
+      "Genuine leather jacket in excellent condition. Worn only a few times.",
+    price: 199.99,
+    category: "Clothing",
+    condition: "Used",
+    quantity: 1,
+    isVisible: true,
+    images: [
+      "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400",
+    ],
+  },
+];
+
+export const categories = [
+  "Clothing",
+  "Electronics",
+  "Home & Garden",
+  "Sports",
+  "Collectibles",
+  "Books",
+  "Jewelry",
+  "Automotive",
+  "Toys",
+  "Other",
+];
+
+export const conditions = [
+  "New",
+  "Like New",
+  "Used",
+  "Refurbished",
+  "For Parts",
+];
