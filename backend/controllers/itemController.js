@@ -10,7 +10,7 @@ async function createItem(req, res) {
       category,
       condition,
       images,
-      visibilityStatus,
+      visibilityStatus, // For the seller to choose visibility
       location,
       sellerId,
     } = req.body;
@@ -20,8 +20,8 @@ async function createItem(req, res) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // Create item via itemService
-    const newItem = await itemService.createItem(
+    // Create item via itemService (pass req.body as a single object)
+    const newItem = await itemService.createItem({
       title,
       description,
       price,
@@ -29,10 +29,10 @@ async function createItem(req, res) {
       category,
       condition,
       images,
-      visibilityStatus,
       location,
-      sellerId
-    );
+      sellerId,
+      visibilityStatus,  // This stays with the item as per the seller's choice
+    });
 
     return res.status(201).json(newItem);
   } catch (error) {
@@ -41,12 +41,33 @@ async function createItem(req, res) {
   }
 }
 
+// Controller function to get all items (no longer filter by visibilityStatus)
+async function getAllItems(req, res) {
+  try {
+    // Get filters and sort options from query params (optional)
+    const filters = req.query;  // You can pass the entire query as filters
+    const sortOptions = req.query.sort ? JSON.parse(req.query.sort) : {};  // If sort is passed in query
+
+    // Fetch all items with possible filtering and sorting
+    const items = await itemService.getAllItems(filters, sortOptions);
+
+    res.status(200).json(items);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to retrieve items" });
+  }
+}
+
 async function getItemById(req, res) {
   try {
     const { itemId } = req.params;
 
+    // Validate the ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(itemId)) {
+      return res.status(400).json({ message: "Invalid item ID format" });
+    }
+
     // Fetch item by ID
-    const item = await itemService.findItemById(itemId);
+    const item = await itemService.getItemById(itemId);
     if (!item) {
       return res.status(404).json({ message: "Item not found" });
     }
@@ -95,6 +116,7 @@ async function deleteItem(req, res) {
 
 module.exports = {
   createItem,
+  getAllItems,
   getItemById,
   updateItem,
   deleteItem,

@@ -1,19 +1,32 @@
 class Item {
   constructor(
-    item_id,
+    id = null,
     title,
     description,
     price,
-    brand,
+    brand = null,
     category,
     condition,
     images = [],
-    visibility_status = "visible",
-    created_at = new Date(),
+    visibilityStatus = true,
+    createdAt = new Date(),
     location,
     sellerId
-  ) {
-    this._item_id = item_id;
+  ){
+     //Validate id only if it's not null
+    if (id !== null && id !== undefined) {
+      this._id = id;
+    } else {
+      // If id is null, MongoDB will handle the _id when saving
+      this._id = null;
+    }
+     //Validate brand only if it's not null
+    if (brand !== null && brand !== undefined) {
+      this._brand = brand;
+    } else {
+      // If brand is null, MongoDB will handle the _id when saving
+      this._brand = null;
+    }
     this._title = title;
     this._description = description;
     this._price = price;
@@ -21,15 +34,15 @@ class Item {
     this._category = category;
     this._condition = condition;
     this._images = images;
-    this._visibilityStatus = visibility_status; // String expected
-    this._createdAt = created_at;
+    this._visibilityStatus = visibilityStatus;  // Consistent naming
+    this._createdAt = new Date(createdAt); // Handle invalid date gracefully
     this._location = location;
     this._sellerId = sellerId;
   }
 
   // Getters
   get id() {
-    return this._item_id;
+    return this._id;
   }
 
   get title() {
@@ -61,23 +74,26 @@ class Item {
   }
 
   get visibilityStatus() {
-    return this._visibility_status;
+    return this._visibilityStatus;
   }
 
   get createdAt() {
-    return this._created_at;
+    return this._createdAt;
   }
 
   get location() {
     return this._location;
   }
+
   get sellerId() {
-    return this.sellerId;
+    return this._sellerId;
   }
+
   // Setters with Validation
   set id(newId) {
-    this._item_id = newId;
+    this._id = newId;
   }
+
   set title(newTitle) {
     if (!newTitle || newTitle.trim().length === 0) {
       throw new Error("Title cannot be empty.");
@@ -121,14 +137,18 @@ class Item {
     if (!Array.isArray(newImages)) {
       throw new Error("Images must be an array.");
     }
+    if (newImages.some(image => typeof image !== 'string' || !image.startsWith('http'))) {
+      throw new Error("Each image must be a valid URL string.");
+    }
     this._images = newImages;
   }
 
   set createdAt(newDate) {
-    if (!(newDate instanceof Date)) {
-      throw new Error("Created date must be a valid Date object.");
+    const date = new Date(newDate);
+    if (isNaN(date.getTime())) {  // More flexible date validation
+      throw new Error("Created date must be a valid Date.");
     }
-    this._created_at = newDate;
+    this._createdAt = date;
   }
 
   set location(newLocation) {
@@ -137,26 +157,13 @@ class Item {
     }
     this._location = newLocation;
   }
+
   set visibilityStatus(status) {
-    const validStatuses = ["visible", "hidden"];
-    if (!validStatuses.includes(status)) {
-      throw new Error(
-        `Visibility status must be one of: ${validStatuses.join(", ")}`
-      );
-    }
-    this._visibility_status = status;
-  }
-  set sellerId(newSellerId) {
-    this._sellerId = newSellerId;
-  }
-  // Set visibility from boolean
-  static fromBooleanVisibility(isVisible) {
-    return isVisible ? "visible" : "hidden";
+    this._visibilityStatus = status;
   }
 
-  // Convert visibility to boolean
-  static toBooleanVisibility(status) {
-    return status === "visible";
+  set sellerId(newSellerId) {
+    this._sellerId = newSellerId;
   }
 }
 
