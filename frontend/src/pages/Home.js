@@ -220,6 +220,9 @@ const HomePage = ({ trending_items, top_deals }) => {
               <div
                 key={item.id}
                 className="cursor-pointer bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-200"
+                onClick={() => {
+                  window.location.href = `/item?item=${item.title}`;
+                }}
               >
                 <div className="relative h-48">
                   <img
@@ -263,7 +266,10 @@ const HomePage = ({ trending_items, top_deals }) => {
             {deals.map((deal) => (
               <div
                 key={deal.id}
-                className="cursor-pointer bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl duration-200 "
+                className="cursor-pointer bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl duration-200"
+                onClick={() => {
+                  window.location.href = `/item?item=${deal.title}`;
+                }}
               >
                 <div className="relative">
                   <img

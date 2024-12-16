@@ -27,7 +27,7 @@ export default function ProfileForm() {
               alt="Profile"
               className="h-24 w-24 rounded-full object-cover"
             />
-            <button className="absolute bottom-0 right-0 p-1.5 bg-blue-600 rounded-full text-white hover:bg-blue-700">
+            <button className="absolute bottom-0 right-0 p-1.5 bg-[#1d4e6e] rounded-full text-white hover:bg-blue-700">
               <Camera className="h-4 w-4" />
             </button>
           </div>
@@ -68,7 +68,7 @@ export default function ProfileForm() {
         </div>
 
         <div className="flex justify-end">
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+          <button className="bg-[#1d4e6e] text-white px-4 py-2 rounded-md hover:bg-[#1f4057]">
             Save Changes
           </button>
         </div>

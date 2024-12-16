@@ -8,7 +8,7 @@ import Footer from "./components/Footer";
 import Registration from "./pages/Registration";
 import Login from "./pages/Login";
 import BrowsePage from "./pages/BrowsePage";
-import UserProfile from "./pages/UserProfile";
+import UserProfile from "./pages/UserProfilePage";
 import ItemDetailsPage from "./pages/ItemDetailsPage";
 import MessagesTab from "./components/profile/tabs/MessagesTab";
 import { NextUIProvider } from "@nextui-org/react";

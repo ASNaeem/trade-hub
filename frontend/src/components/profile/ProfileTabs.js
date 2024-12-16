@@ -3,7 +3,6 @@ import { Package, ShoppingBag, Heart, MessageCircle } from "lucide-react";
 
 const tabs = [
   { id: "selling", label: "Selling", icon: Package, count: 12 },
-  { id: "purchases", label: "Purchases", icon: ShoppingBag, count: 8 },
   { id: "favorites", label: "Favorites", icon: Heart, count: 24 },
   { id: "messages", label: "Messages", icon: MessageCircle, count: 3 },
 ];

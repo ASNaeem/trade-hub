@@ -1,6 +1,6 @@
 import React from "react";
 import { X } from "lucide-react";
-import EditProfileTab from "./EditProfile";
+import EditProfile from "./EditProfile";
 
 export default function EditProfileModal({ isOpen, onClose }) {
   if (!isOpen) return null;
@@ -31,7 +31,7 @@ export default function EditProfileModal({ isOpen, onClose }) {
 
           {/* Content */}
           <div className="max-h-[80vh] overflow-y-auto p-6">
-            <EditProfileTab />
+            <EditProfile />
           </div>
         </div>
       </div>

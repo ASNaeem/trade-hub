@@ -20,6 +20,22 @@ const favorites = [
     seller: "Luxury Timepieces",
     likes: 32,
   },
+  {
+    id: 2,
+    title: "Designer Watch",
+    price: 199,
+    image: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400",
+    seller: "Luxury Timepieces",
+    likes: 32,
+  },
+  {
+    id: 2,
+    title: "Designer Watch",
+    price: 199,
+    image: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400",
+    seller: "Luxury Timepieces",
+    likes: 32,
+  },
 ];
 //#endregion
 
@@ -32,7 +48,7 @@ const FavTab = () => {
             <img
               src={item.image}
               alt={item.title}
-              className="h-full w-full object-cover object-center group-hover:opacity-75"
+              className="h-full w-full object-cover object-center group-hover:scale-105 transition"
             />
             <button className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow-sm">
               <Heart className="h-4 w-4 text-red-500" fill="currentColor" />

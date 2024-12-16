@@ -7,7 +7,6 @@ import UserActions from "../components/profile/UserActions";
 import ProfileTabs from "../components/profile/ProfileTabs";
 
 import ListedItems from "../components/profile/tabs/ListedItems";
-import PurchasesTab from "../components/profile/tabs/PurchasesTab";
 import FavoritesTab from "../components/profile/tabs/FavTab";
 import MessagesTab from "../components/profile/tabs/MessagesTab";
 
@@ -49,8 +48,6 @@ function UserProfile() {
     switch (activeTab) {
       case "selling":
         return <ListedItems />;
-      case "purchases":
-        return <PurchasesTab />;
       case "favorites":
         return <FavoritesTab />;
       case "messages":
@@ -71,7 +68,7 @@ function UserProfile() {
         </div>
       </div>
 
-      <main className="-mt-32">
+      <div className="-mt-32">
         <div className="max-w-7xl mx-auto pb-12 px-4 sm:px-6 lg:px-8">
           <div className="bg-white rounded-lg shadow px-5 py-6 sm:px-6">
             <UserStats stats={mockStats} />
@@ -81,7 +78,7 @@ function UserProfile() {
             <div className="mt-6">{renderTabContent()}</div>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

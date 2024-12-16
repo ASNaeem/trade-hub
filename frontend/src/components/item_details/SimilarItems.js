@@ -7,7 +7,13 @@ export default function SimilarItems({ items }) {
       <h2 className="text-2xl font-bold mb-6">Similar Items</h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {items.map((item) => (
-          <div key={item.id} className="group cursor-pointer">
+          <div
+            key={item.id}
+            className="group cursor-pointer"
+            onClick={() => {
+              window.location.href = `/item?item=${item.title}`;
+            }}
+          >
             <div className="aspect-square mb-2 overflow-hidden rounded-lg">
               <img
                 src={item.image}

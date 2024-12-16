@@ -18,7 +18,7 @@ const UserStats = ({ stats }) => {
       {statItems.map((stat) => {
         const Icon = stat.icon;
         return (
-          <div key={stat.label} className="bg-white rounded-lg p-4 shadow-md">
+          <div key={stat.label} className="p-4">
             <div className="flex items-center">
               <div className="p-2 bg-blue-50 rounded-lg">
                 <Icon className="h-5 w-5 text-[#2C2C2C]}" />
