@@ -1,11 +1,10 @@
-const Item = require('../models/itemSchema');  // Mongoose model for Item
-const ItemClass = require('../classes/Item');  // Traditional class-based Item
+const Item = require("../models/itemSchema"); // Mongoose model for Item
+const ItemClass = require("../classes/Item"); // Traditional class-based Item
 
 const ItemService = {
   // Create Item
   async createItem(itemData) {
     try {
-      
       // Optionally, you can validate data using ItemClass before saving to MongoDB
       const item = new ItemClass(itemData);
       // If ItemClass has validation methods, call them here
@@ -13,7 +12,7 @@ const ItemService = {
       // Mongoose Model save (MongoDB will handle _id automatically)
       const itemDoc = new Item(itemData);
       await itemDoc.save();
-      return itemDoc;  // Return the saved item document (with _id from MongoDB)
+      return itemDoc; // Return the saved item document (with _id from MongoDB)
     } catch (error) {
       throw new Error(`Error creating item: ${error.message}`);
     }
@@ -23,7 +22,7 @@ const ItemService = {
   async getAllItems(filters = {}, sort = {}) {
     try {
       // Combine filtering and sorting logic
-      let query = this.buildFilterQuery(filters);  // Build filter query without visibility_status
+      let query = this.buildFilterQuery(filters); // Build filter query without visibility_status
       let sortQuery = this.buildSortQuery(sort);
 
       // Fetch items from MongoDB with filtering and sorting
@@ -37,9 +36,9 @@ const ItemService = {
   // Get an item by ID
   async getItemById(itemId) {
     try {
-       const item = await Item.findById(itemId);
+      const item = await Item.findById(itemId);
       if (!item) {
-        throw new Error('Item not found');
+        throw new Error("Item not found");
       }
       return item;
     } catch (error) {
@@ -52,7 +51,7 @@ const ItemService = {
     try {
       const item = await Item.findById(itemId);
       if (!item) {
-        throw new Error('Item not found');
+        throw new Error("Item not found");
       }
 
       // Apply updates (optional validation using ItemClass)
@@ -72,11 +71,11 @@ const ItemService = {
     try {
       const item = await Item.findById(itemId);
       if (!item) {
-        throw new Error('Item not found');
+        throw new Error("Item not found");
       }
 
       await Item.findByIdAndDelete(itemId);
-      return { message: 'Item deleted successfully' };
+      return { message: "Item deleted successfully" };
     } catch (error) {
       throw new Error(`Error deleting item: ${error.message}`);
     }
@@ -98,7 +97,7 @@ const ItemService = {
       query.location = filters.location;
     }
 
-    return query;  // Return query without visibility_status filter
+    return query; // Return query without visibility_status filter
   },
 
   // Helper method to build sort query
@@ -106,13 +105,13 @@ const ItemService = {
     let sortQuery = {};
 
     if (sortOptions.price) {
-      sortQuery.price = sortOptions.price === 'asc' ? 1 : -1;
+      sortQuery.price = sortOptions.price === "asc" ? 1 : -1;
     } else if (sortOptions.condition) {
-      sortQuery.condition = sortOptions.condition === 'asc' ? 1 : -1;
+      sortQuery.condition = sortOptions.condition === "asc" ? 1 : -1;
     } else if (sortOptions.createdAt) {
-      sortQuery.created_at = sortOptions.createdAt === 'asc' ? 1 : -1;
+      sortQuery.created_at = sortOptions.createdAt === "asc" ? 1 : -1;
     } else {
-      sortQuery.created_at = -1;  // Default: sort by creation date descending
+      sortQuery.created_at = -1; // Default: sort by creation date descending
     }
 
     return sortQuery;

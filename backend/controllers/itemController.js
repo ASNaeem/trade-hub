@@ -1,4 +1,5 @@
 const itemService = require("../services/itemService");
+const mongoose = require("mongoose");
 
 async function createItem(req, res) {
   try {
@@ -31,7 +32,7 @@ async function createItem(req, res) {
       images,
       location,
       sellerId,
-      visibilityStatus,  // This stays with the item as per the seller's choice
+      visibilityStatus, // This stays with the item as per the seller's choice
     });
 
     return res.status(201).json(newItem);
@@ -45,8 +46,8 @@ async function createItem(req, res) {
 async function getAllItems(req, res) {
   try {
     // Get filters and sort options from query params (optional)
-    const filters = req.query;  // You can pass the entire query as filters
-    const sortOptions = req.query.sort ? JSON.parse(req.query.sort) : {};  // If sort is passed in query
+    const filters = req.query; // You can pass the entire query as filters
+    const sortOptions = req.query.sort ? JSON.parse(req.query.sort) : {}; // If sort is passed in query
 
     // Fetch all items with possible filtering and sorting
     const items = await itemService.getAllItems(filters, sortOptions);
