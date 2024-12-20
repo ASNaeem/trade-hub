@@ -3,7 +3,7 @@ import { Camera } from "lucide-react";
 import FormSection from "./FormSection";
 import InputField from "./InputField";
 
-export default function ProfileForm() {
+export default function ProfileForm(profileDataa) {
   const [profileData, setProfileData] = useState({
     name: "Sarah Anderson",
     email: "sarah@example.com",
@@ -65,12 +65,6 @@ export default function ProfileForm() {
             value={profileData.location}
             onChange={handleChange}
           />
-        </div>
-
-        <div className="flex justify-end">
-          <button className="bg-[#1d4e6e] text-white px-4 py-2 rounded-md hover:bg-[#1f4057]">
-            Save Changes
-          </button>
         </div>
       </div>
     </FormSection>

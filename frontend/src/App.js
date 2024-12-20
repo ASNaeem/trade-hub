@@ -13,6 +13,7 @@ import UserProfile from "./pages/UserProfilePage";
 import ItemDetailsPage from "./pages/ItemDetailsPage";
 import CreateListingPage from "./pages/CreateListingPage";
 import MessagesTab from "./components/profile/tabs/MessagesTab";
+import InboxPage from "./pages/InboxPage";
 //#endregion
 
 const App = () => {
@@ -37,6 +38,8 @@ const App = () => {
             <Route path="/item" element={<ItemDetailsPage />} />
             {/* The Item Details Page */}
             <Route path="/create_item" element={<CreateListingPage />} />
+            {/* {The imbox page} */}
+            <Route path="/inbox" element={<InboxPage />} />
           </Routes>
           <Footer /> {/* Footer with important information */}
         </div>

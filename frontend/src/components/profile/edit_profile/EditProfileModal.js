@@ -21,9 +21,9 @@ export default function EditProfileModal({ isOpen, onClose }) {
             <h2 className="text-xl font-semibold text-white">Edit Profile</h2>
             <button
               onClick={onClose}
-              className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+              className="p-1 rounded-full hover:bg-gray-500 transition-colors"
             >
-              <X className="h-6 w-6 text-gray-500" />
+              <X className="h-6 w-6 text-white" />
             </button>
           </div>
 

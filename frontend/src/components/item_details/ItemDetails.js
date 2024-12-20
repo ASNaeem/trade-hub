@@ -1,5 +1,13 @@
 import React from "react";
-import { Share2, Heart, DollarSign, Package, Calendar } from "lucide-react";
+import {
+  Share2,
+  Heart,
+  DollarSign,
+  Package,
+  Calendar,
+  FlagIcon,
+  MessageCircleCode,
+} from "lucide-react";
 
 export default function ItemDetails({ item }) {
   return (
@@ -58,9 +66,14 @@ export default function ItemDetails({ item }) {
             <p className="text-gray-600">{item.description}</p>
           </div>
 
-          <div className="space-y-4">
-            <button className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
+          <div className="space-y-6">
+            <button className="w-full flex items-center justify-center bg-[#1d4e6e] text-white py-3 rounded-lg hover:bg-[#1f4057] transition">
+              <MessageCircleCode className="h-5 w-5 mr-2" />
               Contact Seller
+            </button>
+            <button className="w-full flex items-center justify-center py-3 border border-red-600 rounded-md shadow-sm font-medium text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+              <FlagIcon className="h-4 w-4 mr-2" />
+              <div>Report Listing</div>
             </button>
           </div>
         </div>

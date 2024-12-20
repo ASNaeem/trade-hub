@@ -1,5 +1,5 @@
 import React from "react";
-import { Star, MessageCircle, Shield, Calendar } from "lucide-react";
+import { Star, Shield, Calendar } from "lucide-react";
 
 export default function SellerInfo({ seller }) {
   return (
@@ -28,10 +28,6 @@ export default function SellerInfo({ seller }) {
             </div>
           </div>
         </div>
-        <button className="flex items-center space-x-2 text-blue-600 hover:text-blue-700">
-          <MessageCircle className="h-5 w-5" />
-          <span>Message</span>
-        </button>
       </div>
 
       <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">

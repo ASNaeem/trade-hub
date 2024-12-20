@@ -33,6 +33,9 @@ const MessagesTab = () => {
           className={`p-4 rounded-lg ${
             message.unread ? "bg-blue-50" : "bg-white"
           } hover:bg-gray-50 cursor-pointer`}
+          onClick={() => {
+            window.location.href = `/inbox?message=${message.id}`;
+          }}
         >
           <div className="flex items-center space-x-4">
             <div className="flex-shrink-0">
