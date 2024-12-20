@@ -1,21 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import FormField from "./FormField";
 import ImageUpload from "./ImageUpload";
-import { Textarea, Input, Checkbox } from "@nextui-org/react";
+import { Select, SelectItem, Input, Checkbox } from "@nextui-org/react";
 import { conditions } from "../../data/mockdata_itemdetails";
 const CATEGORIES = [
-  "electronics",
-  "clothing",
-  "furniture",
-  "books",
-  "sports",
-  "other",
+  "Electronics",
+  "Clothing",
+  "Furniture",
+  "Books",
+  "Bports",
+  "Other",
 ];
 
-const ListingForm = () => {
+const ListingForm = ({ className }) => {
   const [formData, setFormData] = useState({
     title: "",
-    condition: "new",
+    condition: "",
     features: "",
     brand: "",
     description: "",
@@ -51,12 +51,13 @@ const ListingForm = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(formData);
   };
 
   return (
-    <div className="w-screen min-h-screen p-5 bg-[#F9FAFB] rounded-lg">
-      <div className="max-w-4xl mx-auto pl-6 pt-2 rounded-t-md flex justify-between items-center bg-[#244868]">
+    <div
+      className={`w-screen min-h-screen p-5 bg-[#F3F4F6] rounded-lg ${className}`}
+    >
+      <div className="max-w-4xl mx-auto pl-6 pt-2 rounded-t-md flex justify-between items-center bg-[#49647D]">
         <h2 className="text-2xl font-bold text-[#fff] mb-6">
           Fill in the details
         </h2>
@@ -90,11 +91,12 @@ const ListingForm = () => {
           </FormField>
 
           <FormField label="Condition" required>
-            <div className="flex space-x-4">
+            <div className="flex flex-wrap gap-3 md:gap-7">
               {conditions.map((condition) => (
                 <label key={condition} className="flex items-center">
                   <Checkbox
                     className=""
+                    isRequired={true && !formData.condition}
                     isSelected={formData.condition === condition}
                     value={condition}
                     onChange={(e) => {
@@ -137,7 +139,8 @@ const ListingForm = () => {
             <textarea
               required
               rows={4}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#3E6380] focus:border-transparent"
+              placeholder="Add a description"
+              className="w-full px-4 py-2 border text-sm border-none rounded-lg outline-none transition-all duration-200 ease-in-out  placeholder:text-[#71717A] bg-[#F4F4F5] hover:bg-[#FAFAFA]"
               value={formData.description}
               onChange={(e) =>
                 setFormData({ ...formData, description: e.target.value })
@@ -147,13 +150,15 @@ const ListingForm = () => {
 
           <FormField label="Price" required>
             <div className="relative">
-              <span className="absolute left-3 top-2">$</span>
+              <p role="currency" className="absolute top-0 left-3 text-center">
+                ৳
+              </p>
               <input
                 type="number"
                 required
                 min="0"
                 step="0.01"
-                className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#3E6380] focus:border-transparent"
+                className="w-full pl-8 py-2 border text-sm border-none rounded-lg outline-none transition-all duration-200 ease-in-out  placeholder:text-[#71717A] bg-[#F4F4F5] hover:bg-[#FAFAFA]"
                 value={formData.price}
                 onChange={(e) =>
                   setFormData({ ...formData, price: e.target.value })
@@ -170,21 +175,20 @@ const ListingForm = () => {
           />
 
           <FormField label="Category" required>
-            <select
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#3E6380] focus:border-transparent"
+            <Select
+              className="max-w-xs"
+              fullWidth
+              isRequired={true}
               value={formData.category}
               onChange={(e) =>
                 setFormData({ ...formData, category: e.target.value })
               }
+              label="Select an category"
             >
-              <option value="">Select a category</option>
-              {CATEGORIES.map((category) => (
-                <option key={category} value={category}>
-                  {category.charAt(0).toUpperCase() + category.slice(1)}
-                </option>
+              {CATEGORIES.map((category, index) => (
+                <SelectItem key={index}>{category}</SelectItem>
               ))}
-            </select>
+            </Select>
           </FormField>
 
           <div className="flex items-center">
