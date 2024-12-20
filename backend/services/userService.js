@@ -2,117 +2,214 @@ const UserClass = require("../classes/User");
 const UserModel = require("../models/userSchema");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const config = require("../config/test.config");
 
-async function createUser(name, email, phone, password) {
-  const newUserClass = new UserClass(null, name, email, phone, password);
+const UserService = {
+  async createUser(name, email, phone, password) {
+    try {
+      if (password.length < 8) {
+        throw new Error("Password must be at least 8 characters long");
+      }
 
-  const salt = await bcrypt.genSalt(10);
-  newUserClass.password = await bcrypt.hash(password, salt);
+      const existingPhone = await UserModel.findOne({ phone });
+      if (existingPhone) {
+        throw new Error("Phone number already registered");
+      }
 
-  const newUserDocument = new UserModel({
-    name: newUserClass.name,
-    email: newUserClass.email,
-    phone: newUserClass.phone,
-    password: newUserClass.password,
-    createdAt: newUserClass.createdAt,
-  });
+      const existingEmail = await UserModel.findOne({
+        email: email.toLowerCase(),
+      });
+      if (existingEmail) {
+        throw new Error("Email already registered");
+      }
 
-  const savedUser = await newUserDocument.save();
+      const userClassInstance = new UserClass(
+        null,
+        name,
+        email,
+        phone,
+        password
+      );
 
-  return new UserClass(
-    savedUser._id,
-    savedUser.name,
-    savedUser.email,
-    savedUser.phone,
-    savedUser.password,
-    savedUser.createdAt
-  );
-}
+      const salt = await bcrypt.genSalt(10);
+      userClassInstance.password = await bcrypt.hash(password, salt);
 
-async function authenticateUser(email, password) {
-  const userDocument = await UserModel.findOne({ email });
-  if (!userDocument) {
-    throw new Error("Invalid credentials");
-  }
-  
-  console.log("Stored Password:", userDocument.password); 
-  const isMatch = await bcrypt.compare(password, userDocument.password);
-  if (!isMatch) {
-    throw new Error("Invalid credentials");
-  }
+      const userDocument = new UserModel({
+        name: userClassInstance.name,
+        email: userClassInstance.email.toLowerCase(),
+        phone: userClassInstance.phone,
+        password: userClassInstance.password,
+      });
 
-  const userClassInstance = new UserClass(
-    userDocument._id,
-    userDocument.name,
-    userDocument.email,
-    userDocument.phone,
-    userDocument.password,
-    userDocument.createdAt
-  );
+      const savedUser = await userDocument.save();
+      const token = jwt.sign(
+        { id: savedUser._id, email: savedUser.email },
+        config.JWT_SECRET,
+        { expiresIn: "1h" }
+      );
 
-  const payload = { id: userClassInstance.id, email: userClassInstance.email };
-  const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
+      return {
+        user: new UserClass(
+          savedUser._id,
+          savedUser.name,
+          savedUser.email,
+          savedUser.phone,
+          savedUser.password,
+          savedUser.createdAt
+        ),
+        token,
+      };
+    } catch (error) {
+      if (
+        error.message.includes("already registered") ||
+        error.message.includes("must be at least 8 characters")
+      ) {
+        throw error;
+      }
+      if (error.code === 11000) {
+        if (error.keyPattern?.phone) {
+          throw new Error("Phone number already registered");
+        }
+        if (error.keyPattern?.email) {
+          throw new Error("Email already registered");
+        }
+      }
+      throw error;
+    }
+  },
 
-  return { user: userClassInstance, token };
-}
+  async authenticateUser(email, password) {
+    const userDocument = await UserModel.findOne({ email });
+    if (!userDocument) {
+      throw new Error("Invalid credentials");
+    }
 
-async function findUserById(userId) {
-  const userDocument = await UserModel.findById(userId);
-  if (!userDocument) return null;
+    const isMatch = await bcrypt.compare(password, userDocument.password);
+    if (!isMatch) {
+      throw new Error("Invalid credentials");
+    }
 
-  return new UserClass(
-    userDocument._id,
-    userDocument.name,
-    userDocument.email,
-    userDocument.phone,
-    userDocument.password,
-    userDocument.createdAt
-  );
-}
+    const token = jwt.sign(
+      { id: userDocument._id, email: userDocument.email },
+      config.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
 
-async function updateUser(userId, updates) {
-  const userDocument = await UserModel.findById(userId);
-  if (!userDocument) return null;
+    return {
+      user: new UserClass(
+        userDocument._id,
+        userDocument.name,
+        userDocument.email,
+        userDocument.phone,
+        userDocument.password,
+        userDocument.createdAt
+      ),
+      token,
+    };
+  },
 
-  const userClassInstance = new UserClass(
-    userDocument._id,
-    userDocument.name,
-    userDocument.email,
-    userDocument.phone,
-    userDocument.password,
-    userDocument.createdAt
-  );
+  async findUserById(userId) {
+    try {
+      const userDocument = await UserModel.findById(userId);
+      if (!userDocument) return null;
 
-  if (updates.name) userClassInstance.name = updates.name;
-  if (updates.phone) userClassInstance.phone = updates.phone;
-  if (updates.password) {
-    const salt = await bcrypt.genSalt(10);
-    userClassInstance.password = await bcrypt.hash(updates.password, salt);
-  }
+      return new UserClass(
+        userDocument._id,
+        userDocument.name,
+        userDocument.email,
+        userDocument.phone,
+        userDocument.password,
+        userDocument.createdAt
+      );
+    } catch (error) {
+      throw new Error(`Error finding user: ${error.message}`);
+    }
+  },
 
-  userDocument.name = userClassInstance.name;
-  userDocument.phone = userClassInstance.phone;
-  userDocument.password = userClassInstance.password;
+  async updateUser(userId, updates) {
+    try {
+      const userDocument = await UserModel.findById(userId);
+      if (!userDocument) return null;
 
-  await userDocument.save();
+      const userClassInstance = new UserClass(
+        userDocument._id,
+        userDocument.name,
+        userDocument.email,
+        userDocument.phone,
+        userDocument.password,
+        userDocument.createdAt
+      );
 
-  return userClassInstance;
-}
+      if (updates.password) {
+        if (updates.password.length < 8) {
+          throw new Error("Password must be at least 8 characters long");
+        }
+        const salt = await bcrypt.genSalt(10);
+        userClassInstance.password = await bcrypt.hash(updates.password, salt);
+      }
 
-async function isDuplicate(email, phone) {
-  const emailExists = await UserModel.findOne({ email });
-  const phoneExists = await UserModel.findOne({ phone });
+      if (updates.email) {
+        const existingEmail = await UserModel.findOne({
+          email: updates.email.toLowerCase(),
+          _id: { $ne: userId },
+        });
+        if (existingEmail) {
+          throw new Error("Email already registered");
+        }
+        userClassInstance.email = updates.email;
+      }
 
-  return {
-    email: !!emailExists,
-    phone: !!phoneExists,
-  };
-}
+      if (updates.phone) {
+        const existingPhone = await UserModel.findOne({
+          phone: updates.phone,
+          _id: { $ne: userId },
+        });
+        if (existingPhone) {
+          throw new Error("Phone number already registered");
+        }
+        userClassInstance.phone = updates.phone;
+      }
 
-module.exports = {
-  createUser,
-  authenticateUser,
-  findUserById,
-  updateUser,
-  isDuplicate,
+      if (updates.name) userClassInstance.name = updates.name;
+
+      const updatedDocument = await UserModel.findByIdAndUpdate(
+        userId,
+        {
+          name: userClassInstance.name,
+          email: userClassInstance.email,
+          phone: userClassInstance.phone,
+          password: userClassInstance.password,
+        },
+        { new: true }
+      );
+
+      return new UserClass(
+        updatedDocument._id,
+        updatedDocument.name,
+        updatedDocument.email,
+        updatedDocument.phone,
+        updatedDocument.password,
+        updatedDocument.createdAt
+      );
+    } catch (error) {
+      throw new Error(`Error updating user: ${error.message}`);
+    }
+  },
+
+  async isDuplicate(email, phone) {
+    const emailExists = await UserModel.findOne({ email });
+    const phoneExists = await UserModel.findOne({ phone });
+
+    return {
+      email: !!emailExists,
+      phone: !!phoneExists,
+    };
+  },
+
+  async deleteUser(userId) {
+    const result = await UserModel.findByIdAndDelete(userId);
+    return !!result;
+  },
 };
+
+module.exports = UserService;

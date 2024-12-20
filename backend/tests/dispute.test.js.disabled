@@ -1,0 +1,145 @@
+const { app, startServer, stopServer } = require("../server");
+const mongoose = require("mongoose");
+const Dispute = require("../models/disputeSchema");
+const User = require("../models/userSchema");
+const Item = require("../models/itemSchema");
+const request = require("supertest");
+
+describe("Dispute API Tests", () => {
+  let server;
+  let buyerToken;
+  let sellerToken;
+  let adminToken;
+  let itemId;
+  let buyerId;
+  let sellerId;
+
+  const testBuyer = {
+    name: "Test Buyer",
+    email: "buyer@test.com",
+    password: "password123",
+    phone: "+1234567890",
+  };
+
+  const testSeller = {
+    name: "Test Seller",
+    email: "seller@test.com",
+    password: "password123",
+    phone: "+0987654321",
+  };
+
+  const testAdmin = {
+    name: "Test Admin",
+    email: "admin@test.com",
+    password: "password123",
+    phone: "+1122334455",
+    role: "admin",
+  };
+
+  beforeAll(async () => {
+    server = await startServer();
+    // Create test users and get their tokens
+    const buyerRes = await request(app)
+      .post("/api/users/register")
+      .send(testBuyer);
+    buyerId = buyerRes.body.user.id;
+
+    const sellerRes = await request(app)
+      .post("/api/users/register")
+      .send(testSeller);
+    sellerId = sellerRes.body.user.id;
+
+    // Create test item
+    const item = new Item({
+      title: "Test Item",
+      description: "Test Description",
+      price: 100,
+      category: "Electronics",
+      condition: "New",
+      location: "Test Location",
+      sellerId: sellerId,
+    });
+    const savedItem = await item.save();
+    itemId = savedItem._id;
+
+    // Get tokens
+    const buyerLogin = await request(app)
+      .post("/api/users/login")
+      .send({ email: testBuyer.email, password: testBuyer.password });
+    buyerToken = buyerLogin.body.token;
+
+    const sellerLogin = await request(app)
+      .post("/api/users/login")
+      .send({ email: testSeller.email, password: testSeller.password });
+    sellerToken = sellerLogin.body.token;
+
+    // Create and login admin
+    const admin = new Admin(testAdmin);
+    await admin.save();
+    const adminLogin = await request(app)
+      .post("/api/admin/login")
+      .send({ email: testAdmin.email, password: testAdmin.password });
+    adminToken = adminLogin.body.token;
+  });
+
+  afterAll(async () => {
+    await Dispute.deleteMany({});
+    await User.deleteMany({});
+    await Item.deleteMany({});
+    await stopServer();
+  });
+
+  test("Create new dispute", async () => {
+    const res = await request(app)
+      .post("/api/disputes")
+      .set("Authorization", `Bearer ${buyerToken}`)
+      .send({
+        itemId: itemId,
+        sellerId: sellerId,
+        reason: "Item not as described in the listing",
+      });
+
+    expect(res.statusCode).toBe(201);
+    expect(res.body).toHaveProperty("_id");
+    expect(res.body.reason).toBe("Item not as described in the listing");
+  });
+
+  test("Get user's disputes", async () => {
+    const res = await request(app)
+      .get("/api/disputes")
+      .set("Authorization", `Bearer ${buyerToken}`);
+
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.body)).toBeTruthy();
+  });
+
+  test("Update dispute status (admin only)", async () => {
+    // First create a dispute
+    const disputeRes = await request(app)
+      .post("/api/disputes")
+      .set("Authorization", `Bearer ${buyerToken}`)
+      .send({
+        itemId: itemId,
+        sellerId: sellerId,
+        reason: "Test dispute for status update",
+      });
+
+    const res = await request(app)
+      .patch(`/api/disputes/${disputeRes.body._id}/status`)
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ status: "Resolved" });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.resolutionStatus).toBe("Resolved");
+    expect(res.body).toHaveProperty("resolvedAt");
+  });
+
+  test("Get all disputes (admin only)", async () => {
+    const res = await request(app)
+      .get("/api/disputes/all")
+      .set("Authorization", `Bearer ${adminToken}`);
+
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.body)).toBeTruthy();
+  });
+});

@@ -1,0 +1,199 @@
+const { app, startServer, stopServer } = require("../server");
+const mongoose = require("mongoose");
+const User = require("../models/userSchema");
+const request = require("supertest");
+
+describe("User API Tests", () => {
+  let userToken;
+
+  const testUser = {
+    name: "Test User",
+    email: "test@example.com",
+    password: "password123",
+    phone: "+1234567890",
+  };
+
+  beforeAll(async () => {
+    server = await startServer();
+  });
+
+  afterAll(async () => {
+    await User.deleteMany({});
+    await stopServer();
+  });
+
+  test("Register new user", async () => {
+    const res = await request(app).post("/api/users/register").send(testUser);
+
+    expect(res.statusCode).toBe(201);
+    expect(res.body).toHaveProperty("token");
+    expect(res.body.user).toHaveProperty("id");
+    expect(res.body.user.name).toBe(testUser.name);
+  });
+
+  test("Login user", async () => {
+    const res = await request(app).post("/api/users/login").send({
+      email: testUser.email,
+      password: testUser.password,
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveProperty("token");
+    userToken = res.body.token;
+  });
+
+  test("Get user profile", async () => {
+    const res = await request(app)
+      .get("/api/users/profile")
+      .set("Authorization", `Bearer ${userToken}`);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.name).toBe(testUser.name);
+    expect(res.body.email).toBe(testUser.email);
+  });
+
+  test("Update user profile", async () => {
+    const updates = {
+      name: "Updated Name",
+      phone: "+9876543210",
+    };
+
+    const res = await request(app)
+      .put("/api/users/profile")
+      .set("Authorization", `Bearer ${userToken}`)
+      .send(updates);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.name).toBe(updates.name);
+    expect(res.body.phone).toBe(updates.phone);
+  });
+
+  test("Fail to register user with invalid email", async () => {
+    const invalidUser = {
+      ...testUser,
+      email: "invalid-email",
+    };
+
+    const res = await request(app)
+      .post("/api/users/register")
+      .send(invalidUser);
+
+    expect(res.statusCode).toBe(400);
+  });
+
+  test("Fail to register user with invalid phone", async () => {
+    const invalidUser = {
+      ...testUser,
+      phone: "123", // Invalid phone number
+    };
+
+    const res = await request(app)
+      .post("/api/users/register")
+      .send(invalidUser);
+
+    expect(res.statusCode).toBe(400);
+  });
+
+  test("Fail to login with wrong password", async () => {
+    const res = await request(app).post("/api/users/login").send({
+      email: testUser.email,
+      password: "wrongpassword",
+    });
+
+    expect(res.statusCode).toBe(401);
+  });
+
+  test("Fail to access profile without token", async () => {
+    const res = await request(app).get("/api/users/profile");
+
+    expect(res.statusCode).toBe(401);
+  });
+  test("Fail to register user with duplicate email", async () => {
+    // First register a user
+    await request(app).post("/api/users/register").send(testUser);
+
+    // Try to register another user with same email
+    const duplicateUser = {
+      ...testUser,
+      phone: "+1234567890", // Different phone but same email
+    };
+
+    const res = await request(app)
+      .post("/api/users/register")
+      .send(duplicateUser);
+
+    expect(res.statusCode).toBe(400);
+  });
+
+  // test("Fail to register user with duplicate phone", async () => {
+  //   // First register a user
+  //   await request(app).post("/api/users/register").send(testUser);
+
+  //   // Try to register another user with the same phone
+  //   const duplicateUser = {
+  //     name: "Another User",
+  //     email: "another@example.com",
+  //     password: "password123",
+  //     phone: testUser.phone, // Same phone as first user
+  //   };
+
+  //   const res = await request(app)
+  //     .post("/api/users/register")
+  //     .send(duplicateUser);
+
+  //   expect(res.statusCode).toBe(400);
+  //   expect(res.body.message).toBe("Phone number already registered");
+  // });
+
+  test("Fail to register user with short password", async () => {
+    const invalidUser = {
+      ...testUser,
+      password: "short", // Less than 8 characters
+    };
+
+    const res = await request(app)
+      .post("/api/users/register")
+      .send(invalidUser);
+
+    expect(res.statusCode).toBe(400);
+  });
+
+  test("Fail to login with non-existent email", async () => {
+    const res = await request(app).post("/api/users/login").send({
+      email: "nonexistent@email.com",
+      password: testUser.password,
+    });
+
+    expect(res.statusCode).toBe(401);
+  });
+
+  test("Fail to update profile with invalid token", async () => {
+    const updates = {
+      name: "Updated Name",
+      phone: "+1987654321",
+    };
+
+    const res = await request(app)
+      .put("/api/users/profile")
+      .set("Authorization", "Bearer invalidtoken")
+      .send(updates);
+
+    expect(res.statusCode).toBe(401);
+  });
+
+  test("Successfully delete user profile", async () => {
+    const res = await request(app)
+      .delete("/api/users/profile")
+      .set("Authorization", `Bearer ${userToken}`);
+
+    expect(res.statusCode).toBe(200);
+
+    // Verify user can't login after deletion
+    const loginRes = await request(app).post("/api/users/login").send({
+      email: testUser.email,
+      password: testUser.password,
+    });
+
+    expect(loginRes.statusCode).toBe(401);
+  });
+});

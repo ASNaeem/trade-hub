@@ -1,6 +1,6 @@
 class Item {
   constructor(
-    id = null,
+    id,
     title,
     description,
     price,
@@ -8,25 +8,11 @@ class Item {
     category,
     condition,
     images = [],
-    visibilityStatus = true,
-    createdAt = new Date(),
     location,
-    sellerId
-  ){
-     //Validate id only if it's not null
-    if (id !== null && id !== undefined) {
-      this._id = id;
-    } else {
-      // If id is null, MongoDB will handle the _id when saving
-      this._id = null;
-    }
-     //Validate brand only if it's not null
-    if (brand !== null && brand !== undefined) {
-      this._brand = brand;
-    } else {
-      // If brand is null, MongoDB will handle the _id when saving
-      this._brand = null;
-    }
+    sellerId,
+    createdAt = new Date()
+  ) {
+    this._id = id;
     this._title = title;
     this._description = description;
     this._price = price;
@@ -34,136 +20,158 @@ class Item {
     this._category = category;
     this._condition = condition;
     this._images = images;
-    this._visibilityStatus = visibilityStatus;  // Consistent naming
-    this._createdAt = new Date(createdAt); // Handle invalid date gracefully
     this._location = location;
     this._sellerId = sellerId;
+    this._createdAt = createdAt;
   }
 
-  // Getters
+  // Getters and Setters
   get id() {
     return this._id;
+  }
+
+  set id(newId) {
+    this._id = newId;
   }
 
   get title() {
     return this._title;
   }
 
+  set title(newTitle) {
+    if (typeof newTitle !== "string") {
+      throw new Error("Title must be a string");
+    }
+    this._title = newTitle;
+  }
+
   get description() {
     return this._description;
+  }
+
+  set description(newDescription) {
+    if (typeof newDescription !== "string") {
+      throw new Error("Description must be a string");
+    }
+    this._description = newDescription;
   }
 
   get price() {
     return this._price;
   }
 
+  set price(newPrice) {
+    if (typeof newPrice !== "number" || newPrice < 0) {
+      throw new Error("Price must be a non-negative number");
+    }
+    this._price = newPrice;
+  }
+
   get brand() {
     return this._brand;
+  }
+
+  set brand(newBrand) {
+    if (newBrand !== null && typeof newBrand !== "string") {
+      throw new Error("Brand must be null or a string");
+    }
+    this._brand = newBrand;
   }
 
   get category() {
     return this._category;
   }
 
+  set category(newCategory) {
+    if (typeof newCategory !== "string") {
+      throw new Error("Category must be a string");
+    }
+    this._category = newCategory;
+  }
+
   get condition() {
     return this._condition;
+  }
+
+  set condition(newCondition) {
+    if (typeof newCondition !== "string") {
+      throw new Error("Condition must be a string");
+    }
+    this._condition = newCondition;
   }
 
   get images() {
     return this._images;
   }
 
-  get visibilityStatus() {
-    return this._visibilityStatus;
-  }
-
-  get createdAt() {
-    return this._createdAt;
+  set images(newImages) {
+    if (!Array.isArray(newImages)) {
+      throw new Error("Images must be an array");
+    }
+    this._images = newImages;
   }
 
   get location() {
     return this._location;
   }
 
-  get sellerId() {
-    return this._sellerId;
-  }
-
-  // Setters with Validation
-  set id(newId) {
-    this._id = newId;
-  }
-
-  set title(newTitle) {
-    if (!newTitle || newTitle.trim().length === 0) {
-      throw new Error("Title cannot be empty.");
-    }
-    this._title = newTitle;
-  }
-
-  set description(newDescription) {
-    if (newDescription && newDescription.trim().length > 500) {
-      throw new Error("Description cannot exceed 500 characters.");
-    }
-    this._description = newDescription;
-  }
-
-  set price(newPrice) {
-    if (newPrice <= 0) {
-      throw new Error("Price must be greater than 0.");
-    }
-    this._price = newPrice;
-  }
-
-  set brand(newBrand) {
-    this._brand = newBrand;
-  }
-
-  set category(newCategory) {
-    this._category = newCategory;
-  }
-
-  set condition(newCondition) {
-    const validConditions = ["New", "Used", "Refurbished"];
-    if (!validConditions.includes(newCondition)) {
-      throw new Error(
-        `Condition must be one of: ${validConditions.join(", ")}`
-      );
-    }
-    this._condition = newCondition;
-  }
-
-  set images(newImages) {
-    if (!Array.isArray(newImages)) {
-      throw new Error("Images must be an array.");
-    }
-    if (newImages.some(image => typeof image !== 'string' || !image.startsWith('http'))) {
-      throw new Error("Each image must be a valid URL string.");
-    }
-    this._images = newImages;
-  }
-
-  set createdAt(newDate) {
-    const date = new Date(newDate);
-    if (isNaN(date.getTime())) {  // More flexible date validation
-      throw new Error("Created date must be a valid Date.");
-    }
-    this._createdAt = date;
-  }
-
   set location(newLocation) {
-    if (!newLocation || typeof newLocation !== "string") {
-      throw new Error("Location must be a valid division name.");
+    if (typeof newLocation !== "string") {
+      throw new Error("Location must be a string");
     }
     this._location = newLocation;
   }
 
-  set visibilityStatus(status) {
-    this._visibilityStatus = status;
+  get sellerId() {
+    return this._sellerId;
   }
 
   set sellerId(newSellerId) {
+    if (typeof newSellerId !== "string") {
+      throw new Error("Seller ID must be a string");
+    }
     this._sellerId = newSellerId;
+  }
+
+  get createdAt() {
+    return this._createdAt;
+  }
+
+  set createdAt(newCreatedAt) {
+    if (!(newCreatedAt instanceof Date)) {
+      throw new Error("Created At must be a Date object");
+    }
+    this._createdAt = newCreatedAt;
+  }
+
+  validate() {
+    if (!this._title || typeof this._title !== "string") {
+      throw new Error("Title is required and must be a string");
+    }
+    if (!this._description || typeof this._description !== "string") {
+      throw new Error("Description is required and must be a string");
+    }
+
+    if (!this._price || typeof this._price !== "number" || this._price <= 0) {
+      throw new Error("Price is required and must be a positive number");
+    }
+
+    if (!Array.isArray(this._images) || this._images.length === 0) {
+      throw new Error("At least one image is required");
+    }
+
+    if (!this._location || typeof this._location !== "string") {
+      throw new Error("Location is required and must be a string");
+    }
+
+    if (!this._sellerId || typeof this._sellerId !== "string") {
+      throw new Error("Seller ID is required and must be a string");
+    }
+
+    if (!this._createdAt || !(this._createdAt instanceof Date)) {
+      throw new Error("Created At is required and must be a Date object");
+    }
+    return true;
   }
 }
 

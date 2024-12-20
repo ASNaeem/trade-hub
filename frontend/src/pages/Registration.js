@@ -14,6 +14,7 @@ const Registration = () => {
 
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState(1); // Step 1: Registration Form, Step 2: OTP Verification
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -22,20 +23,60 @@ const Registration = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+
     if (formData.password !== formData.confirmPassword) {
       alert("Passwords don't match!");
       return;
     }
-    try {
-      // Call backend to register and send OTP
-      const response = await axios.post(
-        "http://localhost:5000/api/register",
-        formData
+
+    // Add validation checks
+    if (formData.password.length < 8) {
+      alert("Password must be at least 8 characters long");
+      return;
+    }
+
+    // Phone number validation (matches backend regex pattern)
+    const phoneRegex = /^\+?\d{10,14}$/;
+    if (!phoneRegex.test(formData.phoneNumber)) {
+      alert(
+        "Please enter a valid phone number (10-14 digits, optionally starting with '+')"
       );
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /\S+@\S+\.\S+/;
+    if (!emailRegex.test(formData.email)) {
+      alert("Please enter a valid email address");
+      return;
+    }
+
+    try {
+      // Transform the data to match backend expectations
+      const userData = {
+        name: formData.fullName, // Changed from fullName to name
+        email: formData.email,
+        phone: formData.phoneNumber, // Changed from phoneNumber to phone
+        password: formData.password,
+      };
+
+      // Call backend to register user
+      const response = await axios.post(
+        "http://localhost:5000/api/users/register", // Updated endpoint
+        userData
+      );
+
+      // Store the token in localStorage
+      localStorage.setItem("token", response.data.token);
+
       alert(response.data.message);
-      setStep(2); // Move to OTP verification step
+      // Redirect to login page or dashboard
+      window.location.href = "/login";
     } catch (error) {
       alert(error.response?.data?.message || "Registration failed.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -137,9 +178,16 @@ const Registration = () => {
               </div>
               <button
                 type="submit"
-                className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 flex justify-center items-center"
+                disabled={isLoading}
+                className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 flex justify-center items-center disabled:bg-blue-300"
               >
-                <i className="fas fa-user-plus mr-2"></i> Create Account
+                {isLoading ? (
+                  <span>Creating Account...</span>
+                ) : (
+                  <>
+                    <i className="fas fa-user-plus mr-2"></i> Create Account
+                  </>
+                )}
               </button>
             </form>
           </>

@@ -2,7 +2,8 @@ const mongoose = require("mongoose");
 
 const connectDB = async () => {
   try {
-    const dbUri = process.env.DB_URI || "mongodb://localhost:27017/tradehub";
+    const dbUri =
+      process.env.MONGODB_URI || "mongodb://localhost:27017/tradehub";
     await mongoose.connect(dbUri);
     console.log("MongoDB Connected...");
   } catch (error) {
