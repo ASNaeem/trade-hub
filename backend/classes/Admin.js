@@ -1,64 +1,75 @@
+const Person = require("./Person");
 
-const axios = require("axios");
-const User = require("./User"); // Admin will also manage users
-
-class Admin extends User {
-  constructor(id, name, email, password, createdAt = new Date(), phoneNumber) {
-    super(id, name, email, password, createdAt, phoneNumber);
-    this._role = "Admin"; // Admin role by default
+class Admin extends Person {
+  constructor(id, name, email, password, createdAt = new Date()) {
+    super(id, name, email, password, createdAt); // Call parent constructor
+    this._role = "admin"; // Default role
   }
-  // Getter for Role
+
+  // Getter and Setter for Role
   get role() {
     return this._role;
   }
 
-  // Setter for Role
   set role(newRole) {
     const allowedRoles = ["admin", "superadmin"];
-    if (!allowedRoles.includes(newRole)) {
+    if (!allowedRoles.includes(newRole.toLowerCase())) {
       throw new Error(`Role must be one of: ${allowedRoles.join(", ")}`);
     }
-    this._role = newRole;
+    this._role = newRole.toLowerCase();
   }
 
-  // Manage Users (e.g., suspend, delete)
-  async manageUser(userId) {
+  // Override getSummary to include admin-specific fields
+  getSummary() {
+    return {
+      ...super.getSummary(), // Get base fields from Person
+      role: this._role,
+    };
+  }
+
+  // Admin-specific method to check if they have super admin privileges
+  isSuperAdmin() {
+    return this._role === "superadmin";
+  }
+
+  // Admin-specific method to manage users
+  async manageUser(userId, action) {
     try {
-      const response = await axios.patch(
-        `http://localhost:5000/api/users/${userId}/suspend`
-      );
-      console.log(`User ${userId} suspended:`, response.data);
+      switch (action) {
+        case "suspend":
+          // Implementation for suspending user
+          break;
+        case "activate":
+          // Implementation for activating user
+          break;
+        case "delete":
+          // Implementation for deleting user
+          break;
+        default:
+          throw new Error(`Invalid action: ${action}`);
+      }
     } catch (error) {
-      console.error("Error managing user:", error.message);
+      throw new Error(`Error managing user: ${error.message}`);
     }
   }
 
-  // Save Admin via API
-  async save() {
+  // Admin-specific method to manage policies
+  async managePolicy(policyId, updates) {
     try {
-      const response = await axios.post("http://localhost:5000/api/admin", {
-        id: this._id,
-        name: this._name,
-        email: this._email,
-        password: this._password,
-        createdAt: this._createdAt,
-        phoneNumber: this._phoneNumber,
-      });
-      console.log("Admin saved:", response.data);
+      // Logic for updating global policies
+      return true;
     } catch (error) {
-      console.error("Error saving admin:", error.message);
+      throw new Error(`Error managing policy: ${error.message}`);
     }
   }
 
-  // Load Admin via API
-  static async load(email) {
+  // Admin-specific method to handle disputes
+  async handleDispute(disputeId, resolution) {
     try {
-      const response = await axios.get(`http://localhost:5000/api/users/admin/${email}`);
-      const { id, name, email: adminEmail, password, createdAt, phoneNumber } = response.data;
-      return new Admin(id, name, adminEmail, password, new Date(createdAt), phoneNumber);
+      // Logic for resolving disputes
+      return true;
     } catch (error) {
-      console.error("Error loading admin:", error.message);
-      return null;
+      throw new Error(`Error handling dispute: ${error.message}`);
     }
   }
 }

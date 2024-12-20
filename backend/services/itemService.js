@@ -1,121 +1,137 @@
-const Item = require("../models/itemSchema"); // Mongoose model for Item
-const ItemClass = require("../classes/Item"); // Traditional class-based Item
+const ItemModel = require("../models/itemSchema");
+const ItemClass = require("../classes/Item");
 
 const ItemService = {
-  // Create Item
   async createItem(itemData) {
-    try {
-      // Optionally, you can validate data using ItemClass before saving to MongoDB
-      const item = new ItemClass(itemData);
-      // If ItemClass has validation methods, call them here
+    const itemClassInstance = new ItemClass(
+      null,
+      itemData.title,
+      itemData.description,
+      itemData.price,
+      itemData.brand,
+      itemData.category,
+      itemData.condition,
+      itemData.images,
+      itemData.location,
+      itemData.sellerId
+    );
 
-      // Mongoose Model save (MongoDB will handle _id automatically)
-      const itemDoc = new Item(itemData);
-      await itemDoc.save();
-      return itemDoc; // Return the saved item document (with _id from MongoDB)
-    } catch (error) {
-      throw new Error(`Error creating item: ${error.message}`);
-    }
+    itemClassInstance.validate();
+
+    const itemDocument = new ItemModel({
+      title: itemClassInstance.title,
+      description: itemClassInstance.description,
+      price: itemClassInstance.price,
+      brand: itemClassInstance.brand,
+      category: itemClassInstance.category,
+      condition: itemClassInstance.condition,
+      images: itemClassInstance.images,
+      location: itemClassInstance.location,
+      sellerId: itemClassInstance.sellerId,
+      createdAt: itemClassInstance.createdAt,
+    });
+
+    const savedItem = await itemDocument.save();
+    return new ItemClass(
+      savedItem._id,
+      savedItem.title,
+      savedItem.description,
+      savedItem.price,
+      savedItem.brand,
+      savedItem.category,
+      savedItem.condition,
+      savedItem.images,
+      savedItem.location,
+      savedItem.sellerId,
+      savedItem.createdAt
+    );
   },
 
-  // Get all items with filtering and sorting combined in one query
-  async getAllItems(filters = {}, sort = {}) {
-    try {
-      // Combine filtering and sorting logic
-      let query = this.buildFilterQuery(filters); // Build filter query without visibility_status
-      let sortQuery = this.buildSortQuery(sort);
-
-      // Fetch items from MongoDB with filtering and sorting
-      const items = await Item.find(query).sort(sortQuery);
-      return items;
-    } catch (error) {
-      throw new Error(`Error fetching items: ${error.message}`);
-    }
+  async getAllItems() {
+    const items = await ItemModel.find();
+    return items.map(
+      (item) =>
+        new ItemClass(
+          item._id,
+          item.title,
+          item.description,
+          item.price,
+          item.brand,
+          item.category,
+          item.condition,
+          item.images,
+          item.location,
+          item.sellerId,
+          item.createdAt
+        )
+    );
   },
 
-  // Get an item by ID
   async getItemById(itemId) {
-    try {
-      const item = await Item.findById(itemId);
-      if (!item) {
-        throw new Error("Item not found");
-      }
-      return item;
-    } catch (error) {
-      throw new Error(`Error fetching item by ID: ${error.message}`);
-    }
+    const item = await ItemModel.findById(itemId);
+    if (!item) return null;
+
+    return new ItemClass(
+      item._id,
+      item.title,
+      item.description,
+      item.price,
+      item.brand,
+      item.category,
+      item.condition,
+      item.images,
+      item.location,
+      item.sellerId,
+      item.createdAt
+    );
   },
 
-  // Update an existing item by ID
-  async updateItem(itemId, updateData) {
-    try {
-      const item = await Item.findById(itemId);
-      if (!item) {
-        throw new Error("Item not found");
+  async updateItem(itemId, updates) {
+    const item = await ItemModel.findById(itemId);
+    if (!item) return null;
+
+    // Update only the fields that are provided
+    Object.keys(updates).forEach((key) => {
+      if (updates[key] !== undefined) {
+        item[key] = updates[key];
       }
+    });
 
-      // Apply updates (optional validation using ItemClass)
-      const updatedItem = new ItemClass(updateData);
+    const updatedItem = await item.save();
 
-      // Update the item in the database using Mongoose
-      await Item.findByIdAndUpdate(itemId, updateData, { new: true });
-
-      return await Item.findById(itemId);
-    } catch (error) {
-      throw new Error(`Error updating item: ${error.message}`);
-    }
+    return new ItemClass(
+      updatedItem._id,
+      updatedItem.title,
+      updatedItem.description,
+      updatedItem.price,
+      updatedItem.brand,
+      updatedItem.category,
+      updatedItem.condition,
+      updatedItem.images,
+      updatedItem.location,
+      updatedItem.sellerId,
+      updatedItem.createdAt
+    );
   },
 
-  // Delete an item by ID
   async deleteItem(itemId) {
-    try {
-      const item = await Item.findById(itemId);
-      if (!item) {
-        throw new Error("Item not found");
-      }
+    const deletedItem = await ItemModel.findByIdAndDelete(itemId);
+    if (!deletedItem) return null;
 
-      await Item.findByIdAndDelete(itemId);
-      return { message: "Item deleted successfully" };
-    } catch (error) {
-      throw new Error(`Error deleting item: ${error.message}`);
-    }
-  },
-
-  // Helper method to build filter query (without visibility_status)
-  buildFilterQuery(filters) {
-    let query = {};
-
-    if (filters.category) {
-      query.category = filters.category;
-    }
-
-    if (filters.condition) {
-      query.condition = filters.condition;
-    }
-
-    if (filters.location) {
-      query.location = filters.location;
-    }
-
-    return query; // Return query without visibility_status filter
-  },
-
-  // Helper method to build sort query
-  buildSortQuery(sortOptions) {
-    let sortQuery = {};
-
-    if (sortOptions.price) {
-      sortQuery.price = sortOptions.price === "asc" ? 1 : -1;
-    } else if (sortOptions.condition) {
-      sortQuery.condition = sortOptions.condition === "asc" ? 1 : -1;
-    } else if (sortOptions.createdAt) {
-      sortQuery.created_at = sortOptions.createdAt === "asc" ? 1 : -1;
-    } else {
-      sortQuery.created_at = -1; // Default: sort by creation date descending
-    }
-
-    return sortQuery;
-  },
+    return new ItemClass(
+      deletedItem._id,
+      deletedItem.title,
+      deletedItem.description,
+      deletedItem.price,
+      deletedItem.brand,
+      deletedItem.category,
+      deletedItem.condition,
+      deletedItem.images,
+      deletedItem.location,
+      deletedItem.sellerId,
+      deletedItem.createdAt
+    );
+  }
 };
 
 module.exports = ItemService;

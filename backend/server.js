@@ -1,69 +1,69 @@
 const express = require("express");
-const dotenv = require("dotenv");
-const cors = require("cors");
-const connectDB = require("./config/db");
-const userRoutes = require("./routes/userRoutes");
-const itemRoutes = require("./routes/itemRoutes");
-
-dotenv.config();
-
+const mongoose = require("mongoose");
 const app = express();
+const cors = require("cors");
 
-// Middleware to parse JSON
+// Load config based on environment
+const config =
+  process.env.NODE_ENV === "test"
+    ? require("./config/test.config")
+    : require("./config/dev");
+
+// Routes
+const userRoutes = require("./routes/userRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+const itemRoutes = require("./routes/itemRoutes");
+const messageRoutes = require("./routes/messageRoutes");
+const disputeRoutes = require("./routes/disputeRoutes");
+const tokenRoutes = require("./routes/tokenRoutes");
+const globalPolicySettingsRoutes = require("./routes/globalPolicySettingsRoutes");
+
 app.use(express.json());
+app.use(
+  cors({
+    origin: "http://localhost:3000", // Your frontend URL
+    credentials: true,
+  })
+);
 
-// Enable CORS
-const corsOptions = {
-  origin: process.env.NODE_ENV === "production"
-    ? "https://your-frontend-domain.com" // Your production frontend domain
-    : "http://localhost:3000", // Frontend origin during local development
-  methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
-  credentials: true, // Allow cookies and authentication headers
-};
- app.use(cors(corsOptions));
+// API Routes
+app.use("/api/users", userRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/items", itemRoutes);
+app.use("/api/messages", messageRoutes);
+app.use("/api/disputes", disputeRoutes);
+app.use("/api/tokens", tokenRoutes);
+app.use("/api/policies", globalPolicySettingsRoutes);
 
-// Connect to MongoDB
-if (process.env.NODE_ENV !== "test") {
-  connectDB();
-}
-
-// Define Routes
-app.get("/", (req, res) => {
-  res.send("Welcome to the Trade-Hub API");
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: "Something went wrong!" });
 });
 
-// Attach user and item routes
-app.use("/api/users", userRoutes);
-app.use("/api/items", itemRoutes);
-
-// Catch-All Route for Undefined Endpoints
+// 404 handler
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });
 });
 
-// Centralized Error Handling Middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(err.status || 500).json({ message: err.message || "Server Error" });
-});
+let server;
 
-// Start the server
+const startServer = async () => {
+  try {
+    await mongoose.connect(config.MONGODB_URI);
+    server = app.listen(config.PORT);
+    return server;
+  } catch (error) {
+    console.error("Database connection failed:", error);
+    process.exit(1);
+  }
+};
 
-const PORT = process.env.PORT || 5000;
-const server =
-  process.env.NODE_ENV !== "test"
-    ? app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
-    : null;
+const stopServer = async () => {
+  if (server) {
+    await mongoose.connection.close();
+    await new Promise((resolve) => server.close(resolve));
+  }
+};
 
-// Graceful Shutdown
-process.on("unhandledRejection", (err) => {
-  console.error(`Unhandled Rejection: ${err.message}`);
-  server.close(() => process.exit(1));
-});
-
-process.on("SIGTERM", () => {
-  console.log("SIGTERM received. Shutting down gracefully...");
-  server.close(() => process.exit(0));
-});
-
-module.exports = { app, server };
+module.exports = { app, startServer, stopServer };

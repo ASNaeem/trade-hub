@@ -8,9 +8,29 @@ class Message {
     this._createdAt = createdAt;
   }
 
-  // Getter for Content
+  // Getters
+  get id() {
+    return this._id;
+  }
+
+  get senderId() {
+    return this._senderId;
+  }
+
+  get receiverId() {
+    return this._receiverId;
+  }
+
   get content() {
     return this._content;
+  }
+
+  get isRead() {
+    return this._isRead;
+  }
+
+  get createdAt() {
+    return this._createdAt;
   }
 
   // Setter for Content
@@ -21,14 +41,21 @@ class Message {
     this._content = newContent;
   }
 
-  // Getter for Read Status
-  get isRead() {
-    return this._isRead;
-  }
-
   // Mark Message as Read
   markAsRead() {
     this._isRead = true;
+  }
+
+  // Get message summary
+  getSummary() {
+    return {
+      _id: this._id,
+      senderId: this._senderId,
+      receiverId: this._receiverId,
+      content: this._content,
+      isRead: this._isRead,
+      createdAt: this._createdAt,
+    };
   }
 }
 

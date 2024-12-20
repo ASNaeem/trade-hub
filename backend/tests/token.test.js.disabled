@@ -1,0 +1,97 @@
+const { app, startServer, stopServer } = require("../server");
+const mongoose = require("mongoose");
+const Token = require("../models/tokenSchema");
+const User = require("../models/userSchema");
+const request = require("supertest");
+
+describe("Token API Tests", () => {
+  let server;
+  let userToken;
+  let userId;
+
+  const testUser = {
+    name: "Test User",
+    email: "user@test.com",
+    password: "password123",
+    phone: "+1234567890",
+  };
+
+  beforeAll(async () => {
+    server = await startServer();
+
+    // Create test user and get authentication token
+    const userRes = await request(app)
+      .post("/api/users/register")
+      .send(testUser);
+    userId = userRes.body.user.id;
+
+    const loginRes = await request(app).post("/api/users/login").send({
+      email: testUser.email,
+      password: testUser.password,
+    });
+    userToken = loginRes.body.token;
+  });
+
+  afterAll(async () => {
+    await Token.deleteMany({});
+    await User.deleteMany({});
+    await stopServer();
+  });
+
+  test("Create verification token", async () => {
+    const res = await request(app)
+      .post("/api/tokens/verification")
+      .set("Authorization", `Bearer ${userToken}`);
+
+    expect(res.statusCode).toBe(201);
+    expect(res.body).toHaveProperty("tokenValue");
+  });
+
+  test("Verify valid token", async () => {
+    // First create a token
+    const createRes = await request(app)
+      .post("/api/tokens/verification")
+      .set("Authorization", `Bearer ${userToken}`);
+
+    const res = await request(app).post("/api/tokens/verify").send({
+      tokenValue: createRes.body.tokenValue,
+      type: "verification",
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.message).toBe("Token verified successfully");
+  });
+
+  test("Fail to verify invalid token", async () => {
+    const res = await request(app).post("/api/tokens/verify").send({
+      tokenValue: "invalid_token",
+      type: "verification",
+    });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body.message).toBe("Invalid or expired token");
+  });
+
+  test("Delete token", async () => {
+    // First create a token
+    const createRes = await request(app)
+      .post("/api/tokens/verification")
+      .set("Authorization", `Bearer ${userToken}`);
+
+    const res = await request(app)
+      .delete(`/api/tokens/${createRes.body.tokenValue}`)
+      .set("Authorization", `Bearer ${userToken}`);
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body.message).toBe("Token deleted successfully");
+  });
+
+  test("Fail to delete non-existent token", async () => {
+    const res = await request(app)
+      .delete("/api/tokens/non_existent_token")
+      .set("Authorization", `Bearer ${userToken}`);
+
+    expect(res.statusCode).toBe(404);
+    expect(res.body.message).toBe("Token not found");
+  });
+});
