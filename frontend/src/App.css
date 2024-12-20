@@ -1,2 +1,13 @@
 /* body {
   /* font-family: "Noto Sans", sans-serif; }*/
+
+/* Custom styling */
+
+p[role="currency"] {
+  font-weight: 700;
+  font-size: 25px;
+  line-height: 1.2;
+}
+div [data-slot="base"] {
+  max-width: none !important;
+}

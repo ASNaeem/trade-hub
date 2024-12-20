@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ListPlus, PlusIcon } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 import Modal from "../../edit_item/Modal";
 import ItemEditForm from "../../edit_item/ItemEditForm.js";
 
@@ -94,14 +94,13 @@ function ListedItems({ items }) {
         ))}
         <div className="card group select-none">
           <div
-            className="flex justify-center items-center border-[2px] transition-all duration-150 hover:bg-gray-100 border-dashed border-gray-300 hover:border-[2px] hover:border-cyan-500 cursor-pointer aspect-square overflow-hidden rounded-lg"
+            className="flex flex-col justify-center items-center border-[2px] transition-all duration-150 hover:bg-gray-100 border-dashed border-gray-300 hover:border-[2px] hover:border-cyan-500 cursor-pointer aspect-square overflow-hidden rounded-lg"
             onClick={() => {
               window.location.href = "/create_item";
             }}
           >
-            <div className="w-[52px] h-[52px] flex justify-center items-center text-gray-400">
-              <PlusIcon size={30} />
-            </div>
+            <PlusIcon size={30} className="text-gray-400" />
+            <span className="text-sm text-gray-500 mt-1">New Listing</span>
           </div>
         </div>
       </div>
