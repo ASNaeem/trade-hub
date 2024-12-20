@@ -6,8 +6,6 @@ import { NextUIProvider } from "@nextui-org/react";
 //#region Importing Components
 import HomePage from "./pages/Home";
 import Footer from "./components/Footer";
-import Registration from "./pages/Registration";
-import Login from "./pages/Login";
 import BrowsePage from "./pages/BrowsePage";
 import UserProfile from "./pages/UserProfilePage";
 import ItemDetailsPage from "./pages/ItemDetailsPage";
@@ -24,12 +22,8 @@ const App = () => {
           <Routes>
             {/* Home Route */}
             <Route path="/" element={<HomePage />} />
-            {/* Registration Route */}
-            {/* <Route path="/register" element={<Registration />} />{" "} */}
             {/* The Browse Route*/}
             <Route path="/browse" element={<BrowsePage />} />
-            {/* The login form */}
-            {/* <Route path="/login" element={<Login />} /> */}
             {/* Usesr profile page */}
             <Route path="/user" element={<UserProfile />} />
             {/* Messages */}
