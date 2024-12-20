@@ -10,23 +10,66 @@ router.get("/", (req, res) => {
 
 // Register a new user
 router.post("/register", async (req, res) => {
+  console.log("Registration attempt:", req.body);
   try {
     const { name, email, phone, password } = req.body;
-    const result = await userService.createUser(name, email, phone, password);
+
+    // First check if user already exists
+    const existingUser = await userService.findUserByEmail(email);
+    if (existingUser) {
+      return res.status(400).json({ message: "Email already registered" });
+    }
+
+    // Create unverified user and get verification token
+    const result = await userService.createUnverifiedUser(
+      name,
+      email,
+      phone,
+      password
+    );
+
+    // Send verification email with OTP
+    const emailService = require("../services/emailService");
+    await emailService.sendOTP(email, result.token.tokenValue);
+
     res.status(201).json({
-      message: "User registered successfully",
-      user: result.user.getSummary(),
-      token: result.token,
+      message: "Please check your email for verification code",
+      token: result.authToken,
+      email: email,
     });
   } catch (error) {
-    if (
-      error.message.includes("already registered") ||
-      error.message.includes("must be at least 8 characters") ||
-      error.message.includes("validation failed")
-    ) {
-      return res.status(400).json({ message: error.message });
+    console.error("Registration error:", error);
+    res
+      .status(500)
+      .json({ message: "Error registering user", error: error.message });
+  }
+});
+
+// Verify email with OTP
+router.post("/verify-email", async (req, res) => {
+  try {
+    const { tokenValue, email } = req.body;
+
+    // Verify the token
+    const verificationResult = await userService.verifyUserEmail(
+      email,
+      tokenValue
+    );
+
+    if (verificationResult.success) {
+      res.status(200).json({
+        message: "Email verified successfully",
+        user: verificationResult.user.getSummary(),
+        token: verificationResult.token,
+      });
+    } else {
+      res.status(400).json({ message: "Invalid or expired verification code" });
     }
-    res.status(500).json({ message: "Error registering user", error: error.message });
+  } catch (error) {
+    console.error("Verification error:", error);
+    res
+      .status(500)
+      .json({ message: "Error verifying email", error: error.message });
   }
 });
 
@@ -57,7 +100,9 @@ router.get("/profile", authMiddleware, async (req, res) => {
     }
     res.status(200).json(user.getSummary());
   } catch (error) {
-    res.status(500).json({ message: "Error fetching profile", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error fetching profile", error: error.message });
   }
 });
 
@@ -78,7 +123,9 @@ router.put("/profile", authMiddleware, async (req, res) => {
     ) {
       return res.status(400).json({ message: error.message });
     }
-    res.status(500).json({ message: "Error updating profile", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error updating profile", error: error.message });
   }
 });
 
