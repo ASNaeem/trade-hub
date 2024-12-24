@@ -8,6 +8,7 @@ function LoginPage({ from }) {
 
   const handle_login = (e) => {
     e.preventDefault();
+
     //suppose login success
     from == "chats"
       ? (window.location.href = "/user?loggedin=true")
