@@ -4,10 +4,45 @@ const app = express();
 const cors = require("cors");
 
 // Load config based on environment
-const config =
-  process.env.NODE_ENV === "test"
-    ? require("./config/test.config")
-    : require("./config/dev");
+const config = {
+  PORT: process.env.PORT || 5000,
+  MONGODB_URI: process.env.MONGODB_URI || "mongodb://localhost:27017/tradehub",
+  JWT_SECRET: process.env.JWT_SECRET || "your-secret-key",
+};
+
+console.log("Starting server with config:", {
+  PORT: config.PORT,
+  MONGODB_URI: config.MONGODB_URI.split("@")[1] || "local", // Log DB URI without credentials
+});
+
+// CORS Middleware
+app.use(express.json());
+app.use((req, res, next) => {
+  console.log("Incoming request:", {
+    method: req.method,
+    path: req.path,
+  });
+
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  res.header("Access-Control-Allow-Credentials", "true");
+
+  if (req.method === "OPTIONS") {
+    console.log("Handling OPTIONS request");
+    return res.status(200).end();
+  }
+
+  next();
+});
+
+// Test route
+app.get("/", (req, res) => {
+  res.send("Server is running!");
+});
 
 // Routes
 const userRoutes = require("./routes/userRoutes");
@@ -18,14 +53,6 @@ const disputeRoutes = require("./routes/disputeRoutes");
 const tokenRoutes = require("./routes/tokenRoutes");
 const globalPolicySettingsRoutes = require("./routes/globalPolicySettingsRoutes");
 
-app.use(express.json());
-app.use(
-  cors({
-    origin: "http://localhost:3000", // Your frontend URL
-    credentials: true,
-  })
-);
-
 // API Routes
 app.use("/api/users", userRoutes);
 app.use("/api/admin", adminRoutes);
@@ -35,35 +62,32 @@ app.use("/api/disputes", disputeRoutes);
 app.use("/api/tokens", tokenRoutes);
 app.use("/api/policies", globalPolicySettingsRoutes);
 
-// Error handling middleware
+// Error handling
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error("Error:", err);
   res.status(500).json({ message: "Something went wrong!" });
 });
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ message: "Route not found" });
-});
-
-let server;
-
 const startServer = async () => {
   try {
+    console.log("Attempting to connect to MongoDB...");
     await mongoose.connect(config.MONGODB_URI);
-    server = app.listen(config.PORT);
+    console.log("MongoDB connected successfully");
+
+    server = app.listen(config.PORT, () => {
+      console.log(`Server is running on http://localhost:${config.PORT}`);
+    });
     return server;
   } catch (error) {
-    console.error("Database connection failed:", error);
+    console.error("Failed to start server:", error);
     process.exit(1);
   }
 };
 
-const stopServer = async () => {
-  if (server) {
-    await mongoose.connection.close();
-    await new Promise((resolve) => server.close(resolve));
-  }
-};
+// Start the server
+startServer().catch((error) => {
+  console.error("Startup error:", error);
+  process.exit(1);
+});
 
-module.exports = { app, startServer, stopServer };
+module.exports = { app };

@@ -1,19 +1,36 @@
 import { React, useState, useRef } from "react";
 import { ShoppingBag } from "lucide-react";
-
+import axios from "axios";
 function LoginPage({ from }) {
   const [CurrentPage, setCurrentPage] = useState("login");
 
   //#region Login Page
 
-  const handle_login = (e) => {
+  const handle_login = async (e) => {
     e.preventDefault();
+    try {
+      const email = e.target.email.value;
+      const password = e.target.password.value;
 
-    //suppose login success
-    from == "chats"
-      ? (window.location.href = "/user?loggedin=true")
-      : (window.location.href = "/user");
-    localStorage.setItem("loggedin", true); // here later will be the token instead of true
+      const response = await axios.post(
+        "http://localhost:5000/api/users/login",
+        {
+          email,
+          password,
+        }
+      );
+
+      // Store the token in localStorage
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+
+      // Redirect based on 'from' prop
+      from === "chats"
+        ? (window.location.href = "/user?loggedin=true")
+        : (window.location.href = "/user");
+    } catch (error) {
+      alert(error.response?.data?.message || "Login failed");
+    }
   };
 
   const Login = () => (
@@ -29,9 +46,11 @@ function LoginPage({ from }) {
             Sign in to your account
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Don’t have an account?{" "}
+            Don't have an account?{" "}
             <a
-              onClick={() => {
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
                 setCurrentPage("register");
               }}
               className="cursor-pointer text-blue-500 hover:underline"
@@ -123,31 +142,38 @@ function LoginPage({ from }) {
     e.preventDefault();
     const fullName = fullNameRef.current.value;
     const email = emailRef.current.value;
+    const phone = phoneNumberRef.current.value;
     const password = passwordRef.current.value;
     const confirmPassword = confirmPasswordRef.current.value;
 
-    setFormData({
-      fullName: fullName,
-      email: email,
-      password: password,
-      confirmPassword: confirmPassword,
-    });
-
-    console.log(formData);
-    if (formData.password !== formData.confirmPassword) {
+    if (password !== confirmPassword) {
       alert("Passwords don't match!");
       return;
     }
+
     try {
-      // Call backend to register and send OTP
-      const response = await axios.post(
-        "http://localhost:5000/api/register",
-        formData
+      // First register the user
+      const registerResponse = await axios.post(
+        "http://localhost:5000/api/users/register",
+        {
+          name: fullName,
+          email,
+          phone,
+          password,
+        }
       );
-      alert(response.data.message);
+
+      // Store token for verification request
+      const token = registerResponse.data.token;
+
+      // Store email for OTP verification step
+      setFormData({
+        email,
+        verificationToken: token,
+      });
       setStep(2); // Move to OTP verification step
     } catch (error) {
-      alert(error.response?.data?.message || "Registration failed.");
+      alert(error.response?.data?.message || "Registration failed");
     }
   };
 
@@ -155,16 +181,17 @@ function LoginPage({ from }) {
     e.preventDefault();
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/verify-otp",
+        "http://localhost:5000/api/users/verify-email",
         {
+          tokenValue: otp,
           email: formData.email,
-          otp,
         }
       );
-      alert(response.data.message); // Registration successful message
-      // Redirect to login or dashboard
+
+      alert("Registration successful! Please login.");
+      setCurrentPage("login");
     } catch (error) {
-      alert(error.response?.data?.message || "OTP verification failed.");
+      alert(error.response?.data?.message || "Verification failed");
     }
   };
 
@@ -185,7 +212,9 @@ function LoginPage({ from }) {
               <p className="text-gray-500">
                 Already have an account?{" "}
                 <a
-                  onClick={() => {
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
                     setCurrentPage("login");
                   }}
                   className="cursor-pointer text-blue-500 hover:underline"
@@ -295,7 +324,7 @@ function LoginPage({ from }) {
   );
   //#endregion
 
-  return <div>{CurrentPage == "login" ? <Login /> : <Register />}</div>;
+  return <div>{CurrentPage === "login" ? <Login /> : <Register />}</div>;
 }
 
 export default LoginPage;
