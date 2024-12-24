@@ -11,3 +11,7 @@ p[role="currency"] {
 div [data-slot="base"] {
   max-width: none !important;
 }
+
+/* button {
+  background-color: #5b7c9b !important;
+} */

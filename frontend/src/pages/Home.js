@@ -1,7 +1,7 @@
 import { React, useEffect, useState } from "react";
 import "../styles/Home.css";
 import Header from "../components/Header";
-import LoginPage from "./Login";
+import LoginPage from "./Authorization";
 import { Search } from "tabler-icons-react";
 import {
   Smartphone,
