@@ -3,6 +3,26 @@
 
 /* Custom styling */
 
+:root {
+  --primaryColor: #123456;
+  --secondaryColor: #83adc2;
+  --accentColor: #e0ffff;
+
+  --foreGroundColor: #fff;
+  --pricingColor: #f5f5f5;
+
+  --buttonColor: #396d9e;
+  --buttonHoverColor: #2a5a86;
+
+  --modalHeaderColor: #244868;
+
+  --iconColor: #396d9e;
+
+  --textColorSecondary: #6b7280;
+
+  --linkTextColor: #69aeee;
+}
+
 p[role="currency"] {
   font-weight: 700;
   font-size: 25px;

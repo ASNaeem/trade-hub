@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Camera } from "lucide-react";
 import FormSection from "./FormSection";
 import InputField from "./InputField";
+import DocumentUpload from "./DocumentUpload.js.js";
 
 export default function ProfileForm(profileDataa) {
   const [profileData, setProfileData] = useState({
@@ -66,6 +67,7 @@ export default function ProfileForm(profileDataa) {
             onChange={handleChange}
           />
         </div>
+        <DocumentUpload />
       </div>
     </FormSection>
   );

@@ -147,23 +147,23 @@ const HomePage = ({ trending_items, top_deals }) => {
         </div>
       </div>
       {/* Hero Section */}
-      <div className="relative h-[600px] bg-gradient-to-r from-[#123456] to-[#83adc2]">
+      <div className="relative h-[600px] bg-gradient-to-r from-[var(--primaryColor)] to-[var(--secondaryColor)]">
         <div className="absolute inset-0">
-          <img
+          {/* <img
             src="https://images.unsplash.com/photo-1556742111-a301076d9d18?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             alt="Shopping background"
             className="w-full h-full object-cover opacity-20"
-          />
+          /> */}
         </div>
         <div className="relative max-w-7xl mx-auto px-4 py-24 sm:px-6 lg:px-8">
           <div className="text-center pt-9">
-            <h1 className="text-4xl tracking-tight font-extrabold text-[#F9F9F9] sm:text-5xl md:text-6xl">
+            <h1 className="text-4xl tracking-tight font-extrabold text-[var(--foreGroundColor)] sm:text-5xl md:text-6xl">
               <span className="pt-8">Trade Hub</span>
-              <span className="block text-[#E0FFFF]">
+              <span className="block text-[var(--accentColor)]">
                 Buy and Sell with Confidence
               </span>
             </h1>
-            <p className="mt-3 max-w-md mx-auto text-base text-indigo-100 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
+            <p className="mt-3 max-w-md mx-auto text-base text-gray-200 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
               Your trusted marketplace for buying and selling pre-loved items.
               Join thousands of happy traders in your city.
             </p>

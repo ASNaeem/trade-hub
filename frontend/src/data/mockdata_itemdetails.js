@@ -58,10 +58,10 @@ export const initialItem = [
     id: 1,
     title: "Vintage Leather Jacket",
     description:
-      "Genuine leather jacket in excellent condition. Worn only a few times.",
+      "Beautiful vintage leather jacket in excellent condition. Real leather, size M, barely worn. Features classic styling with silver hardware and multiple pockets. Perfect for any season.",
     price: 199.99,
     category: "Clothing",
-    condition: "Used",
+    condition: "New",
     quantity: 1,
     isVisible: true,
     images: [
@@ -71,11 +71,11 @@ export const initialItem = [
   },
   {
     id: 2,
-    title: "Vintage Leather Jacket",
+    title: "Keyboard",
     description:
-      "Genuine leather jacket in excellent condition. Worn only a few times.",
-    price: 199.99,
-    category: "Clothing",
+      "Mechanical keyboard with RGB lighting. Barely used, like new condition.",
+    price: 200,
+    category: "Electronics",
     condition: "Used",
     quantity: 1,
     isVisible: true,
@@ -86,14 +86,13 @@ export const initialItem = [
   },
   {
     id: 3,
-    title: "Vintage Leather Jacket",
-    description:
-      "Genuine leather jacket in excellent condition. Worn only a few times.",
-    price: 199.99,
-    category: "Clothing",
+    title: "Vintage Camara",
+    description: "Very old camera, some scratches but still works perfectly.",
+    price: 999.99,
+    category: "Electronics",
     condition: "Used",
-    quantity: 1,
-    isVisible: true,
+    quantity: 10,
+    isVisible: false,
     images: [
       "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400",
     ],
@@ -113,10 +112,4 @@ export const categories = [
   "Other",
 ];
 
-export const conditions = [
-  "New",
-  "Like New",
-  "Used",
-  "Refurbished",
-  "For Parts",
-];
+export const conditions = ["New", "Like New", "Used", "Refurbished"];

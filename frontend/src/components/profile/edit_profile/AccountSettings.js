@@ -44,7 +44,7 @@ export default function AccountSettings(loginDataa) {
           <div className="space-x-3">
             <button
               type="submit"
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#1d4e6e]  hover:bg-[#1f4057]"
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#396d9e]  hover:bg-[#2a5a86]"
             >
               <Save className="h-4 w-4 mr-2" />
               Save Changes

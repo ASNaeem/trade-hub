@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Save, Trash2, Eye, EyeOff } from "lucide-react";
+import FormField from "./FormField";
 import { categories, conditions } from "../../data/mockdata_itemdetails";
+import { Input, SelectItem, Checkbox, Select } from "@nextui-org/react";
 import ImageGallery from "./ImageGallery";
 
 export default function ItemEditForm({
@@ -10,7 +12,7 @@ export default function ItemEditForm({
   onCancel,
 }) {
   const [item, setItem] = useState(initialItem);
-  const [message, setMessage] = useState({ type: "", text: "" });
+  // const [message, setMessage] = useState({ type: "", text: "" });
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -39,85 +41,75 @@ export default function ItemEditForm({
       />
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Title
-          </label>
-          <input
-            type="text"
+        <FormField label="Title">
+          <Input
+            radius="sm"
             value={item.title}
             onChange={(e) => setItem({ ...item, title: e.target.value })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           />
-        </div>
+        </FormField>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Price
-          </label>
-          <div className="mt-1 relative rounded-md shadow-sm">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span className="text-gray-500 sm:text-sm">$</span>
-            </div>
+        <FormField label="Price">
+          <div className="relative">
+            <p role="currency" className="absolute top-0 left-3 text-center">
+              ৳
+            </p>
             <input
               type="number"
+              min="0"
+              step="0.01"
+              className="w-full pl-8 py-2 border text-sm border-none rounded-lg outline-none transition-all duration-200 ease-in-out  placeholder:text-[#71717A] bg-[#F4F4F5] hover:bg-[#FAFAFA]"
               value={item.price}
-              onChange={(e) =>
-                setItem({ ...item, price: parseFloat(e.target.value) })
-              }
-              className="pl-7 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              onChange={(e) => setItem({ ...item, price: e.target.value })}
             />
           </div>
-        </div>
+        </FormField>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Category
-          </label>
-          <select
-            value={item.category}
+        <FormField label="Category">
+          <Select
+            className="max-w-xs"
+            fullWidth
+            selectedKeys={[categories.indexOf(item.category).toString()]}
             onChange={(e) => setItem({ ...item, category: e.target.value })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
           >
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
+            {categories.map((category, index) => (
+              <SelectItem key={index}>{category}</SelectItem>
             ))}
-          </select>
-        </div>
+          </Select>
+        </FormField>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Condition
-          </label>
-          <select
-            value={item.condition}
-            onChange={(e) => setItem({ ...item, condition: e.target.value })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          >
-            {conditions.map((cond) => (
-              <option key={cond} value={cond}>
-                {cond}
-              </option>
+        <FormField label="Condition">
+          <div className="flex flex-wrap gap-3 md:gap-5">
+            {conditions.map((condition) => (
+              <label key={condition} className="flex items-center">
+                <Checkbox
+                  className=""
+                  isRequired={true && !item.condition}
+                  isSelected={item.condition === condition}
+                  value={condition}
+                  onChange={(e) => {
+                    setItem({
+                      ...item,
+                      condition: e.target.value,
+                    });
+                  }}
+                />
+                <span className="capitalize">{condition}</span>
+              </label>
             ))}
-          </select>
-        </div>
+          </div>
+        </FormField>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Quantity
-          </label>
+        <FormField label="Quantity">
           <input
             type="number"
-            min="1"
+            min="0"
+            step="0.01"
+            className="w-full pl-4 py-2 border text-sm border-none rounded-lg outline-none transition-all duration-200 ease-in-out  placeholder:text-[#71717A] bg-[#F4F4F5] hover:bg-[#FAFAFA]"
             value={item.quantity}
-            onChange={(e) =>
-              setItem({ ...item, quantity: parseInt(e.target.value) })
-            }
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            onChange={(e) => setItem({ ...item, quantity: e.target.value })}
           />
-        </div>
+        </FormField>
 
         <div className="flex items-center space-x-3">
           <label className="text-sm font-medium text-gray-700">
@@ -137,19 +129,16 @@ export default function ItemEditForm({
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700">
-          Description
-        </label>
+      <FormField label="Description">
         <textarea
           rows={4}
+          className="w-full px-4 py-2 border text-sm border-none rounded-lg outline-none transition-all duration-200 ease-in-out  placeholder:text-[#71717A] bg-[#F4F4F5] hover:bg-[#FAFAFA]"
           value={item.description}
           onChange={(e) => setItem({ ...item, description: e.target.value })}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
         />
-      </div>
+      </FormField>
 
-      {message.text && (
+      {/* {message.text && (
         <div
           className={`p-4 rounded-md ${
             message.type === "success"
@@ -159,7 +148,7 @@ export default function ItemEditForm({
         >
           {message.text}
         </div>
-      )}
+      )} */}
 
       <div className="flex justify-between pt-4 border-t">
         <button
@@ -181,7 +170,7 @@ export default function ItemEditForm({
           </button>
           <button
             type="submit"
-            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#1d4e6e]  hover:bg-[#1f4057]"
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[var(--buttonColor)]  hover:bg-[var(--buttonHoverColor)]"
           >
             <Save className="h-4 w-4 mr-2" />
             Save Changes

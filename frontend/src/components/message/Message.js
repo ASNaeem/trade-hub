@@ -16,7 +16,9 @@ export function Message({ text, timestamp, imageUrls, isOwn, senderName }) {
       <div className={`flex ${isOwn ? "justify-end" : "justify-start"} mb-4`}>
         <div
           className={`relative max-w-[70%] ${
-            isOwn ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-900"
+            isOwn
+              ? "bg-[var(--buttonColor)] text-white"
+              : "bg-gray-100 text-gray-900"
           } rounded-lg p-3`}
         >
           <div className="flex flex-col">
@@ -50,7 +52,7 @@ export function Message({ text, timestamp, imageUrls, isOwn, senderName }) {
               <span>{formatMessageTime(timestamp)}</span>
               <div
                 className={`fixed pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${
-                  isOwn ? "bg-indigo-700" : "bg-gray-800"
+                  isOwn ? "bg-gray-700" : "bg-gray-800"
                 } text-white px-2 py-1 rounded text-xs whitespace-nowrap`}
                 style={{
                   left: `${tooltipPosition.x + 10}px`,

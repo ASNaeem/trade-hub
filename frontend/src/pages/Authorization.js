@@ -45,14 +45,14 @@ function LoginPage({ from }) {
       <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="w-10 h-10 bg-[#396d9e] text-white flex items-center justify-center rounded-full">
+            <div className="w-10 h-10 bg-[var(--iconColor)] text-white flex items-center justify-center rounded-full">
               <ShoppingBag />
             </div>
           </div>
           <h2 className="text-2xl font-bold text-gray-800">
             Sign in to your account
           </h2>
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-2 text-sm text-[var(--textColorSecondary)]">
             Don't have an account?{" "}
             <a
               href="#"
@@ -60,7 +60,7 @@ function LoginPage({ from }) {
                 e.preventDefault();
                 setCurrentPage("register");
               }}
-              className="cursor-pointer text-[#69aeee] hover:underline"
+              className="cursor-pointer text-[var(--linkTextColor)] hover:underline"
             >
               Sign up
             </a>
@@ -106,7 +106,7 @@ function LoginPage({ from }) {
               </span>
             </label>
             <a
-              className="text-sm cursor-pointer text-[#69aeee] hover:underline"
+              className="text-sm cursor-pointer text-[var(--linkTextColor)] hover:underline"
               onClick={() => setCurrentPage("forgot_pass")}
             >
               Forgot your password?
@@ -114,7 +114,7 @@ function LoginPage({ from }) {
           </div>
           <button
             type="submit"
-            className="w-full bg-[#396d9e] text-white py-2 rounded-lg hover:bg-[#2a5a86] flex justify-center items-center gap-2"
+            className="w-full bg-[var(--buttonColor)] text-white py-2 rounded-lg hover:bg-[var(--buttonHoverColor)] flex justify-center items-center gap-2"
           >
             Sign in
           </button>
@@ -218,7 +218,7 @@ function LoginPage({ from }) {
           <>
             <div className="text-center mb-6">
               <div className="flex justify-center items-center mb-4">
-                <div className="w-10 h-10 bg-[#396d9e] text-white flex justify-center items-center rounded-full">
+                <div className="w-10 h-10 bg-[var(--iconColor)] text-white flex justify-center items-center rounded-full">
                   <ShoppingBag />
                 </div>
               </div>
@@ -233,7 +233,7 @@ function LoginPage({ from }) {
                     e.preventDefault();
                     setCurrentPage("login");
                   }}
-                  className="cursor-pointer text-[#69aeee] hover:underline"
+                  className="cursor-pointer text-[var(--linkTextColor)] hover:underline"
                 >
                   Sign in
                 </a>
@@ -299,7 +299,7 @@ function LoginPage({ from }) {
               </div>
               <button
                 type="submit"
-                className="w-full bg-[#396d9e] text-white py-2 rounded-lg hover:bg-[#2a5a86] flex justify-center items-center gap-2"
+                className="w-full bg-[var(--buttonColor)] text-white py-2 rounded-lg hover:bg-[var(--buttonHoverColor)] flex justify-center items-center gap-2"
               >
                 <i className="fas fa-user-plus mr-2"></i> Create Account
               </button>
@@ -320,7 +320,7 @@ function LoginPage({ from }) {
     <div className="bg-white w-[350px] md:w-[448px] md:h-[428px] rounded-lg flex flex-col justify-center items-center">
       <div className="text-center mb-6">
         <div className="flex justify-center items-center mb-4">
-          <div className="w-10 h-10 bg-[#396d9e] text-white flex justify-center items-center rounded-full">
+          <div className="w-10 h-10 bg-[var(--iconColor)] text-white flex justify-center items-center rounded-full">
             <ShoppingBag />
           </div>
         </div>
@@ -346,7 +346,7 @@ function LoginPage({ from }) {
 
         <button
           type="submit"
-          className="w-full select-none bg-[#396d9e] text-white py-2 rounded-lg hover:bg-[#2a5a86] flex justify-center items-center gap-2"
+          className="w-full select-none bg-[var(--buttonColor)] text-white py-2 rounded-lg hover:bg-[var(--buttonHoverColor)] flex justify-center items-center gap-2"
         >
           <BadgeCheck />
           Verify OTP
@@ -362,7 +362,7 @@ function LoginPage({ from }) {
       <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="w-10 h-10 bg-[#396d9e] text-white flex items-center justify-center rounded-full">
+            <div className="w-10 h-10 bg-[var(--iconColor)] text-white flex items-center justify-center rounded-full">
               <CircleAlert />
             </div>
           </div>
@@ -389,7 +389,7 @@ function LoginPage({ from }) {
 
           <button
             type="submit"
-            className="w-full bg-[#396d9e] text-white py-2 rounded-lg hover:bg-[#2a5a86] flex justify-center items-center gap-2"
+            className="w-full bg-[var(--buttonColor)] text-white py-2 rounded-lg hover:bg-[var(--buttonHoverColor)] flex justify-center items-center gap-2"
           >
             Submit
           </button>

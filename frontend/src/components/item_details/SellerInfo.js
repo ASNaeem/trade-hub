@@ -35,7 +35,7 @@ export default function SellerInfo({ seller }) {
           <Calendar className="h-4 w-4" />
           <span>Member since {seller.memberSince}</span>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 text-green-500">
           <Shield className="h-4 w-4" />
           <span>Verified Seller</span>
         </div>

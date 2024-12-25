@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import FormField from "./FormField";
 import ImageUpload from "./ImageUpload";
 import { Select, SelectItem, Input, Checkbox } from "@nextui-org/react";
@@ -211,7 +211,7 @@ const ListingForm = ({ className }) => {
           <div className="flex justify-end">
             <button
               type="submit"
-              className="px-6 py-2 bg-[#244868] text-white rounded-md hover:bg-[#173A5B] transition-colors duration-200"
+              className="px-6 py-2 bg-[var(--buttonColor)] text-white rounded-md hover:bg-[var(--buttonHoverColor)] transition-colors duration-200"
             >
               Create Listing
             </button>

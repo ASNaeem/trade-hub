@@ -65,7 +65,7 @@ export function MessageInput({ onSendMessage }) {
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="p-2.5 rounded-full text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 transition-all duration-200"
+          className="p-2.5 rounded-full text-gray-500 hover:text-[var(--buttonHoverColor)] hover:bg-indigo-50 transition-all duration-200"
         >
           <ImagePlus size={22} />
         </button>
@@ -78,7 +78,7 @@ export function MessageInput({ onSendMessage }) {
         />
         <button
           type="submit"
-          className="p-3 text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 transform transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm hover:shadow-md"
+          className="p-3 text-white bg-[var(--buttonColor)] rounded-xl hover:bg-[var(--buttonHoverColor)] transform transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm hover:shadow-md"
         >
           <Send size={20} />
         </button>
