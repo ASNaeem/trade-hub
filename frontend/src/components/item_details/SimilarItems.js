@@ -3,11 +3,11 @@ import { DollarSign } from "lucide-react";
 
 export default function SimilarItems({ items }) {
   return (
-    <div className="bg-[var(--cardBgColor)] rounded-lg shadow-lg p-6 border border-gray-100">
-      <h2 className="text-2xl font-bold mb-6 text-[var(--textColorPrimary)]">
+    <>
+      <h2 className="text-2xl font-bold pt-20 text-[var(--textColorPrimary)]">
         Similar Items
       </h2>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6">
         {items.map((item) => (
           <div
             key={item.id}
@@ -33,6 +33,6 @@ export default function SimilarItems({ items }) {
           </div>
         ))}
       </div>
-    </div>
+    </>
   );
 }

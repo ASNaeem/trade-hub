@@ -1,58 +1,64 @@
 import React, { useState } from "react";
 import {
-  Share2,
   Heart,
   DollarSign,
   Package,
   Calendar,
   FlagIcon,
   MessageCircleCode,
+  Shield,
 } from "lucide-react";
 import AlertDialog from "../AlertDialog";
 
-export default function ItemDetails({ item }) {
+export default function ItemDetails({ item, seller }) {
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   const handleReport = () => {
     // Handle report submission logic here
     setIsReportDialogOpen(false);
   };
 
-  const handleFavorite = () => {
-    // Handle favorite toggle logic here
-  };
-
   return (
     <>
-      <div className="bg-[var(--cardBgColor)] rounded-lg shadow-lg p-6 mb-8 border border-gray-100">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Image Gallery */}
-          <div className="space-y-4">
-            <img
-              src={item.images[0]}
-              alt={item.title}
-              className="w-full h-[400px] object-cover rounded-lg border border-gray-100"
-            />
-            <div className="grid grid-cols-4 gap-2">
-              {item.images.slice(1).map((image, index) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+        {/* Image Gallery */}
+        <div className="space-y-4">
+          <img
+            src={item.images[selectedImageIndex]}
+            alt={item.title}
+            className="w-full h-[300px] md:h-[400px] object-cover rounded-lg border border-gray-100"
+          />
+          <div className="grid grid-cols-5 gap-2">
+            {item.images.map((image, index) => (
+              <button
+                key={index}
+                onClick={() => setSelectedImageIndex(index)}
+                className={`relative rounded-lg overflow-hidden ${
+                  selectedImageIndex === index
+                    ? "ring-2 ring-[var(--buttonColor)] ring-offset-2"
+                    : "hover:opacity-80"
+                }`}
+              >
                 <img
-                  key={index}
                   src={image}
-                  alt={`${item.title} ${index + 2}`}
-                  className="w-full h-20 object-cover rounded-lg cursor-pointer hover:opacity-80 border border-gray-100 transition-all duration-200"
+                  alt={`${item.title} ${index + 1}`}
+                  className="w-full h-20 object-cover cursor-pointer transition-all duration-200"
                 />
-              ))}
-            </div>
+              </button>
+            ))}
           </div>
+        </div>
 
-          {/* Item Info */}
-          <div className="space-y-6">
+        {/* Item Info */}
+        <div className="flex flex-col h-full">
+          <div className="flex-1 space-y-6">
             <div className="space-y-2">
-              <h1 className="text-3xl font-bold text-[var(--textColorPrimary)]">
+              <h1 className="text-2xl md:text-3xl font-bold text-[var(--textColorPrimary)]">
                 {item.title}
               </h1>
               <div className="flex items-center space-x-4">
-                <span className="text-2xl font-bold text-[var(--iconColor)]">
+                <span className="text-xl md:text-2xl font-bold text-[var(--iconColor)]">
                   <DollarSign className="inline h-6 w-6" />
                   {item.price}
                 </span>
@@ -82,18 +88,55 @@ export default function ItemDetails({ item }) {
               </p>
             </div>
 
-            <div className="space-y-4">
-              <button className="w-full flex items-center justify-center bg-[var(--buttonColor)] text-white py-3 rounded-lg hover:bg-[var(--buttonHoverColor)] transition-colors duration-200 shadow-sm">
-                <MessageCircleCode className="h-5 w-5 mr-2" />
-                Contact Seller
-              </button>
-              <button
-                className="w-full flex items-center justify-center py-3 border border-[var(--errorColor)] rounded-lg shadow-sm font-medium text-[var(--errorColor)] hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
-                onClick={() => setIsReportDialogOpen(true)}
-              >
-                <FlagIcon className="h-4 w-4 mr-2" />
-                Report Listing
-              </button>
+            {/* Seller Info and Action Buttons Section */}
+            <div className="py-4">
+              <div className="flex justify-between items-start">
+                {/* Seller Info */}
+                <div className="space-y-4">
+                  <h2 className="text-lg font-semibold text-[var(--textColorPrimary)]">
+                    Seller Information
+                  </h2>
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-[var(--buttonColor)] text-white rounded-full flex items-center justify-center">
+                      <span className="text-xl font-bold">
+                        {seller.name[0]}
+                      </span>
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-semibold text-[var(--textColorPrimary)]">
+                        {seller.name}
+                      </h2>
+                      <div className="flex items-center pt-1 space-x-2">
+                        <Shield className="h-4 w-4 text-[var(--buttonColor)]" />
+                        <span className="text-[var(--buttonColor)]">
+                          Verified Seller
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="h-4 w-4 text-[var(--iconColor)]" />
+                    <span className="text-[var(--textColorSecondary)]">
+                      Member since {seller.memberSince}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="space-y-3 min-w-[200px]">
+                  <button className="w-full flex items-center justify-center bg-[var(--buttonColor)] text-white px-6 py-2.5 rounded-lg hover:opacity-90 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow-md">
+                    <MessageCircleCode className="h-4 w-4 mr-2" />
+                    Contact Seller
+                  </button>
+                  <button
+                    className="w-full flex items-center justify-center px-6 py-2.5 bg-white border border-gray-200 rounded-lg shadow-sm font-medium text-sm text-gray-700 hover:bg-gray-50 focus:outline-none transition-all duration-200"
+                    onClick={() => setIsReportDialogOpen(true)}
+                  >
+                    <FlagIcon className="h-4 w-4 mr-2 text-gray-500" />
+                    Report Listing
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
