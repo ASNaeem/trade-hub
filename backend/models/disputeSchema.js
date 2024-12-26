@@ -1,17 +1,22 @@
 const mongoose = require("mongoose");
 
 const disputeSchema = new mongoose.Schema({
-  itemId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Item",
+  reportType: {
+    type: String,
     required: true,
+    enum: ["message", "item", "user"],
   },
-  buyerId: {
+  targetId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    refPath: "reportType",
+  },
+  reporterId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,
   },
-  sellerId: {
+  reportedId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,
@@ -19,22 +24,34 @@ const disputeSchema = new mongoose.Schema({
   reason: {
     type: String,
     required: true,
-    minlength: 10,
+    enum: ["inappropriate", "spam", "fraud", "harassment", "other"],
   },
-  resolutionStatus: {
+  description: String,
+  status: {
     type: String,
-    enum: ["Pending", "Resolved", "Rejected"],
-    default: "Pending",
+    enum: ["open", "resolved"],
+    default: "open",
   },
-  resolvedAt: {
-    type: Date,
-    default: null,
+  resolution: {
+    type: String,
+    enum: ["warning", "delete", "ban", "no_action"],
   },
+  adminNote: String,
+  resolvedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Admin",
+  },
+  resolvedAt: Date,
   createdAt: {
     type: Date,
     default: Date.now,
   },
 });
+
+// Add indexes for common queries
+disputeSchema.index({ status: 1, createdAt: -1 });
+disputeSchema.index({ reporterId: 1 });
+disputeSchema.index({ reportedId: 1 });
 
 disputeSchema.virtual("id").get(function () {
   return this._id.toHexString();

@@ -7,25 +7,21 @@ const adminAuthMiddleware = require("../middleware/adminAuthMiddleware");
 // Admin registration (protected, only super admins can create new admins)
 router.post(
   "/register",
-  [authMiddleware, adminAuthMiddleware],
+  [authMiddleware, adminAuthMiddleware.superadmin],
   async (req, res) => {
     try {
-      const { name, email, password, phone, role } = req.body;
-      const newAdmin = await adminService.createAdmin(
-        name,
-        email,
-        phone,
-        password,
-        role
-      );
+      const { name, email, password, role } = req.body;
+      const admin = await adminService.createAdmin(name, email, password, role);
+      const { token } = await adminService.authenticateAdmin(email, password);
       res.status(201).json({
-        message: "Admin registered successfully",
-        admin: newAdmin.getSummary(),
+        token,
+        id: admin.id,
+        name: admin.name,
+        email: admin.email,
+        role: admin.role,
       });
     } catch (error) {
-      res
-        .status(500)
-        .json({ message: "Error creating admin", error: error.message });
+      res.status(400).json({ message: error.message });
     }
   }
 );
@@ -39,12 +35,14 @@ router.post("/login", async (req, res) => {
       password
     );
     res.status(200).json({
-      message: "Login successful",
       token,
-      admin: admin.getSummary(),
+      id: admin.id,
+      name: admin.name,
+      email: admin.email,
+      role: admin.role,
     });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(401).json({ message: error.message });
   }
 });
 

@@ -23,6 +23,44 @@ const userSchema = new mongoose.Schema({
     required: true,
     minlength: 8,
   },
+  profilePicture: {
+    data: Buffer,
+    contentType: String,
+  },
+  govtDocument: {
+    documentType: {
+      type: String,
+      enum: ["NID", "Birth Certificate"],
+    },
+    documentNumber: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+    documentImage: {
+      data: Buffer,
+      contentType: String,
+    },
+  },
+  isDocumentVerified: {
+    type: Boolean,
+    default: false,
+  },
+  isBanned: {
+    type: Boolean,
+    default: false,
+  },
+  banReason: {
+    type: String,
+  },
+  isUnderReview: {
+    type: Boolean,
+    default: false,
+  },
+  city: {
+    type: String,
+    default: null,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

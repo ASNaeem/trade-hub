@@ -1,22 +1,22 @@
 class GlobalPolicySettings {
-  constructor(id, policyName, value, updatedAt = new Date()) {
+  constructor(id, name, value, updatedAt = new Date()) {
     this._id = id;
-    this._policyName = policyName;
+    this._name = name;
     this._value = value;
     this._updatedAt = updatedAt;
   }
 
-  // Getter for Policy Name
-  get policyName() {
-    return this._policyName;
+  // Getter for Name
+  get name() {
+    return this._name;
   }
 
-  // Setter for Policy Name
-  set policyName(newName) {
+  // Setter for Name
+  set name(newName) {
     if (!newName || newName.length < 3) {
-      throw new Error('Policy name must be at least 3 characters long.');
+      throw new Error("Policy name must be at least 3 characters long.");
     }
-    this._policyName = newName;
+    this._name = newName;
   }
 
   // Getter for Value
@@ -26,8 +26,8 @@ class GlobalPolicySettings {
 
   // Setter for Value
   set value(newValue) {
-    if (typeof newValue !== 'number' || newValue < 0) {
-      throw new Error('Policy value must be a positive number.');
+    if (typeof newValue !== "number" || newValue < 0) {
+      throw new Error("Policy value must be a positive number.");
     }
     this._value = newValue;
     this._updatedAt = new Date();

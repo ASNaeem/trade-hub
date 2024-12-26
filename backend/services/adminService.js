@@ -2,6 +2,7 @@ const AdminClass = require("../classes/Admin");
 const AdminModel = require("../models/adminSchema");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const config = require("../config/test.config");
 
 const AdminService = {
   async createAdmin(name, email, password, role = "admin") {
@@ -55,14 +56,15 @@ const AdminService = {
     );
 
     const payload = {
-      id: adminClassInstance.id,
-      email: adminClassInstance.email,
+      id: adminDocument._id,
+      email: adminDocument.email,
       role: adminDocument.role,
     };
 
-    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+    const token = jwt.sign(payload, config.JWT_SECRET, {
       expiresIn: "1h",
     });
+
     return { admin: adminClassInstance, token };
   },
 

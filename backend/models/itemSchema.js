@@ -31,7 +31,21 @@ const itemSchema = new mongoose.Schema(
     },
     images: [
       {
-        type: String,
+        type: {
+          type: String,
+          required: true,
+          enum: ["url", "buffer"],
+          default: "url",
+        },
+        url: {
+          type: String,
+        },
+        data: {
+          type: Buffer,
+        },
+        contentType: {
+          type: String,
+        },
       },
     ],
     location: {

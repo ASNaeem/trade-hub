@@ -1,5 +1,5 @@
 const emailjs = require("emailjs-com");
-const { serviceID, templateID, userID } = require("../config/email"); // Import EmailJS config
+const { serviceID, templateID, userID } = require("../config/emailjs"); // Import EmailJS config
 
 const sendOTP = async (email, otp) => {
   try {
