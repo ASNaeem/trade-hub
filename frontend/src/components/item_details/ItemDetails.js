@@ -35,7 +35,7 @@ export default function ItemDetails({ item }) {
         {/* Item Info */}
         <div className="space-y-6">
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold text-gray-900">{item.title}</h1>
+            <h1 className="text-3xl font-bold text-gray-800">{item.title}</h1>
             <div className="flex items-center space-x-4">
               <span className="text-2xl font-bold text-green-600">
                 <DollarSign className="inline h-6 w-6" />
@@ -45,7 +45,7 @@ export default function ItemDetails({ item }) {
                 <Heart className="h-6 w-6" />
               </button>
               <button className="text-blue-500 hover:text-blue-600">
-                <Share2 className="h-6 w-6" />
+                <Share2 className="h-6 w-6 text-[var(--iconColor)]" />
               </button>
             </div>
           </div>
@@ -67,7 +67,7 @@ export default function ItemDetails({ item }) {
           </div>
 
           <div className="space-y-6">
-            <button className="w-full flex items-center justify-center bg-[#1d4e6e] text-white py-3 rounded-lg hover:bg-[#1f4057] transition">
+            <button className="w-full flex items-center justify-center bg-[var(--buttonColor)] text-white py-3 rounded-lg hover:bg-[var(--buttonHoverColor)] transition">
               <MessageCircleCode className="h-5 w-5 mr-2" />
               Contact Seller
             </button>

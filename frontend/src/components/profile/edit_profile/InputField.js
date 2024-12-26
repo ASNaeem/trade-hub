@@ -11,7 +11,10 @@ export default function InputField({
 }) {
   return (
     <div>
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700">
+      <label
+        htmlFor={name}
+        className="block text-sm pb-2 font-medium text-[var(--primaryColor)] "
+      >
         {label}
       </label>
       <Input

@@ -40,15 +40,15 @@ export function MessageInput({ onSendMessage }) {
   };
 
   return (
-    <div>
+    <div className="message-input-container">
       {selectedImages.length > 0 && (
-        <div className="px-4 py-2 border-t">
+        <div className="px-4 py-2 border-t animate-fadeIn">
           <ImagePreview images={selectedImages} onRemove={removeImage} />
         </div>
       )}
       <form
         onSubmit={handleSubmit}
-        className="flex items-center gap-2 p-4 bg-white border-t"
+        className="flex items-center gap-3 p-4 rounded-b-lg bg-white border-t shadow-sm transition-all duration-300 hover:shadow-md"
         ref={dropZoneRef}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -65,20 +65,20 @@ export function MessageInput({ onSendMessage }) {
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="p-2 text-gray-500 hover:text-indigo-600 transition-colors"
+          className="p-2.5 rounded-full text-gray-500 hover:text-[var(--buttonHoverColor)] hover:bg-indigo-50 transition-all duration-200"
         >
-          <ImagePlus size={20} />
+          <ImagePlus size={22} />
         </button>
         <input
           type="text"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder="Type your message..."
-          className="w-full px-4 py-2 border text-sm border-none rounded-lg outline-none transition-all duration-200 ease-in-out  placeholder:text-[#71717A] bg-[#F4F4F5] hover:bg-[#FAFAFA]"
+          className="w-full px-5 py-3 text-sm rounded-2xl outline-none transition-all duration-300 placeholder:text-gray-400 bg-gray-50 hover:bg-gray-100 focus:bg-white focus:ring-2 focus:ring-indigo-100"
         />
         <button
           type="submit"
-          className="p-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
+          className="p-3 text-white bg-[var(--buttonColor)] rounded-xl hover:bg-[var(--buttonHoverColor)] transform transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm hover:shadow-md"
         >
           <Send size={20} />
         </button>

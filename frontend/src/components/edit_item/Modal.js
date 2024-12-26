@@ -13,7 +13,7 @@ export default function Modal({ isOpen, onClose, children, title }) {
         />
 
         <div className="relative w-full max-w-4xl bg-white rounded-lg shadow-xl animate-[comeup_0.1s_ease-in]">
-          <div className="flex items-center rounded-t-lg justify-between px-6 py-4 bg-[#244868]">
+          <div className="flex items-center rounded-t-lg justify-between px-6 py-4 bg-[var(--buttonHoverColor)]">
             <h2 className="text-2xl font-bold text-white">{title}</h2>
             <button
               onClick={onClose}

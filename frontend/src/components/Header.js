@@ -5,7 +5,7 @@ import "../styles/Header.css";
 const Header = ({
   user_state,
   shadow = false,
-  className = "text-[#f9f9f9] fill-[#E0FFFF]",
+  className = "text-[var(--foreGroundColor)] fill-[var(--accentColor)]",
   login_clicked = () => {
     window.location.href = "/user";
   },

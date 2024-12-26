@@ -1,0 +1,14 @@
+button colors: #396d9e, hover: #2a5a86
+icon color: #396d9e
+
+
+var(--buttonColor)
+var(--buttonHoverColor)
+var(--foreGroundColor)
+var(--primaryColor)
+var(--secondaryColor)
+
+var(--accentColor)
+var(--iconColor)
+var(--linkTextColor)
+

@@ -3,35 +3,6 @@ import { PlusIcon } from "lucide-react";
 import Modal from "../../edit_item/Modal";
 import ItemEditForm from "../../edit_item/ItemEditForm.js";
 
-//#region Fake data
-// const items = [
-//   {
-//     id: 1,
-//     title: "Vintage Leather Jacket",
-//     price: 120,
-//     image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400",
-//     likes: 24,
-//     timeLeft: "2 days",
-//   },
-//   {
-//     id: 2,
-//     title: "Mechanical Keyboard",
-//     price: 85,
-//     image: "https://images.unsplash.com/photo-1601445638532-3c6f6c3aa1d6?w=400",
-//     likes: 15,
-//     timeLeft: "5 days",
-//   },
-//   {
-//     id: 3,
-//     title: "Retro Camera",
-//     price: 150,
-//     image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400",
-//     likes: 32,
-//     timeLeft: "1 day",
-//   },
-// ];
-//#endregion
-
 function ListedItems({ items }) {
   const [IsModalOpen, setIsModalOpen] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState(null);

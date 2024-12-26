@@ -17,7 +17,7 @@ export default function EditProfileModal({ isOpen, onClose }) {
       <div className="flex min-h-full items-center justify-center p-4 animate-[comeup_0.1s_ease-in]">
         <div className="relative w-full max-w-4xl bg-gray-50 rounded-lg shadow-xl">
           {/* Header */}
-          <div className="flex items-center rounded-t-lg bg-[#244868] justify-between p-4 border-b border-gray-200">
+          <div className="flex items-center rounded-t-lg bg-[var(--buttonHoverColor)] justify-between p-4 border-b border-gray-200">
             <h2 className="text-xl font-semibold text-white">Edit Profile</h2>
             <button
               onClick={onClose}

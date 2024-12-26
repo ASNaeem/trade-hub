@@ -1,5 +1,5 @@
 import React from "react";
-import { MessageCircle, Circle } from "lucide-react";
+import { Circle } from "lucide-react";
 
 //#region Fake data
 const messages = [
@@ -42,7 +42,7 @@ const MessagesTab = () => {
               <img
                 src={message.avatar}
                 alt={message.sender}
-                className="h-12 w-12 rounded-full"
+                className="h-12 w-12 object-cover rounded-full"
               />
             </div>
             <div className="flex-1 min-w-0">
@@ -52,7 +52,7 @@ const MessagesTab = () => {
                 </p>
                 <div className="flex items-center">
                   {message.unread && (
-                    <Circle className="h-2 w-2 text-blue-600 fill-current mr-2" />
+                    <Circle className="h-2 w-2 fill-current mr-2" />
                   )}
                   <span className="text-sm text-gray-500">{message.time}</span>
                 </div>
@@ -64,12 +64,6 @@ const MessagesTab = () => {
           </div>
         </div>
       ))}
-      <div className="flex justify-center mt-6">
-        <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
-          <MessageCircle className="h-5 w-5 mr-2" />
-          New Message
-        </button>
-      </div>
     </div>
   );
 };
