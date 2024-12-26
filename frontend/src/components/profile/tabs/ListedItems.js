@@ -65,7 +65,7 @@ function ListedItems({ items }) {
         ))}
         <div className="card group select-none">
           <div
-            className="flex flex-col justify-center items-center border-[2px] transition-all duration-150 hover:bg-gray-100 border-dashed border-gray-300 hover:border-[2px] hover:border-cyan-500 cursor-pointer aspect-square overflow-hidden rounded-lg"
+            className="flex flex-col justify-center items-center border-2 border-dashed border-gray-300 rounded-lg hover:border-[var(--accentColor)] hover:bg-gray-100 transition-colors cursor-pointer aspect-square overflow-hidden"
             onClick={() => {
               window.location.href = "/create_item";
             }}

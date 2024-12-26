@@ -13,6 +13,8 @@ import CreateListingPage from "./pages/CreateListingPage";
 import MessagesTab from "./components/profile/tabs/MessagesTab";
 import InboxPage from "./pages/InboxPage";
 import ContactUsPage from "./pages/ContactUsPage";
+import TermsPage from "./pages/TermsOfServicesPage";
+import AdminPage from "./pages/AdminPage";
 //#endregion
 
 const App = () => {
@@ -25,6 +27,8 @@ const App = () => {
             <Route path="/" element={<HomePage />} />
             {/* The Browse Route*/}
             <Route path="/browse" element={<BrowsePage />} />
+            {/* Admin Page */}
+            <Route path="/admin" element={<AdminPage />} />
             {/* Usesr profile page */}
             <Route path="/user" element={<UserProfile />} />
             {/* Messages */}
@@ -37,6 +41,8 @@ const App = () => {
             <Route path="/inbox" element={<InboxPage />} />
             {/* Contact Us Page */}
             <Route path="/contact" element={<ContactUsPage />} />
+            {/* Terms of Services Page */}
+            <Route path="/terms" element={<TermsPage />} />
           </Routes>
           <Footer /> {/* Footer with important information */}
         </div>

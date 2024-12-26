@@ -51,7 +51,7 @@ const FavTab = () => {
               className="h-full w-full object-cover object-center group-hover:scale-105 transition"
             />
             <button className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow-sm">
-              <Heart className="h-4 w-4 text-red-500" fill="currentColor" />
+              <Heart className="h-4 w-4 text-teal-600" fill="currentColor" />
             </button>
           </div>
           <div className="mt-4">
@@ -63,7 +63,7 @@ const FavTab = () => {
               </p>
               <a
                 href="/item"
-                className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
+                className="text-sm text-[var(--linkTextColor)] hover:text-[var(--linkTextHoverColor)] flex items-center"
               >
                 View <ExternalLink className="h-4 w-4 ml-1" />
               </a>

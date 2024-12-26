@@ -17,7 +17,7 @@ const ItemDetailsPage = () => {
     <div className="min-h-screen bg-gray-100">
       <Header
         shadow={true}
-        className="text-black bg-[#FFF] overflow-hidden fill-[#49647D]"
+        className="text-black bg-[#FFF] overflow-hidden fill-[var(--buttonColor)]"
       />
       <div className="max-w-7xl mx-auto pt-[100px] px-4 py-8">
         <ItemDetails item={itemData} />

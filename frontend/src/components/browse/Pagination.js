@@ -11,7 +11,7 @@ export const Pagination = ({ currentPage, totalPages, onPageChange }) => {
   });
 
   return (
-    <div className="flex items-center justify-center gap-2 mt-8">
+    <div className="flex select-none items-center justify-center gap-2 mt-8">
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
@@ -31,7 +31,7 @@ export const Pagination = ({ currentPage, totalPages, onPageChange }) => {
               onClick={() => onPageChange(page)}
               className={`px-3 py-1 rounded-lg transition-colors ${
                 currentPage === page
-                  ? "bg-[var(--primaryColor)] text-white"
+                  ? "bg-[var(--buttonHoverColor)] text-white"
                   : "hover:bg-gray-100"
               }`}
             >

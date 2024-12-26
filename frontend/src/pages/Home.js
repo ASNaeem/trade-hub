@@ -279,7 +279,7 @@ const HomePage = ({ trending_items, top_deals }) => {
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
                     {item.title}
                   </h3>
-                  <p className="text-xl font-bold text-teal-600">
+                  <p className="text-xl font-bold text-[var(--iconColor)]">
                     {item.price}
                   </p>
                   <div className="flex items-center mt-3 text-gray-500">
@@ -329,7 +329,7 @@ const HomePage = ({ trending_items, top_deals }) => {
                     {deal.title}
                   </h3>
                   <div className="flex items-center space-x-2">
-                    <span className="text-xl font-bold text-teal-600">
+                    <span className="text-xl font-bold text-[var(--iconColor)]">
                       {deal.discountedPrice}
                     </span>
                   </div>

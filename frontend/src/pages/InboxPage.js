@@ -49,7 +49,7 @@ export default function InboxPage() {
   };
 
   return (
-    <div className="min-h-screen bg-texture">
+    <div className="min-h-screen bg-[#fefefe]">
       <Header
         shadow={true}
         className="text-black bg-[var(--foreGroundColor)] overflow-hidden fill-[var(--buttonColor)]"

@@ -23,12 +23,12 @@ const ContactUsPage = () => {
     <div className="flex flex-col min-h-screen font-sans bg-gradient-to-b from-white to-gray-50">
       <Header
         shadow={true}
-        className="text-black !fixed bg-[var(--foreGroundColor)] overflow-hidden fill-[var(--primaryColor)]"
+        className="text-black !fixed bg-[var(--foreGroundColor)] overflow-hidden fill-[var(--buttonColor)]"
       />
 
       <div className="container mx-auto px-4 pt-24 pb-12">
         <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-[var(--primaryColor)] to-purple-600 inline-block text-transparent bg-clip-text">
+          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-[var(--primaryColor)] to-[var(--accentColor)] inline-block text-transparent bg-clip-text">
             Get in Touch
           </h1>
           <p className="text-gray-600 text-lg">We'd love to hear from you!</p>
@@ -210,7 +210,7 @@ const ContactUsPage = () => {
 
               <button
                 type="submit"
-                className="w-full bg-[var(--primaryColor)] text-white py-4 px-6 rounded-lg hover:shadow-md hover:shadow-[var(--primaryColor)]/10 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 group mt-auto"
+                className="w-full bg-[var(--buttonHoverColor)] text-white py-4 px-6 rounded-lg hover:shadow-md hover:shadow-[var(--primaryColor)]/10 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 group mt-auto"
               >
                 Send Message
                 <Send

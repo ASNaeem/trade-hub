@@ -112,23 +112,26 @@ export default function ProfileForm() {
               Document Type
             </label>
             <div className="flex gap-5">
-              <Checkbox
-                value={"nid"}
-                name="documentType"
-                checked={profileData.documentType.includes("nid")}
-                onChange={handleChange}
-              >
+              <label title="National ID">
+                <Checkbox
+                  value={"nid"}
+                  name="documentType"
+                  checked={profileData.documentType.includes("nid")}
+                  onChange={handleChange}
+                />
                 NID
-              </Checkbox>
-
-              <Checkbox
-                value={"birthCertificate"}
-                name="documentType"
-                checked={profileData.documentType.includes("birthCertificate")}
-                onChange={handleChange}
-              >
+              </label>
+              <label title="Birth Certificate">
+                <Checkbox
+                  value={"birthCertificate"}
+                  name="documentType"
+                  checked={profileData.documentType.includes(
+                    "birthCertificate"
+                  )}
+                  onChange={handleChange}
+                />
                 Birth Certificate
-              </Checkbox>
+              </label>
             </div>
           </div>
 
