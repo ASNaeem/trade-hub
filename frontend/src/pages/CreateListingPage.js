@@ -7,7 +7,7 @@ const CreateListing = () => {
     <div>
       <Header
         shadow={true}
-        className="text-black bg-[var(--foreGroundColor)] overflow-hidden fill-[var(--primaryColor)]"
+        className="text-black bg-[var(--foreGroundColor)] overflow-hidden fill-[var(--buttonHoverColor)]"
       />
       <ListingForm className="pt-[100px]" />
     </div>

@@ -27,9 +27,12 @@ export default function ItemEditForm({
     });
   };
 
-  const handleAddImage = () => {
-    // In a real app, this would open a file picker
-    alert("Image upload functionality would be implemented here");
+  const handleAddImage = (image) => {
+    if (item.images.length >= 5) return;
+    setItem({
+      ...item,
+      images: [...item.images, image],
+    });
   };
 
   return (
@@ -87,6 +90,7 @@ export default function ItemEditForm({
                   isRequired={true && !item.condition}
                   isSelected={item.condition === condition}
                   value={condition}
+                  color="success"
                   onChange={(e) => {
                     setItem({
                       ...item,
@@ -137,19 +141,6 @@ export default function ItemEditForm({
           onChange={(e) => setItem({ ...item, description: e.target.value })}
         />
       </FormField>
-
-      {/* {message.text && (
-        <div
-          className={`p-4 rounded-md ${
-            message.type === "success"
-              ? "bg-green-50 text-green-700"
-              : "bg-red-50 text-red-700"
-          }`}
-        >
-          {message.text}
-        </div>
-      )} */}
-
       <div className="flex justify-between pt-4 border-t">
         <button
           type="button"

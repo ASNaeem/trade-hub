@@ -2,6 +2,16 @@ import React from "react";
 import { X, Upload } from "lucide-react";
 
 export default function ImageGallery({ images, onRemoveImage, onAddImage }) {
+  const inputRef = React.useRef(null);
+  function onInputAddImage() {
+    inputRef.current.click();
+  }
+  function handleOnaddImage(e) {
+    const file = e.target.files[0];
+    const filePath = URL.createObjectURL(file);
+    onAddImage(filePath);
+  }
+
   return (
     <div className="space-y-4">
       <label className="block text-sm font-medium text-gray-700">
@@ -24,13 +34,22 @@ export default function ImageGallery({ images, onRemoveImage, onAddImage }) {
             </button>
           </div>
         ))}
-        <button
-          type="button"
-          onClick={onAddImage}
-          className="h-40 w-full border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center hover:border-indigo-500 hover:bg-indigo-50 transition-colors"
-        >
-          <Upload className="h-8 w-8 text-gray-400" />
-        </button>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleOnaddImage}
+          className="hidden"
+        />
+        <div className={`${images.length >= 5 ? "hidden" : ""}`}>
+          <button
+            type="button"
+            onClick={onInputAddImage}
+            className="h-40 w-full border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center hover:border-indigo-500 hover:bg-indigo-50 transition-colors"
+          >
+            <Upload className="h-8 w-8 text-gray-400" />
+          </button>
+        </div>
       </div>
     </div>
   );

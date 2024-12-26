@@ -24,13 +24,11 @@ const DocumentUpload = () => {
     setFiles((prev) => prev.filter((file) => file !== fileToRemove));
   };
 
-  const { getRootProps, getInputProps } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      "application/pdf": [".pdf"],
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-        [".docx"],
       "image/jpeg": [".jpg", ".jpeg"],
+      "image/png": [".png"],
     },
   });
 
@@ -38,7 +36,9 @@ const DocumentUpload = () => {
     <div className="space-y-2">
       <div
         {...getRootProps()}
-        className="flex justify-center items-center p-4 border-2 border-dashed transition-all hover:bg-gray-50 hover:border-gray-400 border-gray-300 rounded-md cursor-pointer"
+        className={`flex justify-center items-center p-4 border-2 border-dashed transition-all hover:bg-gray-50 hover:border-gray-400 border-gray-300 rounded-md cursor-pointer ${
+          isDragActive ? "bg-blue-100 border-blue-400" : ""
+        }`}
       >
         <input {...getInputProps()} />
         <p className="text-sm text-gray-500">

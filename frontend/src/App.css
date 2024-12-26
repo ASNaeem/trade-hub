@@ -4,23 +4,32 @@
 /* Custom styling */
 
 :root {
-  --primaryColor: #123456;
-  --secondaryColor: #83adc2;
-  --accentColor: #e0ffff;
+  --primaryColor: #2c5364;
+  --secondaryColor: #203a43;
+  --accentColor: #2dd4bf;
 
   --foreGroundColor: #fff;
-  --pricingColor: #f5f5f5;
+  --pricingColor: #f9fafb;
 
-  --buttonColor: #396d9e;
-  --buttonHoverColor: #2a5a86;
+  --buttonColor: #0d9488;
+  --buttonHoverColor: #0f766e;
 
-  --modalHeaderColor: #244868;
+  --footerColor: #042c29;
+  --footerSecondaryColor: #022421;
 
-  --iconColor: #396d9e;
+  /* --modalHeaderColor: #2c5364; */
+
+  --iconColor: #0d9488;
 
   --textColorSecondary: #6b7280;
+  --textColorPrimary: #111827;
 
-  --linkTextColor: #69aeee;
+  --linkTextColor: #2dd4bf;
+
+  --errorColor: #ef4444;
+  --shadowColor: rgb(0 0 0 / 0.1);
+  --cardBgColor: #ffffff;
+  --hoverBgColor: #f9fafb;
 }
 
 p[role="currency"] {
@@ -32,6 +41,24 @@ div [data-slot="base"] {
   max-width: none !important;
 }
 
+/* Custom styling for NEXTUI Library */
+label {
+  label {
+    span {
+      &::after {
+        background-color: var(--buttonColor) !important;
+      }
+      svg {
+        color: white !important;
+      }
+    }
+  }
+}
+
 /* button {
   background-color: #5b7c9b !important;
+} */
+
+/* .bg-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 } */
