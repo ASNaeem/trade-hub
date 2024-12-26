@@ -45,7 +45,7 @@ function LoginPage({ from }) {
       <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="w-10 h-10 bg-[var(--iconColor)] text-white flex items-center justify-center rounded-full">
+            <div className="w-10 h-10 bg-[var(--buttonColor)] text-white flex items-center justify-center rounded-full">
               <ShoppingBag />
             </div>
           </div>
@@ -218,7 +218,7 @@ function LoginPage({ from }) {
           <>
             <div className="text-center mb-6">
               <div className="flex justify-center items-center mb-4">
-                <div className="w-10 h-10 bg-[var(--iconColor)] text-white flex justify-center items-center rounded-full">
+                <div className="w-10 h-10 bg-[var(--buttonColor)] text-white flex justify-center items-center rounded-full">
                   <ShoppingBag />
                 </div>
               </div>
@@ -320,7 +320,7 @@ function LoginPage({ from }) {
     <div className="bg-white w-[350px] md:w-[448px] md:h-[428px] rounded-lg flex flex-col justify-center items-center">
       <div className="text-center mb-6">
         <div className="flex justify-center items-center mb-4">
-          <div className="w-10 h-10 bg-[var(--iconColor)] text-white flex justify-center items-center rounded-full">
+          <div className="w-10 h-10 bg-[var(--buttonColor)] text-white flex justify-center items-center rounded-full">
             <ShoppingBag />
           </div>
         </div>
@@ -362,7 +362,7 @@ function LoginPage({ from }) {
       <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="w-10 h-10 bg-[var(--iconColor)] text-white flex items-center justify-center rounded-full">
+            <div className="w-10 h-10 bg-[var(--buttonColor)] text-white flex items-center justify-center rounded-full">
               <CircleAlert />
             </div>
           </div>

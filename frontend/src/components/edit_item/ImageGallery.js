@@ -45,7 +45,7 @@ export default function ImageGallery({ images, onRemoveImage, onAddImage }) {
           <button
             type="button"
             onClick={onInputAddImage}
-            className="h-40 w-full border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center hover:border-indigo-500 hover:bg-indigo-50 transition-colors"
+            className="h-40 w-full border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center hover:border-[var(--accentColor)] hover:bg-gray-100 transition-colors"
           >
             <Upload className="h-8 w-8 text-gray-400" />
           </button>

@@ -21,7 +21,7 @@ const UserStats = ({ stats }) => {
           <div key={stat.label} className="p-4">
             <div className="flex items-center">
               <div className="p-2 bg-blue-50 rounded-lg">
-                <Icon className="h-5 w-5 text-[#2C2C2C]}" />
+                <Icon className="h-5 w-5 text-teal-600" />
               </div>
               <div className="ml-3">
                 <p className="text-sm font-medium text-gray-600">

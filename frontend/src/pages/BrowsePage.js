@@ -204,10 +204,10 @@ const BrowsePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-[#fefefe]">
       <Header
         shadow={true}
-        className="text-black !fixed bg-[var(--foreGroundColor)] overflow-hidden fill-[var(--buttonHoverColor)]"
+        className="text-black !fixed bg-[var(--foreGroundColor)] overflow-hidden fill-[var(--buttonColor)]"
       />
       <div className="max-w-7xl mx-auto px-4 py-20">
         <div className="flex items-center justify-between mb-8">

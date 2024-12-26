@@ -19,7 +19,7 @@ const Header = ({
   const [LoggedIn, setLoggedIn] = useState(false);
   return (
     <nav
-      className={`nav_bar pr-4 md:pr-[80px] ${
+      className={`nav_bar select-none pr-4 md:pr-[80px] ${
         shadow ? "shadow-sm" : ""
       } ${className}`}
     >
@@ -38,6 +38,9 @@ const Header = ({
       </a>
 
       <ul>
+        <li>
+          <a href="/admin">Admin</a>
+        </li>
         <li>
           <a href="/browse">Browse</a>
         </li>

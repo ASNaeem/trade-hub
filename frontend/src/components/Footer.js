@@ -16,7 +16,7 @@ const Footer = () => {
             <div className="flex space-x-4 mt-6">
               <a
                 href="https://facebook.com"
-                className="bg-gray-700 p-2 rounded-full text-gray-300 hover:bg-blue-600 hover:text-white transition-all duration-300 ease-in-out transform hover:scale-110"
+                className="p-2 rounded-full bg-blue-600 text-white transition-all duration-300 ease-in-out transform hover:scale-110"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -24,7 +24,7 @@ const Footer = () => {
               </a>
               <a
                 href="https://twitter.com"
-                className="bg-gray-700 p-2 rounded-full text-gray-300 hover:bg-sky-500 hover:text-white transition-all duration-300 ease-in-out transform hover:scale-110"
+                className="p-2 rounded-full bg-sky-500 text-white transition-all duration-300 ease-in-out transform hover:scale-110"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -32,7 +32,7 @@ const Footer = () => {
               </a>
               <a
                 href="https://instagram.com"
-                className="bg-gray-700 p-2 rounded-full text-gray-300 hover:bg-pink-600 hover:text-white transition-all duration-300 ease-in-out transform hover:scale-110"
+                className="p-2 rounded-full bg-pink-600 text-white transition-all duration-300 ease-in-out transform hover:scale-110"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -80,7 +80,7 @@ const Footer = () => {
         {/* Copyright Bar */}
         <div className="border-t border-gray-700 py-6">
           <p className="text-sm text-center text-gray-400">
-            © {new Date().getFullYear()} Trade Hub. All Rights Reserved.
+            © 2025 Trade Hub. All Rights Reserved.
           </p>
         </div>
       </div>
