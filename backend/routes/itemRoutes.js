@@ -7,15 +7,39 @@ const sellerCheckMiddleware = require("../middleware/sellerCheckMiddleware");
 // Public Routes (No authentication required)
 router.get("/", async (req, res) => {
   try {
+    // Parse array parameters
     const filters = {
+      page: parseInt(req.query.page) || 1,
+      limit: parseInt(req.query.limit) || 6,
       category: req.query.category,
       brand: req.query.brand,
-      minPrice: req.query.minPrice,
-      maxPrice: req.query.maxPrice,
+      minPrice: req.query.minPrice ? Number(req.query.minPrice) : undefined,
+      maxPrice: req.query.maxPrice ? Number(req.query.maxPrice) : undefined,
     };
-    const items = await itemService.getAllItems(filters);
-    res.status(200).json(items);
+
+    // Handle array parameters
+    if (req.query.brands) {
+      filters.brands = Array.isArray(req.query.brands)
+        ? req.query.brands
+        : [req.query.brands];
+    }
+
+    if (req.query.locations) {
+      filters.locations = Array.isArray(req.query.locations)
+        ? req.query.locations
+        : [req.query.locations];
+    }
+
+    if (req.query.conditions) {
+      filters.conditions = Array.isArray(req.query.conditions)
+        ? req.query.conditions
+        : [req.query.conditions];
+    }
+
+    const result = await itemService.getAllItems(filters);
+    res.status(200).json(result);
   } catch (error) {
+    console.error("Error in GET /items:", error);
     res
       .status(500)
       .json({ message: "Error fetching items", error: error.message });

@@ -1,52 +1,33 @@
 const mongoose = require("mongoose");
-const { app } = require("../server");
-const testConfig = require("../config/test.config");
 
-const startTestServer = async () => {
-  global.__MONGO_URI__ = testConfig.MONGODB_URI;
-
+const setupTestDB = async () => {
   try {
-    // Close any existing connections
-    if (mongoose.connection.readyState !== 0) {
-      await mongoose.connection.close();
-    }
-
-    // Connect with updated settings
-    await mongoose.connect(global.__MONGO_URI__, {
-      serverSelectionTimeoutMS: 60000,
-      socketTimeoutMS: 60000,
-      connectTimeoutMS: 60000,
-      maxPoolSize: 10,
-      minPoolSize: 5,
+    await mongoose.connect("mongodb://localhost:27017/tradehub-test", {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
     });
-
-    // Drop database to ensure clean state
-    await mongoose.connection.dropDatabase();
-
-    console.log(`Connected to test database: ${global.__MONGO_URI__}`);
-    const server = app.listen(0); // Use port 0 for random test port
-    return server;
+    // Clear all collections
+    const collections = await mongoose.connection.db.collections();
+    for (let collection of collections) {
+      await collection.deleteMany({});
+    }
   } catch (error) {
-    console.error("Failed to start test server:", error);
+    console.error("Error connecting to test database:", error);
     throw error;
   }
 };
 
-const stopTestServer = async (server) => {
-  if (!server) {
-    throw new Error("No server instance provided to stopTestServer");
-  }
-
+const teardownTestDB = async () => {
   try {
-    // Drop database before closing connection
     await mongoose.connection.dropDatabase();
     await mongoose.connection.close();
-    await new Promise((resolve) => server.close(resolve));
-    delete global.__MONGO_URI__;
   } catch (error) {
-    console.error("Error stopping test server:", error);
+    console.error("Error cleaning up test database:", error);
     throw error;
   }
 };
 
-module.exports = { startTestServer, stopTestServer };
+module.exports = {
+  setupTestDB,
+  teardownTestDB,
+};

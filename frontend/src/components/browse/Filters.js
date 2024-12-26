@@ -21,11 +21,11 @@ export const Filters = ({ filters, selectedFilters, onFilterChange }) => {
       <h2 className="text-xl font-semibold mb-4">Filters</h2>
       <FilterSection
         title="Price Range"
+        type="price-range"
         isExpanded={expandedSections.price}
         onToggle={() => toggleSection("price")}
-        items={filters.priceRanges}
-        selectedItems={selectedFilters.priceRanges}
-        onChange={(value) => onFilterChange("priceRanges", value)}
+        selectedItems={selectedFilters.priceRange}
+        onChange={(value) => onFilterChange("priceRange", value)}
       />
       <FilterSection
         title="Brand"

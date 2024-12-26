@@ -75,42 +75,92 @@ const ItemService = {
 
   async getAllItems(filters = {}) {
     try {
+      const {
+        page = 1,
+        limit = 6,
+        category,
+        brand,
+        brands = [],
+        minPrice,
+        maxPrice,
+        conditions = [],
+        locations = [],
+      } = filters;
+
       const query = {};
 
-      if (filters.category) {
-        query.category = filters.category;
+      if (category) {
+        query.category = category;
       }
 
-      if (filters.brand) {
-        query.brand = filters.brand;
+      // Handle brand filtering
+      if (brands.length > 0) {
+        const mainBrands = ["Levi's", "Fossil", "Sony", "Apple", "Dell"];
+        if (brands.includes("Other")) {
+          query.$or = [
+            { brand: { $nin: mainBrands } },
+            { brand: null },
+            { brand: { $in: brands.filter((b) => b !== "Other") } },
+          ];
+        } else {
+          query.brand = { $in: brands };
+        }
+      } else if (brand) {
+        query.brand = brand;
       }
 
-      if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
+      // Handle condition filtering
+      if (conditions.length > 0) {
+        query.condition = { $in: conditions };
+      }
+
+      // Handle location filtering
+      if (locations.length > 0) {
+        query.location = { $in: locations };
+      }
+
+      // Handle price range filtering
+      if (minPrice !== undefined || maxPrice !== undefined) {
         query.price = {};
-        if (filters.minPrice !== undefined) {
-          query.price.$gte = Number(filters.minPrice);
+        if (minPrice !== undefined) {
+          query.price.$gte = Number(minPrice);
         }
-        if (filters.maxPrice !== undefined) {
-          query.price.$lte = Number(filters.maxPrice);
+        if (maxPrice !== undefined) {
+          query.price.$lte = Number(maxPrice);
         }
       }
 
-      const items = await ItemModel.find(query).sort({ createdAt: -1 });
-      return items.map((item) =>
-        new ItemClass(
-          item._id,
-          item.title,
-          item.description,
-          item.price,
-          item.brand,
-          item.category,
-          item.condition,
-          item.images,
-          item.location,
-          item.sellerId,
-          item.createdAt
-        ).getSummary()
-      );
+      // Count total documents for pagination
+      const totalItems = await ItemModel.countDocuments(query);
+      const totalPages = Math.ceil(totalItems / limit);
+      const skip = (page - 1) * limit;
+
+      // Get paginated items
+      const items = await ItemModel.find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
+
+      return {
+        items: items.map((item) =>
+          new ItemClass(
+            item._id,
+            item.title,
+            item.description,
+            item.price,
+            item.brand,
+            item.category,
+            item.condition,
+            item.images,
+            item.location,
+            item.sellerId,
+            item.createdAt
+          ).getSummary()
+        ),
+        totalPages,
+        currentPage: page,
+        totalItems,
+      };
     } catch (error) {
       throw new Error(`Error getting items: ${error.message}`);
     }

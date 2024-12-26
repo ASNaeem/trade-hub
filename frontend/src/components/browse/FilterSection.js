@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import PriceRangeSlider from "./PriceRangeSlider";
 
 export const FilterSection = ({
   title,
@@ -8,6 +9,7 @@ export const FilterSection = ({
   items,
   selectedItems,
   onChange,
+  type = "checkbox",
 }) => {
   const contentRef = useRef(null);
   const [contentHeight, setContentHeight] = useState(0);
@@ -17,6 +19,34 @@ export const FilterSection = ({
       setContentHeight(contentRef.current.scrollHeight);
     }
   }, [items]);
+
+  const renderContent = () => {
+    if (type === "price-range") {
+      return (
+        <PriceRangeSlider
+          value={[selectedItems.minPrice || 0, selectedItems.maxPrice || 1000]}
+          onChange={onChange}
+          min={0}
+          max={1000}
+        />
+      );
+    }
+
+    return items.map((item) => (
+      <label
+        key={item}
+        className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded transition-colors"
+      >
+        <input
+          type="checkbox"
+          checked={selectedItems.includes(item)}
+          onChange={() => onChange(item)}
+          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 transition-colors"
+        />
+        <span className="text-sm text-gray-700">{item}</span>
+      </label>
+    ));
+  };
 
   return (
     <div className="border-b border-gray-200 py-4">
@@ -41,20 +71,7 @@ export const FilterSection = ({
         className="overflow-hidden"
       >
         <div ref={contentRef} className="mt-2">
-          {items.map((item) => (
-            <label
-              key={item}
-              className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-1 rounded transition-colors"
-            >
-              <input
-                type="checkbox"
-                checked={selectedItems.includes(item)}
-                onChange={() => onChange(item)}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 transition-colors"
-              />
-              <span className="text-sm text-gray-700">{item}</span>
-            </label>
-          ))}
+          {renderContent()}
         </div>
       </div>
     </div>
