@@ -10,17 +10,29 @@ router.get("/", (req, res) => {
 
 // Register a new user
 router.post("/register", async (req, res) => {
-  console.log("Registration attempt:", req.body);
   try {
     const { name, email, phone, password } = req.body;
 
-    // First check if user already exists
-    const existingUser = await userService.findUserByEmail(email);
-    if (existingUser) {
+    // Check for existing user by email or phone
+    const duplicateCheck = await userService.isDuplicate(email, phone);
+
+    if (duplicateCheck.email) {
       return res.status(400).json({ message: "Email already registered" });
     }
 
-    // Create unverified user and get verification token
+    if (duplicateCheck.phone) {
+      return res
+        .status(400)
+        .json({ message: "Phone number already registered" });
+    }
+
+    // Add password length validation
+    if (password.length < 8) {
+      return res.status(400).json({
+        message: "Password must be at least 8 characters long",
+      });
+    }
+
     const result = await userService.createUnverifiedUser(
       name,
       email,
@@ -28,17 +40,22 @@ router.post("/register", async (req, res) => {
       password
     );
 
-    // Send verification email with OTP
-    const emailService = require("../services/emailService");
-    await emailService.sendOTP(email, result.token.tokenValue);
-
     res.status(201).json({
       message: "Please check your email for verification code",
-      token: result.authToken,
+      token: result.token,
       email: email,
     });
   } catch (error) {
     console.error("Registration error:", error);
+
+    if (
+      error.message.includes("Password must be at least 8 characters long") ||
+      error.name === "ValidationError" ||
+      error.message.includes("validation failed")
+    ) {
+      return res.status(400).json({ message: error.message });
+    }
+
     res
       .status(500)
       .json({ message: "Error registering user", error: error.message });
@@ -110,19 +127,36 @@ router.get("/profile", authMiddleware, async (req, res) => {
 router.put("/profile", authMiddleware, async (req, res) => {
   try {
     const updates = req.body;
+
+    // Handle profile picture
+    if (updates.profilePicture) {
+      if (updates.profilePicture.data) {
+        updates.profilePicture = {
+          data: Buffer.from(updates.profilePicture.data),
+          contentType: updates.profilePicture.contentType || "image/jpeg",
+        };
+      }
+    }
+
+    // Handle government document
+    if (updates.govtDocument?.documentImage) {
+      if (updates.govtDocument.documentImage.data) {
+        updates.govtDocument.documentImage = {
+          data: Buffer.from(updates.govtDocument.documentImage.data),
+          contentType:
+            updates.govtDocument.documentImage.contentType || "image/jpeg",
+        };
+      }
+    }
+
     const updatedUser = await userService.updateUser(req.user.id, updates);
     if (!updatedUser) {
       return res.status(404).json({ message: "User not found" });
     }
+
     res.status(200).json(updatedUser.getSummary());
   } catch (error) {
-    if (
-      error.message.includes("already registered") ||
-      error.message.includes("must be at least 8 characters") ||
-      error.message.includes("Invalid phone")
-    ) {
-      return res.status(400).json({ message: error.message });
-    }
+    console.error(`Error in ${req.originalUrl} -`, error.message);
     res
       .status(500)
       .json({ message: "Error updating profile", error: error.message });

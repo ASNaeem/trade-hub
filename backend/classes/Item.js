@@ -173,6 +173,22 @@ class Item {
     }
     return true;
   }
+
+  getSummary() {
+    return {
+      _id: this._id,
+      title: this._title,
+      description: this._description,
+      price: this._price,
+      brand: this._brand,
+      category: this._category,
+      condition: this._condition,
+      images: this._images,
+      location: this._location,
+      sellerId: this._sellerId,
+      createdAt: this._createdAt,
+    };
+  }
 }
 
 module.exports = Item;

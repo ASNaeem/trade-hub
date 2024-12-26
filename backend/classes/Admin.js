@@ -64,12 +64,44 @@ class Admin extends Person {
   }
 
   // Admin-specific method to handle disputes
-  async handleDispute(disputeId, resolution) {
+  async handleDispute(disputeId, action, note) {
+    const validActions = [
+      "warning",
+      "delete_content",
+      "temporary_ban",
+      "permanent_ban",
+      "no_action",
+    ];
+
+    if (!validActions.includes(action)) {
+      throw new Error(
+        `Invalid action. Must be one of: ${validActions.join(", ")}`
+      );
+    }
+
     try {
-      // Logic for resolving disputes
-      return true;
+      // Implementation will be in disputeService
+      return {
+        action,
+        adminId: this.id,
+        note,
+        createdAt: new Date(),
+      };
     } catch (error) {
       throw new Error(`Error handling dispute: ${error.message}`);
+    }
+  }
+
+  // Add note to dispute
+  async addDisputeNote(disputeId, note) {
+    try {
+      return {
+        note,
+        adminId: this.id,
+        createdAt: new Date(),
+      };
+    } catch (error) {
+      throw new Error(`Error adding note to dispute: ${error.message}`);
     }
   }
 }

@@ -10,11 +10,13 @@ const tokenSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+    index: true,
   },
   type: {
     type: String,
     enum: ["reset", "verification", "refresh"],
     required: true,
+    index: true,
   },
   createdAt: {
     type: Date,
@@ -26,6 +28,9 @@ const tokenSchema = new mongoose.Schema({
     required: true,
   },
 });
+
+// Add compound index for faster lookups
+tokenSchema.index({ tokenValue: 1, type: 1 });
 
 tokenSchema.virtual("id").get(function () {
   return this._id.toHexString();

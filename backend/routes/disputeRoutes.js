@@ -4,70 +4,120 @@ const disputeService = require("../services/disputeService");
 const authMiddleware = require("../middleware/authMiddleware");
 const adminAuthMiddleware = require("../middleware/adminAuthMiddleware");
 
-// Create new dispute
-router.post("/", authMiddleware, async (req, res) => {
+// Report content
+router.post("/report", authMiddleware, async (req, res) => {
   try {
-    const { itemId, sellerId, reason } = req.body;
-    const dispute = await disputeService.createDispute(
-      itemId,
-      req.user.id, // buyerId from authenticated user
-      sellerId,
-      reason
+    const { reportType, contentId, reason, description } = req.body;
+
+    // Validate required fields
+    if (!reportType || !contentId || !reason) {
+      return res.status(400).json({
+        message: "reportType, contentId, and reason are required fields",
+      });
+    }
+
+    // Validate report type
+    const validReportTypes = ["message", "item", "user"];
+    if (!validReportTypes.includes(reportType)) {
+      return res.status(400).json({
+        message: `Invalid report type. Must be one of: ${validReportTypes.join(
+          ", "
+        )}`,
+      });
+    }
+
+    // Validate reason
+    const validReasons = [
+      "inappropriate",
+      "spam",
+      "fraud",
+      "harassment",
+      "other",
+    ];
+    if (!validReasons.includes(reason)) {
+      return res.status(400).json({
+        message: `Invalid reason. Must be one of: ${validReasons.join(", ")}`,
+      });
+    }
+
+    const dispute = await disputeService.reportContent(
+      reportType,
+      contentId,
+      req.user.id,
+      reason,
+      description
     );
     res.status(201).json(dispute);
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error creating dispute", error: error.message });
-  }
-});
-
-// Get all disputes (admin only)
-router.get("/all", [authMiddleware, adminAuthMiddleware], async (req, res) => {
-  try {
-    const disputes = await disputeService.getAllDisputes();
-    res.status(200).json(disputes);
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error fetching disputes", error: error.message });
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
+    if (error.message.includes("already reported")) {
+      return res.status(400).json({ message: error.message });
+    }
+    if (error.message.includes("reached the report threshold")) {
+      return res.status(400).json({ message: error.message });
+    }
+    res.status(500).json({ message: error.message });
   }
 });
 
 // Get user's disputes
 router.get("/", authMiddleware, async (req, res) => {
   try {
-    const disputes = await disputeService.getDisputesByUser(req.user.id);
+    const disputes = await disputeService.getUserDisputes(req.user.id);
     res.status(200).json(disputes);
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error fetching disputes", error: error.message });
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ message: error.message });
+    }
+    res.status(500).json({ message: error.message });
   }
 });
 
-// Update dispute status (admin only)
-router.patch(
-  "/:disputeId/status",
+// Resolve dispute (admin only)
+router.put(
+  "/:disputeId/resolve",
   [authMiddleware, adminAuthMiddleware],
   async (req, res) => {
     try {
-      const { status } = req.body;
-      const dispute = await disputeService.updateDisputeStatus(
-        req.params.disputeId,
-        status
-      );
-      if (!dispute) {
-        return res.status(404).json({ message: "Dispute not found" });
+      const { resolution, notes } = req.body;
+
+      // Validate required fields
+      if (!resolution) {
+        return res.status(400).json({
+          message: "resolution is a required field",
+        });
       }
+
+      // Validate resolution
+      const validResolutions = ["warning", "delete", "ban", "no_action"];
+      if (!validResolutions.includes(resolution)) {
+        return res.status(400).json({
+          message: `Invalid resolution. Must be one of: ${validResolutions.join(
+            ", "
+          )}`,
+        });
+      }
+
+      const dispute = await disputeService.resolveDispute(
+        req.params.disputeId,
+        req.user.id,
+        resolution,
+        notes
+      );
       res.status(200).json(dispute);
     } catch (error) {
-      res
-        .status(500)
-        .json({
-          message: "Error updating dispute status",
-          error: error.message,
-        });
+      if (error.statusCode) {
+        return res.status(error.statusCode).json({ message: error.message });
+      }
+      if (error.message.includes("Dispute not found")) {
+        return res.status(404).json({ message: error.message });
+      }
+      if (error.message.includes("Not authorized")) {
+        return res.status(403).json({ message: error.message });
+      }
+      res.status(500).json({ message: error.message });
     }
   }
 );

@@ -3,21 +3,21 @@ const Admin = require("../models/adminSchema");
 const adminAuthMiddleware = async (req, res, next) => {
   try {
     // Check if user has role property (should be set by authMiddleware)
-    if (!req.user || !req.user.role) {
-      return res.status(401).json({ message: "Unauthorized - Not an admin" });
+    if (!req.user) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized - Not authenticated" });
     }
 
     // Verify the user is an admin
     const admin = await Admin.findById(req.user.id);
     if (!admin) {
-      return res
-        .status(401)
-        .json({ message: "Unauthorized - Admin not found" });
+      return res.status(403).json({ message: "Forbidden - Not an admin" });
     }
 
-    // Check if the role matches
-    if (admin.role !== req.user.role) {
-      return res.status(401).json({ message: "Unauthorized - Role mismatch" });
+    // Check if the admin role is valid
+    if (!["admin", "superadmin"].includes(admin.role)) {
+      return res.status(403).json({ message: "Forbidden - Invalid role" });
     }
 
     // For routes that require superadmin

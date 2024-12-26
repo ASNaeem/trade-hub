@@ -4,15 +4,20 @@ const app = express();
 const cors = require("cors");
 
 // Load config based on environment
-const config = {
-  PORT: process.env.PORT || 5000,
-  MONGODB_URI: process.env.MONGODB_URI || "mongodb://localhost:27017/tradehub",
-  JWT_SECRET: process.env.JWT_SECRET || "your-secret-key",
-};
+const config =
+  process.env.NODE_ENV === "test"
+    ? require("./config/test.config")
+    : {
+        PORT: process.env.PORT || 5000,
+        MONGODB_URI:
+          process.env.MONGODB_URI || "mongodb://localhost:27017/tradehub",
+        JWT_SECRET: process.env.JWT_SECRET || "your-secret-key",
+      };
 
 console.log("Starting server with config:", {
   PORT: config.PORT,
   MONGODB_URI: config.MONGODB_URI.split("@")[1] || "local", // Log DB URI without credentials
+  ENV: process.env.NODE_ENV || "development",
 });
 
 // CORS Middleware
@@ -68,15 +73,16 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: "Something went wrong!" });
 });
 
-const startServer = async () => {
+const startServer = async (config) => {
   try {
-    console.log("Attempting to connect to MongoDB...");
-    await mongoose.connect(config.MONGODB_URI);
-    console.log("MongoDB connected successfully");
-
-    server = app.listen(config.PORT, () => {
-      console.log(`Server is running on http://localhost:${config.PORT}`);
-    });
+    // Only connect to database if not in test environment and no global test URI exists
+    if (process.env.NODE_ENV !== "test" && !global.__MONGO_URI__) {
+      await mongoose.connect(config.MONGODB_URI);
+      console.log(`Connected to MongoDB: ${config.MONGODB_URI}`);
+    } else if (process.env.NODE_ENV === "test") {
+      console.log("Test environment detected - skipping database connection");
+    }
+    const server = app.listen(config.PORT);
     return server;
   } catch (error) {
     console.error("Failed to start server:", error);
@@ -84,10 +90,9 @@ const startServer = async () => {
   }
 };
 
-// Start the server
-startServer().catch((error) => {
-  console.error("Startup error:", error);
-  process.exit(1);
-});
+// For normal server start
+if (require.main === module) {
+  startServer(config).catch(console.error);
+}
 
-module.exports = { app };
+module.exports = { app, startServer };

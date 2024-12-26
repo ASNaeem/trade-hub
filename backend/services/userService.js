@@ -5,6 +5,52 @@ const jwt = require("jsonwebtoken");
 const config = require("../config/test.config");
 
 const UserService = {
+  async createUnverifiedUser(name, email, phone, password) {
+    try {
+      if (password.length < 8) {
+        throw new Error("Password must be at least 8 characters long");
+      }
+
+      const existingPhone = await UserModel.findOne({ phone });
+      if (existingPhone) {
+        throw new Error("Phone number already registered");
+      }
+
+      const existingEmail = await UserModel.findOne({
+        email: email.toLowerCase(),
+      });
+      if (existingEmail) {
+        throw new Error("Email already registered");
+      }
+
+      // Hash password
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+
+      // Create user
+      const user = new UserModel({
+        name,
+        email: email.toLowerCase(),
+        phone,
+        password: hashedPassword,
+      });
+
+      await user.save();
+
+      // Create JWT
+      const token = jwt.sign({ id: user._id }, config.JWT_SECRET, {
+        expiresIn: "24h",
+      });
+
+      return {
+        user,
+        token,
+      };
+    } catch (error) {
+      throw error;
+    }
+  },
+
   async createUser(name, email, phone, password) {
     try {
       if (password.length < 8) {
@@ -125,61 +171,47 @@ const UserService = {
       throw new Error(`Error finding user: ${error.message}`);
     }
   },
-
+  async findUserByEmail(email) {
+    const userDocument = await UserModel.findOne({
+      email: email.toLowerCase(),
+    });
+    if (!userDocument) return null;
+    return new UserClass(
+      userDocument._id,
+      userDocument.name,
+      userDocument.email,
+      userDocument.phone,
+      userDocument.password,
+      userDocument.createdAt
+    );
+  },
   async updateUser(userId, updates) {
     try {
+      console.log("Updating user:", userId, updates);
       const userDocument = await UserModel.findById(userId);
-      if (!userDocument) return null;
 
-      const userClassInstance = new UserClass(
-        userDocument._id,
-        userDocument.name,
-        userDocument.email,
-        userDocument.phone,
-        userDocument.password,
-        userDocument.createdAt
-      );
-
-      if (updates.password) {
-        if (updates.password.length < 8) {
-          throw new Error("Password must be at least 8 characters long");
-        }
-        const salt = await bcrypt.genSalt(10);
-        userClassInstance.password = await bcrypt.hash(updates.password, salt);
+      if (!userDocument) {
+        console.log("User not found:", userId);
+        return null;
       }
 
-      if (updates.email) {
-        const existingEmail = await UserModel.findOne({
-          email: updates.email.toLowerCase(),
-          _id: { $ne: userId },
-        });
-        if (existingEmail) {
-          throw new Error("Email already registered");
-        }
-        userClassInstance.email = updates.email;
+      if (updates.profilePicture?.data) {
+        updates.profilePicture.data = Buffer.from(
+          updates.profilePicture.data,
+          "base64"
+        );
       }
 
-      if (updates.phone) {
-        const existingPhone = await UserModel.findOne({
-          phone: updates.phone,
-          _id: { $ne: userId },
-        });
-        if (existingPhone) {
-          throw new Error("Phone number already registered");
-        }
-        userClassInstance.phone = updates.phone;
+      if (updates.govtDocument?.documentImage?.data) {
+        updates.govtDocument.documentImage.data = Buffer.from(
+          updates.govtDocument.documentImage.data,
+          "base64"
+        );
       }
-
-      if (updates.name) userClassInstance.name = updates.name;
 
       const updatedDocument = await UserModel.findByIdAndUpdate(
         userId,
-        {
-          name: userClassInstance.name,
-          email: userClassInstance.email,
-          phone: userClassInstance.phone,
-          password: userClassInstance.password,
-        },
+        { $set: updates },
         { new: true }
       );
 
@@ -189,9 +221,14 @@ const UserService = {
         updatedDocument.email,
         updatedDocument.phone,
         updatedDocument.password,
-        updatedDocument.createdAt
+        updatedDocument.createdAt,
+        updatedDocument.profilePicture,
+        updatedDocument.govtDocument,
+        updatedDocument.isDocumentVerified,
+        updatedDocument.city
       );
     } catch (error) {
+      console.error("Error updating user:", error);
       throw new Error(`Error updating user: ${error.message}`);
     }
   },
@@ -209,6 +246,10 @@ const UserService = {
   async deleteUser(userId) {
     const result = await UserModel.findByIdAndDelete(userId);
     return !!result;
+  },
+
+  async findUserByPhone(phone) {
+    return await UserModel.findOne({ phone });
   },
 };
 

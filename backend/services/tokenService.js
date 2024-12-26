@@ -13,44 +13,73 @@ const TokenService = {
     });
 
     const savedToken = await tokenDocument.save();
-    return new TokenClass(savedToken.userId, expiresInMinutes);
+    return savedToken;
   },
 
-  async verifyToken(tokenValue, type) {
-    const token = await TokenModel.findOne({ tokenValue, type });
-    if (!token) return null;
+  async verifyToken(token, type) {
+    try {
+      const tokenDoc = await TokenModel.findOne({ tokenValue: token, type });
+      if (!tokenDoc) {
+        return null;
+      }
 
-    const tokenClassInstance = new TokenClass(token.userId);
-    tokenClassInstance._tokenValue = token.tokenValue;
+      if (new Date() > tokenDoc.expiresAt) {
+        await TokenModel.deleteOne({ _id: tokenDoc._id });
+        return null;
+      }
 
-    if (tokenClassInstance.isExpired()) {
-      await TokenModel.deleteOne({ _id: token._id });
-      return null;
+      // Delete the token after successful verification
+      await TokenModel.deleteOne({ _id: tokenDoc._id });
+      return tokenDoc;
+    } catch (error) {
+      throw new Error(`Error verifying token: ${error.message}`);
     }
-
-    return tokenClassInstance;
   },
 
-  async deleteToken(tokenValue) {
-    const result = await TokenModel.deleteOne({ tokenValue });
-    return result.deletedCount > 0;
+  async findToken(token) {
+    try {
+      return await TokenModel.findOne({ tokenValue: token });
+    } catch (error) {
+      throw new Error(`Error finding token: ${error.message}`);
+    }
+  },
+
+  async deleteToken(token) {
+    try {
+      const tokenDoc = await TokenModel.findOne({ tokenValue: token });
+      if (!tokenDoc) {
+        return false;
+      }
+      await TokenModel.deleteOne({ _id: tokenDoc._id });
+      return true;
+    } catch (error) {
+      throw new Error(`Error deleting token: ${error.message}`);
+    }
   },
 
   async deleteAllUserTokens(userId, type) {
-    const result = await TokenModel.deleteMany({ userId, type });
-    return result.deletedCount;
+    try {
+      const result = await TokenModel.deleteMany({ userId, type });
+      return result.deletedCount;
+    } catch (error) {
+      throw new Error(`Error deleting user tokens: ${error.message}`);
+    }
   },
 
   async getValidTokenByUserId(userId, type) {
-    const token = await TokenModel.findOne({
-      userId,
-      type,
-      expiresAt: { $gt: new Date() },
-    });
+    try {
+      const token = await TokenModel.findOne({
+        userId,
+        type,
+        expiresAt: { $gt: new Date() },
+      });
 
-    if (!token) return null;
+      if (!token) return null;
 
-    return new TokenClass(token.userId);
+      return new TokenClass(token.userId);
+    } catch (error) {
+      throw new Error(`Error getting valid token: ${error.message}`);
+    }
   },
 };
 
