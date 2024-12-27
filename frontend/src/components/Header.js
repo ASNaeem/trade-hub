@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { MessageSquareText, User, Home, Globe } from "lucide-react";
+import {
+  MessageSquareText,
+  User,
+  LucideHammer,
+  Globe,
+  LogOut,
+} from "lucide-react";
 import "../styles/Header.css";
 
 const Header = ({
@@ -10,13 +16,14 @@ const Header = ({
     window.location.href = "/user";
   },
 }) => {
+  const [LoggedIn, setLoggedIn] = useState(false);
+
   useEffect(() => {
-    localStorage.getItem("loggedin") != null
-      ? setLoggedIn(true)
-      : setLoggedIn(false);
+    setLoggedIn(localStorage.getItem("loggedin") != null);
+
+    console.log(localStorage.getItem("loggedin") != null);
   }, []);
 
-  const [LoggedIn, setLoggedIn] = useState(false);
   return (
     <nav
       className={`nav_bar select-none pr-4 md:pr-[80px] ${
@@ -37,13 +44,13 @@ const Header = ({
         </svg>
       </a>
 
-      <ul className="flex md:space-x-1">
+      <ul className="flex">
         <li>
           <button
             className="flex items-center gap-2"
             onClick={() => (window.location.href = "/admin")}
           >
-            <Home style={{ width: "16px", height: "16px" }} />
+            <LucideHammer style={{ width: "16px", height: "16px" }} />
             <h1 className="hidden md:block"> Admin </h1>
           </button>
         </li>
@@ -72,6 +79,8 @@ const Header = ({
         <li>
           <div
             onClick={() => {
+              console.log(LoggedIn);
+
               user_state
                 ? (window.location.href = "/user")
                 : login_clicked("login");
@@ -85,6 +94,23 @@ const Header = ({
             </h1>
           </div>
         </li>
+
+        {LoggedIn && (
+          <li>
+            <div
+              onClick={() => {
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+                localStorage.removeItem("loggedin");
+                window.location.href = "/";
+              }}
+              className="flex items-center gap-2 cursor-pointer"
+            >
+              <LogOut style={{ width: "16px", height: "16px" }} />
+              <h1 className="hidden md:block"> Logout </h1>
+            </div>
+          </li>
+        )}
       </ul>
     </nav>
   );

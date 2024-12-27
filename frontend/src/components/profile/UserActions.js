@@ -42,6 +42,8 @@ const UserActions = () => {
 
         <button
           onClick={function logout() {
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
             localStorage.removeItem("loggedin");
             window.location.href = "/";
           }}
