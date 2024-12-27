@@ -6,18 +6,16 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import { ring } from "ldrs";
-
-ring.register();
-
 import { InputOtp } from "@nextui-org/input-otp";
 import axios from "axios";
+
+ring.register();
 function LoginPage({ from }) {
   const [CurrentPage, setCurrentPage] = useState("login");
 
   const [isLoading, setIsLoading] = useState(false);
 
   //#region Login Page
-
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState("");
   const [otp, setOtp] = useState("");

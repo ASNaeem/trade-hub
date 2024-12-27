@@ -77,62 +77,47 @@ const Header = ({
               {LoggedIn ? "Profile" : "Login"}{" "}
             </h1>
           </div>
-          <div className="absolute left-[-30px] p-3 mt-2 w-40 flex flex-col gap-1 bg-[#16292F] overflow-hidden shadow-lg rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-250">
-            <a
-              onClick={() => {
-                LoggedIn
-                  ? (window.location.href = "/user?loggedin=true")
-                  : login_clicked("chats");
-              }}
-              className="block px-4 py-1 text-sm text-white hover:bg-gray-200 hover:text-black cursor-pointer"
-            >
-              <MessageSquareText size={12} />
-              Chats
-            </a>
-            <a
-              onClick={() => {
-                LoggedIn
-                  ? (window.location.href = "/user?settings=true")
-                  : login_clicked("chats");
-              }}
-              className="block px-4 py-1 text-sm text-white hover:bg-gray-200 hover:text-black cursor-pointer"
-            >
-              <Settings size={12} />
-              Settings
-            </a>
-            {LoggedIn && (
+          {LoggedIn && (
+            <div className="absolute left-[-30px] p-3 mt-2 w-40 flex flex-col gap-1 bg-[#16292F] overflow-hidden shadow-lg rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-250">
               <a
                 onClick={() => {
-                  localStorage.removeItem("token");
-                  localStorage.removeItem("user");
-                  localStorage.removeItem("loggedin");
-                  window.location.href = "/";
+                  LoggedIn
+                    ? (window.location.href = "/user?loggedin=true")
+                    : login_clicked("chats");
                 }}
-                className="block px-4 py-1 text-sm text-red-600 hover:bg-gray-200 hover:text-black cursor-pointer"
+                className="block px-4 py-1 text-sm text-white hover:bg-gray-200 hover:text-black cursor-pointer"
               >
-                <LogOutIcon size={12} />
-                Logout
+                <MessageSquareText size={12} />
+                Chats
               </a>
-            )}
-          </div>
-        </li>
-
-        {/* {LoggedIn && (
-          <li>
-            <div
-              onClick={() => {
-                localStorage.removeItem("token");
-                localStorage.removeItem("user");
-                localStorage.removeItem("loggedin");
-                window.location.href = "/";
-              }}
-              className="flex items-center gap-2 cursor-pointer"
-            >
-              <LogOut style={{ width: "16px", height: "16px" }} />
-              <h1 className="hidden md:block"> Logout </h1>
+              <a
+                onClick={() => {
+                  LoggedIn
+                    ? (window.location.href = "/user?settings=true")
+                    : login_clicked("chats");
+                }}
+                className="block px-4 py-1 text-sm text-white hover:bg-gray-200 hover:text-black cursor-pointer"
+              >
+                <Settings size={12} />
+                Settings
+              </a>
+              {LoggedIn && (
+                <a
+                  onClick={() => {
+                    localStorage.removeItem("token");
+                    localStorage.removeItem("user");
+                    localStorage.removeItem("loggedin");
+                    window.location.href = "/";
+                  }}
+                  className="block px-4 py-1 text-sm text-red-600 hover:bg-gray-200 hover:text-black cursor-pointer"
+                >
+                  <LogOutIcon size={12} />
+                  Logout
+                </a>
+              )}
             </div>
-          </li>
-        )} */}
+          )}
+        </li>
       </ul>
     </nav>
   );
