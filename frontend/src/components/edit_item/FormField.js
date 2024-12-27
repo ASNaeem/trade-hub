@@ -5,7 +5,7 @@ const FormField = ({ label, required = false, children }) => {
     <motion.div
       initial={{ x: -20, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      transition={{ duration: 0.6 }}
+      transition={{ duration: 0.7 }}
     >
       <label className="block text-sm font-medium text-[var(--primaryColor)] mb-2">
         {label} {required && "*"}

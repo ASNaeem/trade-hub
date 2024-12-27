@@ -66,9 +66,9 @@ export default function ItemEditForm({
     <>
       <form onSubmit={handleSubmit} className="p-6 space-y-6">
         <motion.div
-          initial={{ x: -20, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ duration: 0.6 }}
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.7 }}
         >
           <ImageGallery
             images={item.images}
