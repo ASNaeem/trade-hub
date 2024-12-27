@@ -2,14 +2,25 @@ const TokenClass = require("../classes/Token");
 const TokenModel = require("../models/tokenSchema");
 
 const TokenService = {
+  generateOTP() {
+    return Math.floor(1000 + Math.random() * 9000).toString();
+  },
+
   async createToken(userId, type = "verification", expiresInMinutes = 15) {
-    const tokenClassInstance = new TokenClass(userId, expiresInMinutes);
+    let tokenValue;
+
+    if (type === "verification") {
+      tokenValue = this.generateOTP();
+    } else {
+      const tokenClassInstance = new TokenClass(userId, expiresInMinutes);
+      tokenValue = tokenClassInstance.tokenValue;
+    }
 
     const tokenDocument = new TokenModel({
-      userId: tokenClassInstance._userId,
-      tokenValue: tokenClassInstance.tokenValue,
+      userId,
+      tokenValue,
       type,
-      expiresAt: tokenClassInstance.expiresAt,
+      expiresAt: new Date(Date.now() + expiresInMinutes * 60 * 1000),
     });
 
     const savedToken = await tokenDocument.save();

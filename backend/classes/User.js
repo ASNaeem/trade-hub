@@ -11,7 +11,8 @@ class User extends Person {
     profilePicture = null,
     govtDocument = null,
     isDocumentVerified = false,
-    city = null
+    city = null,
+    isEmailVerified = false
   ) {
     super(id, name, email, password, createdAt);
     this._phone = phone;
@@ -20,6 +21,7 @@ class User extends Person {
     this._govtDocument = govtDocument;
     this._isDocumentVerified = isDocumentVerified;
     this._city = city;
+    this._isEmailVerified = isEmailVerified;
   }
 
   // Getter and Setter for Phone
@@ -79,6 +81,14 @@ class User extends Person {
     this._city = newCity;
   }
 
+  get isEmailVerified() {
+    return this._isEmailVerified;
+  }
+
+  set isEmailVerified(value) {
+    this._isEmailVerified = value;
+  }
+
   getSummary() {
     return {
       id: this.id,
@@ -88,6 +98,7 @@ class User extends Person {
       profilePicture: this.profilePicture,
       govtDocument: this.govtDocument,
       isDocumentVerified: this.isDocumentVerified,
+      isEmailVerified: this.isEmailVerified,
       city: this.city,
       createdAt: this.createdAt,
     };
