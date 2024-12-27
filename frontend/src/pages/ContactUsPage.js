@@ -210,7 +210,7 @@ const ContactUsPage = () => {
 
               <button
                 type="submit"
-                className="w-full bg-[var(--buttonHoverColor)] text-white py-4 px-6 rounded-lg hover:shadow-md hover:shadow-[var(--primaryColor)]/10 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 group mt-auto"
+                className="w-full bg-[var(--buttonColor)] text-white py-4 px-6 rounded-lg hover:shadow-md hover:shadow-[var(--buttonHoverColor)]/10 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 group mt-auto"
               >
                 Send Message
                 <Send

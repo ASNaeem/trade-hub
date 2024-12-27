@@ -256,7 +256,7 @@ const AdminPage = () => {
                   onClick={() => setActiveTab(tab)}
                   className={`${
                     activeTab === tab
-                      ? "border-primary text-primary"
+                      ? "border-[var(--iconColor)] text-[var(--iconColor)]"
                       : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                   } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm capitalize`}
                 >
@@ -504,7 +504,7 @@ const AdminPage = () => {
                               </span>
                               <button
                                 onClick={() => setEditingPolicy(policy.id)}
-                                className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-full transition-colors"
+                                className="p-2 text-[var(--iconColor)] hover:text-teal-700 hover:bg-blue-50 rounded-full transition-colors"
                                 title="Edit"
                               >
                                 <Pencil className="w-4 h-4 sm:w-5 sm:h-5 stroke-[1.5]" />

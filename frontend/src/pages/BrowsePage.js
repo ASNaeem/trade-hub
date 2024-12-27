@@ -2,7 +2,7 @@ import React from "react";
 import { ItemCard } from "../components/browse/ItemCard";
 import { Filters } from "../components/browse/Filters";
 import { Pagination } from "../components/browse/Pagination";
-import { Menu, PackageSearch } from "lucide-react";
+import { Menu, PackageSearch, Search } from "lucide-react";
 import Header from "../components/Header";
 import useItems from "../hooks/useItems";
 
@@ -10,7 +10,7 @@ import useItems from "../hooks/useItems";
 const FILTERS = {
   brands: ["Levi's", "Fossil", "Sony", "Apple", "Dell", "Other"],
   locations: ["New York", "Los Angeles", "Chicago", "Miami", "Seattle"],
-  conditions: ["New", "Used", "Refurbished"],
+  conditions: ["New", "Like New", "Used", "Refurbished"],
 };
 
 const ITEMS_PER_PAGE = 6;
@@ -25,6 +25,7 @@ const BrowsePage = () => {
   const [currentPage, setCurrentPage] = React.useState(1);
   const [showFilters, setShowFilters] = React.useState(false);
   const [hasActiveFilters, setHasActiveFilters] = React.useState(false);
+  const [searchTerm, setSearchTerm] = React.useState("");
 
   // Use our custom hook with initial fetch
   const { items, loading, error, totalPages, fetchItems } = useItems({
@@ -49,8 +50,9 @@ const BrowsePage = () => {
       page: currentPage,
       limit: ITEMS_PER_PAGE,
       priceRange: selectedFilters.priceRange,
+      search: searchTerm,
     });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [currentPage, selectedFilters, searchTerm]);
 
   const handleFilterChange = (filterType, value) => {
     let newFilters;
@@ -136,6 +138,11 @@ const BrowsePage = () => {
     fetchItems(apiFilters);
   };
 
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+    setCurrentPage(1);
+  };
+
   const renderContent = () => {
     if (loading) {
       return (
@@ -209,17 +216,7 @@ const BrowsePage = () => {
         shadow={true}
         className="text-black !fixed bg-[var(--foreGroundColor)] overflow-hidden fill-[var(--buttonColor)]"
       />
-      <div className="max-w-7xl mx-auto px-4 py-20">
-        <div className="flex items-center justify-between mb-8">
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="md:hidden flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm"
-          >
-            <Menu size={20} />
-            Filters
-          </button>
-        </div>
-
+      <div className="max-w-7xl mx-auto px-4 py-24">
         <div className="flex flex-col md:flex-row gap-8">
           <div
             className={`md:w-64 flex-shrink-0 ${
@@ -233,8 +230,31 @@ const BrowsePage = () => {
               priceRange={selectedFilters.priceRange}
             />
           </div>
-
-          <div className="flex-1">{renderContent()}</div>
+          <div className="flex flex-col gap-6">
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="md:hidden flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm"
+              >
+                <Menu size={20} />
+                Filters
+              </button>
+              <div className="w-full relative">
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  placeholder="Search items..."
+                  className="border w-full rounded-lg py-2 px-4 pl-10 focus:outline-none focus:ring-2 focus:ring-[var(--iconColor)]"
+                />
+                <Search
+                  className="absolute left-3 top-2.5 text-gray-400"
+                  size={20}
+                />
+              </div>
+            </div>
+            <div>{renderContent()}</div>
+          </div>
         </div>
       </div>
     </div>

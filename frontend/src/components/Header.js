@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { MessageSquareText, User } from "lucide-react";
+import { MessageSquareText, User, Home, Globe } from "lucide-react";
 import "../styles/Header.css";
 
 const Header = ({
@@ -21,9 +21,9 @@ const Header = ({
     <nav
       className={`nav_bar select-none pr-4 md:pr-[80px] ${
         shadow ? "shadow-sm" : ""
-      } ${className}`}
+      } ${className} flex items-center`}
     >
-      <a href="/">
+      <a href="/" className="mb-2 md:mb-0">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="72"
@@ -37,14 +37,25 @@ const Header = ({
         </svg>
       </a>
 
-      <ul>
+      <ul className="flex md:space-x-1">
         <li>
-          <a href="/admin">Admin</a>
+          <button
+            className="flex items-center gap-2"
+            onClick={() => (window.location.href = "/admin")}
+          >
+            <Home style={{ width: "16px", height: "16px" }} />
+            <h1 className="hidden md:block"> Admin </h1>
+          </button>
         </li>
         <li>
-          <a href="/browse">Browse</a>
+          <button
+            className="flex items-center gap-2"
+            onClick={() => (window.location.href = "/browse")}
+          >
+            <Globe style={{ width: "16px", height: "16px" }} />
+            <h1 className="hidden md:block"> Browse </h1>
+          </button>
         </li>
-
         <li>
           <div
             onClick={() => {
@@ -55,10 +66,9 @@ const Header = ({
             className="flex items-center gap-2 cursor-pointer"
           >
             <MessageSquareText style={{ width: "16px", height: "16px" }} />
-            Chats
+            <h1 className="hidden md:block"> Chats </h1>
           </div>
         </li>
-
         <li>
           <div
             onClick={() => {
@@ -69,7 +79,10 @@ const Header = ({
             className="flex items-center gap-2 cursor-pointer"
           >
             <User style={{ width: "16px", height: "16px" }} />
-            {LoggedIn ? "Profile" : "Login"}
+            <h1 className="hidden md:block">
+              {" "}
+              {LoggedIn ? "Profile" : "Login"}{" "}
+            </h1>
           </div>
         </li>
       </ul>

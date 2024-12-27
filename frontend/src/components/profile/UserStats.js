@@ -1,5 +1,5 @@
 import React from "react";
-import { Package, ShoppingBag, DollarSign, Star } from "lucide-react";
+import { Package, ShoppingBag, DollarSign } from "lucide-react";
 
 const UserStats = ({ stats }) => {
   const statItems = [
@@ -10,11 +10,10 @@ const UserStats = ({ stats }) => {
       value: `$${stats.totalEarnings}`,
       icon: DollarSign,
     },
-    { label: "Avg Rating", value: stats.avgRating.toFixed(1), icon: Star },
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
       {statItems.map((stat) => {
         const Icon = stat.icon;
         return (

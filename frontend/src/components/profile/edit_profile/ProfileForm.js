@@ -4,6 +4,7 @@ import FormSection from "./FormSection";
 import InputField from "./InputField";
 import DocumentUpload from "./DocumentUpload";
 import { Checkbox } from "@nextui-org/react";
+import { motion } from "framer-motion";
 
 export default function ProfileForm() {
   const [profileData, setProfileData] = useState({
@@ -108,31 +109,38 @@ export default function ProfileForm() {
               profileData.isVerified ? "hidden" : ""
             }`}
           >
-            <label className="block text-sm font-medium text-[var(--primaryColor)]">
-              Document Type
-            </label>
-            <div className="flex gap-5">
-              <label title="National ID">
-                <Checkbox
-                  value={"nid"}
-                  name="documentType"
-                  checked={profileData.documentType.includes("nid")}
-                  onChange={handleChange}
-                />
-                NID
+            <motion.div
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.6 }}
+            >
+              <label className="block text-sm font-medium text-[var(--primaryColor)]">
+                Document Type
               </label>
-              <label title="Birth Certificate">
-                <Checkbox
-                  value={"birthCertificate"}
-                  name="documentType"
-                  checked={profileData.documentType.includes(
-                    "birthCertificate"
-                  )}
-                  onChange={handleChange}
-                />
-                Birth Certificate
-              </label>
-            </div>
+
+              <div className="flex pt-2 gap-5">
+                <label title="National ID">
+                  <Checkbox
+                    value={"nid"}
+                    name="documentType"
+                    checked={profileData.documentType.includes("nid")}
+                    onChange={handleChange}
+                  />
+                  NID
+                </label>
+                <label title="Birth Certificate">
+                  <Checkbox
+                    value={"birthCertificate"}
+                    name="documentType"
+                    checked={profileData.documentType.includes(
+                      "birthCertificate"
+                    )}
+                    onChange={handleChange}
+                  />
+                  Birth Certificate
+                </label>
+              </div>
+            </motion.div>
           </div>
 
           <div className={`${profileData.isVerified ? "hidden" : ""}`}>

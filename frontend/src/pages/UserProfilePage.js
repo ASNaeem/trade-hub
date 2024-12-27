@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 import axios from "axios";
 
 import UserInfo from "../components/profile/UserInfo";
@@ -117,7 +118,12 @@ function UserProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <motion.div
+      className="min-h-screen bg-gray-50"
+      initial={{ opacity: 0.8 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.7 }}
+    >
       <div className="bg-gradient-to-r from-[var(--primaryColor)] to-[var(--secondaryColor)] pt-8 pb-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <UserInfo user={user} />
@@ -138,7 +144,7 @@ function UserProfile() {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

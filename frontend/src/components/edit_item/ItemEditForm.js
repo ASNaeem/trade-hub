@@ -5,6 +5,7 @@ import { categories, conditions } from "../../data/mockdata_itemdetails";
 import { Input, SelectItem, Checkbox, Select } from "@nextui-org/react";
 import ImageGallery from "./ImageGallery";
 import AlertDialog from "../AlertDialog";
+import { motion } from "framer-motion";
 
 export default function ItemEditForm({
   item: initialItem,
@@ -64,11 +65,17 @@ export default function ItemEditForm({
   return (
     <>
       <form onSubmit={handleSubmit} className="p-6 space-y-6">
-        <ImageGallery
-          images={item.images}
-          onRemoveImage={handleRemoveImage}
-          onAddImage={handleAddImage}
-        />
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.7 }}
+        >
+          <ImageGallery
+            images={item.images}
+            onRemoveImage={handleRemoveImage}
+            onAddImage={handleAddImage}
+          />
+        </motion.div>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <FormField label="Title">

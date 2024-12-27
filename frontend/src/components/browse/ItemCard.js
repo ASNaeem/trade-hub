@@ -10,7 +10,12 @@ export const ItemCard = ({
   imageUrl,
 }) => {
   return (
-    <div className="bg-white cursor-pointer rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:scale-[1.02]">
+    <div
+      className="bg-white cursor-pointer rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:scale-[1.02]"
+      onClick={() => {
+        window.location.href = `/item?item=${title}`;
+      }}
+    >
       <div className="relative h-48 overflow-hidden">
         <img
           src={imageUrl}

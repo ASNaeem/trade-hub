@@ -3,18 +3,20 @@ import { Slider } from "@mui/material";
 import { styled } from "@mui/material/styles";
 
 const StyledSlider = styled(Slider)(({ theme }) => ({
-  color: "#3b82f6", // Tailwind blue-500
-  height: 3,
+  color: "var(--iconColor)",
+  height: 4,
   "& .MuiSlider-track": {
     border: "none",
+    borderRadius: 4,
   },
   "& .MuiSlider-thumb": {
-    height: 18,
-    width: 18,
-    backgroundColor: "#fff",
-    border: "2px solid currentColor",
+    height: 20,
+    width: 20,
+    backgroundColor: "var(--foreGroundColor)",
+    border: "2px solid var(--iconColor)",
+    boxShadow: "0 2px 10px rgba(0, 0, 0, 0.2)",
     "&:focus, &:hover, &.Mui-active, &.Mui-focusVisible": {
-      boxShadow: "inherit",
+      boxShadow: "0 0 0 0.2rem rgba(45, 212, 191, 0.5)",
     },
     "&:before": {
       display: "none",
@@ -25,10 +27,9 @@ const StyledSlider = styled(Slider)(({ theme }) => ({
     fontSize: 12,
     background: "unset",
     padding: 0,
-    width: 32,
-    height: 32,
-    borderRadius: "50% 50% 50% 0",
-    backgroundColor: "#3b82f6",
+    width: 40,
+    height: 40,
+    borderRadius: "50%",
     transformOrigin: "bottom left",
     transform: "translate(50%, -100%) rotate(-45deg) scale(0)",
     "&:before": { display: "none" },
@@ -59,15 +60,17 @@ const PriceRangeSlider = ({ value, onChange, min = 0, max = 1000 }) => {
         <span>${value[0]}</span>
         <span>${value[1]}</span>
       </div>
-      <StyledSlider
-        value={value}
-        onChange={handleChange}
-        valueLabelDisplay="auto"
-        valueLabelFormat={valuetext}
-        min={min}
-        max={max}
-        disableSwap
-      />
+      <div className="w-3/4 mx-auto">
+        <StyledSlider
+          value={value}
+          onChange={handleChange}
+          valueLabelDisplay="auto"
+          valueLabelFormat={valuetext}
+          min={min}
+          max={max}
+          disableSwap
+        />
+      </div>
       <div className="flex justify-between mt-1 text-xs text-gray-500">
         <span>Min</span>
         <span>Max</span>
