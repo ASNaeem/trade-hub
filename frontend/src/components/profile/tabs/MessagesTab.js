@@ -1,64 +1,95 @@
 import React from "react";
 import { Circle } from "lucide-react";
-
-//#region Fake data
-const messages = [
-  {
-    id: 1,
-    sender: "John Doe",
-    avatar:
-      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400",
-    preview: "Hi, is the vintage camera still available?",
-    time: "2 hours ago",
-    unread: true,
-  },
-  {
-    id: 2,
-    sender: "Alice Smith",
-    avatar:
-      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
-    preview: "Thanks for the quick response! When can we meet?",
-    time: "1 day ago",
-    unread: false,
-  },
-];
-//#endregion
+import { useNavigate } from "react-router-dom";
+import useMessages from "../../../hooks/useMessages";
 
 const MessagesTab = () => {
+  const navigate = useNavigate();
+  const { messages, loading, error } = useMessages();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-48">
+        <p className="text-gray-500">Loading messages...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-48">
+        <p className="text-red-500">Error: {error}</p>
+      </div>
+    );
+  }
+
+  if (messages.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-48">
+        <p className="text-gray-500">No messages yet</p>
+      </div>
+    );
+  }
+
+  // Group messages by conversation partner
+  const conversations = messages.reduce((acc, message) => {
+    const partnerId =
+      message.senderId === localStorage.getItem("userId")
+        ? message.receiverId
+        : message.senderId;
+
+    if (!acc[partnerId]) {
+      acc[partnerId] = {
+        lastMessage: message,
+        unreadCount: message.isRead ? 0 : 1,
+      };
+    } else {
+      if (message.createdAt > acc[partnerId].lastMessage.createdAt) {
+        acc[partnerId].lastMessage = message;
+      }
+      if (!message.isRead) {
+        acc[partnerId].unreadCount++;
+      }
+    }
+    return acc;
+  }, {});
+
   return (
     <div className="space-y-4">
-      {messages.map((message) => (
+      {Object.entries(conversations).map(([partnerId, data]) => (
         <div
-          key={message.id}
+          key={partnerId}
           className={`p-4 rounded-lg ${
-            message.unread ? "bg-blue-50" : "bg-white"
+            data.unreadCount > 0 ? "bg-blue-50" : "bg-white"
           } hover:bg-gray-50 cursor-pointer`}
-          onClick={() => {
-            window.location.href = `/inbox?message=${message.id}`;
-          }}
+          onClick={() => navigate(`/inbox?userId=${partnerId}`)}
         >
           <div className="flex items-center space-x-4">
             <div className="flex-shrink-0">
-              <img
-                src={message.avatar}
-                alt={message.sender}
-                className="h-12 w-12 object-cover rounded-full"
-              />
+              <div className="h-12 w-12 bg-gray-200 rounded-full flex items-center justify-center">
+                <span className="text-gray-600 font-medium">
+                  {partnerId.slice(0, 2).toUpperCase()}
+                </span>
+              </div>
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-medium text-gray-900">
-                  {message.sender}
+                  User {partnerId.slice(0, 8)}
                 </p>
                 <div className="flex items-center">
-                  {message.unread && (
-                    <Circle className="h-2 w-2 fill-current mr-2" />
+                  {data.unreadCount > 0 && (
+                    <span className="bg-blue-500 text-white text-xs rounded-full px-2 py-1 mr-2">
+                      {data.unreadCount}
+                    </span>
                   )}
-                  <span className="text-sm text-gray-500">{message.time}</span>
+                  <span className="text-sm text-gray-500">
+                    {new Date(data.lastMessage.createdAt).toLocaleDateString()}
+                  </span>
                 </div>
               </div>
               <p className="text-sm text-gray-500 truncate">
-                {message.preview}
+                {data.lastMessage.content}
               </p>
             </div>
           </div>

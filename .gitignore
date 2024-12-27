@@ -2,7 +2,9 @@ frontend/node_modules/
 backend/node_modules/
 frontend/build/
 backend/build/
-# Logs
+backend/uploads/*
+!backend/uploads/.gitkeep
+# Logs  
 logs
 *.log
 npm-debug.log*

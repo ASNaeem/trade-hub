@@ -9,6 +9,7 @@ import {
   Shield,
 } from "lucide-react";
 import AlertDialog from "../AlertDialog";
+import { useNavigate } from "react-router-dom";
 
 export default function ItemDetails({ item, seller }) {
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);

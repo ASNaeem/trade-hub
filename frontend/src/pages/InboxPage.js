@@ -1,51 +1,85 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { WarningBanner } from "../components/message/WarningBanner";
 import { MessageInput } from "../components/message/MessageInput";
 import { Message } from "../components/message/Message";
 import { ChatHeader } from "../components/message/ChatHeader";
 import Header from "../components/Header";
+import useMessages from "../hooks/useMessages";
 
 export default function InboxPage() {
-  // Set initial state for messages, starting with a welcome message
-  const [messages, setMessages] = useState([
-    {
-      id: "1",
-      text: "Welcome! How can I help you today?",
-      timestamp: new Date(Date.now() - 3600000),
-      isOwn: false,
-      senderName: "Sarah Johnson",
-    },
-  ]);
+  const location = useLocation();
+  const receiverId = new URLSearchParams(location.search).get("userId");
+  const { messages, loading, error, sendMessage, markAsRead } = useMessages();
 
-  // Handle sending a message and updating the state
+  // Mark messages as read when they are viewed
+  useEffect(() => {
+    const unreadMessages = messages.filter(
+      (msg) => !msg.isRead && msg.receiverId === receiverId
+    );
+    unreadMessages.forEach((msg) => markAsRead(msg._id));
+  }, [messages, markAsRead, receiverId]);
+
   const handleSendMessage = async (text, images) => {
-    const imageUrls = images?.map((image) => URL.createObjectURL(image));
+    if (!receiverId) {
+      console.error("No receiver ID provided");
+      return;
+    }
 
-    const newMessage = {
-      id: Date.now().toString(), // Unique message ID based on current timestamp
-      text,
-      timestamp: new Date(),
-      imageUrls,
-      isOwn: true, // Assuming the sent message is from the current user
-      senderName: "You", // Set sender name to "You" for sent messages
-    };
+    try {
+      // For now, we'll just send the text content
+      // TODO: Implement image upload functionality
+      await sendMessage(receiverId, text);
+    } catch (err) {
+      console.error("Failed to send message:", err);
+    }
+  };
 
-    // Update state with the new message
-    setMessages((prevMessages) => [...prevMessages, newMessage]);
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="flex items-center justify-center h-[600px]">
+          <p className="text-gray-500">Loading messages...</p>
+        </div>
+      );
+    }
 
-    // Optionally simulate receiving a response after a delay
-    setTimeout(() => {
-      const responseMessage = {
-        id: Date.now().toString(),
-        text: "I am here to assist you! How can I help further?",
-        timestamp: new Date(),
-        isOwn: false, // Received message from the assistant
-        senderName: "Sarah Johnson",
-      };
+    if (error) {
+      return (
+        <div className="flex items-center justify-center h-[600px]">
+          <p className="text-red-500">Error: {error}</p>
+        </div>
+      );
+    }
 
-      // Add the response message to the state
-      setMessages((prevMessages) => [...prevMessages, responseMessage]);
-    }, 2000); // Simulate a response after 2 seconds
+    if (!receiverId) {
+      return (
+        <div className="flex items-center justify-center h-[600px]">
+          <p className="text-gray-500">
+            Select a conversation to start messaging
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="h-[600px] overflow-x-hidden overflow-y-auto p-4">
+        {messages
+          .filter(
+            (msg) =>
+              msg.senderId === receiverId || msg.receiverId === receiverId
+          )
+          .map((message) => (
+            <Message
+              key={message._id}
+              text={message.content}
+              timestamp={new Date(message.createdAt)}
+              isOwn={message.senderId !== receiverId}
+              senderName={message.senderId === receiverId ? "Them" : "You"}
+            />
+          ))}
+      </div>
+    );
   };
 
   return (
@@ -59,25 +93,13 @@ export default function InboxPage() {
 
         <div className="bg-white rounded-lg shadow-lg">
           <ChatHeader
-            name="Sarah Johnson"
-            status="online"
-            lastSeen={new Date(Date.now() - 300000)}
+            name={receiverId ? "Chat" : "Select a conversation"}
+            status={receiverId ? "online" : "offline"}
           />
 
-          <div className="h-[600px] overflow-x-hidden overflow-y-auto p-4">
-            {/* Map over messages and display them */}
-            {messages.map((message) => (
-              <Message
-                key={message.id}
-                text={message.text}
-                timestamp={message.timestamp}
-                imageUrls={message.imageUrls}
-                isOwn={message.isOwn}
-                senderName={message.senderName}
-              />
-            ))}
-          </div>
-          <MessageInput onSendMessage={handleSendMessage} />
+          {renderContent()}
+
+          {receiverId && <MessageInput onSendMessage={handleSendMessage} />}
         </div>
       </div>
     </div>
