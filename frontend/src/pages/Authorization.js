@@ -5,10 +5,16 @@ import {
   CircleAlert,
   ChevronLeft,
 } from "lucide-react";
+import { ring } from "ldrs";
+
+ring.register();
+
 import { InputOtp } from "@nextui-org/input-otp";
 import axios from "axios";
 function LoginPage({ from }) {
   const [CurrentPage, setCurrentPage] = useState("login");
+
+  const [isLoading, setIsLoading] = useState(false);
 
   //#region Login Page
 
@@ -249,6 +255,7 @@ function LoginPage({ from }) {
     }
 
     try {
+      setIsLoading(true);
       // First register the user
       const registerResponse = await axios.post(
         "http://localhost:5000/api/users/register",
@@ -259,6 +266,8 @@ function LoginPage({ from }) {
           password,
         }
       );
+
+      setIsLoading(false);
 
       // Store email and token for OTP verification step
       setFormData({
@@ -387,9 +396,22 @@ function LoginPage({ from }) {
               </div>
               <button
                 type="submit"
-                className="w-full bg-[var(--buttonColor)] text-white py-2 rounded-lg hover:bg-[var(--buttonHoverColor)] flex justify-center items-center gap-2"
+                className={`w-full bg-[var(--buttonColor)] text-white py-2 rounded-lg hover:bg-[var(--buttonHoverColor)] flex justify-center items-center gap-2 ${
+                  isLoading ? "cursor-not-allowed opacity-80" : ""
+                }`}
               >
-                <i className="fas fa-user-plus mr-2"></i> Create Account
+                {isLoading ? (
+                  <l-ring
+                    size="25"
+                    stroke="2"
+                    bg-opacity="0"
+                    speed="2"
+                    color="white"
+                  ></l-ring>
+                ) : (
+                  <i className="fas fa-user-plus mr-2" />
+                )}
+                Create Account
               </button>
             </form>
           </>
