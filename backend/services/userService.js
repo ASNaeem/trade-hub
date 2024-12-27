@@ -375,6 +375,33 @@ const UserService = {
       throw error;
     }
   },
+
+  async changePassword(userId, currentPassword, newPassword) {
+    try {
+      const user = await UserModel.findById(userId);
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      // Verify current password
+      const isMatch = await bcrypt.compare(currentPassword, user.password);
+      if (!isMatch) {
+        throw new Error("Current password is incorrect");
+      }
+
+      // Hash new password
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+      // Update password
+      user.password = hashedPassword;
+      await user.save();
+
+      return true;
+    } catch (error) {
+      throw error;
+    }
+  },
 };
 
 module.exports = UserService;
