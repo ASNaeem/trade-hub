@@ -10,6 +10,7 @@ import { InputOtp } from "@nextui-org/input-otp";
 import axios from "axios";
 
 ring.register();
+
 function LoginPage({ from }) {
   const [CurrentPage, setCurrentPage] = useState("login");
 

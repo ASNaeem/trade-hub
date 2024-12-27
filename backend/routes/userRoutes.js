@@ -190,4 +190,33 @@ router.post("/resend-otp", async (req, res) => {
   }
 });
 
+// Add change password route
+router.put("/change-password", authMiddleware, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res
+        .status(400)
+        .json({ message: "Both current and new password are required" });
+    }
+
+    if (newPassword.length < 8) {
+      return res
+        .status(400)
+        .json({ message: "New password must be at least 8 characters long" });
+    }
+
+    const result = await userService.changePassword(
+      req.user.id,
+      currentPassword,
+      newPassword
+    );
+    res.status(200).json({ message: "Password changed successfully" });
+  } catch (error) {
+    console.error(`Error in ${req.originalUrl} -`, error.message);
+    res.status(400).json({ message: error.message });
+  }
+});
+
 module.exports = router;
