@@ -300,14 +300,14 @@ function LoginPage({ from }) {
   const Register = () => (
     <div
       className={`${
-        step == 1
+        step === 1
           ? "w-[350px] md:w-[448px] md:h-[428px] flex justify-center items-center bg-white"
           : ""
       }`}
     >
       <div
         className={`bg-white rounded-lg ${
-          step == 2 ? "" : " p-8 w-full max-w-md shadow-md"
+          step === 2 ? "" : " p-8 w-full max-w-md shadow-md"
         } `}
       >
         {step === 1 ? (

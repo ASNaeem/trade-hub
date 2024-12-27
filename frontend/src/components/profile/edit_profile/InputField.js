@@ -9,6 +9,8 @@ export default function InputField({
   value,
   onChange,
   type = "text",
+  disabled = false,
+  className = "",
 }) {
   return (
     <motion.div
@@ -18,7 +20,9 @@ export default function InputField({
     >
       <label
         htmlFor={name}
-        className="block text-sm pb-2 font-medium text-[var(--primaryColor)] "
+        className={`block text-sm pb-2 font-medium text-[var(--primaryColor)] ${
+          disabled ? "opacity-60" : ""
+        }`}
       >
         {label}
       </label>
@@ -30,6 +34,11 @@ export default function InputField({
         value={value}
         onChange={onChange}
         radius="sm"
+        disabled={disabled}
+        className={`${className} ${
+          disabled ? "opacity-60 cursor-not-allowed" : ""
+        }`}
+        isReadOnly={disabled}
       />
     </motion.div>
   );
