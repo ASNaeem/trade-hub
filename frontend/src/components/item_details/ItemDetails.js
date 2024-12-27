@@ -9,9 +9,11 @@ import {
   MessageCircleCode,
 } from "lucide-react";
 import AlertDialog from "../AlertDialog";
+import { useNavigate } from "react-router-dom";
 
 export default function ItemDetails({ item }) {
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleReport = () => {
     // Handle report submission logic here
@@ -20,6 +22,10 @@ export default function ItemDetails({ item }) {
 
   const handleFavorite = () => {
     // Handle favorite toggle logic here
+  };
+
+  const handleContactSeller = () => {
+    navigate(`/inbox?userId=${item.sellerId}`);
   };
 
   return (
@@ -83,7 +89,10 @@ export default function ItemDetails({ item }) {
             </div>
 
             <div className="space-y-4">
-              <button className="w-full flex items-center justify-center bg-[var(--buttonColor)] text-white py-3 rounded-lg hover:bg-[var(--buttonHoverColor)] transition-colors duration-200 shadow-sm">
+              <button
+                onClick={handleContactSeller}
+                className="w-full flex items-center justify-center bg-[var(--buttonColor)] text-white py-3 rounded-lg hover:bg-[var(--buttonHoverColor)] transition-colors duration-200 shadow-sm"
+              >
                 <MessageCircleCode className="h-5 w-5 mr-2" />
                 Contact Seller
               </button>
