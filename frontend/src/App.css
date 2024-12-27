@@ -51,3 +51,7 @@ label {
     }
   }
 }
+
+img {
+  -webkit-user-drag: none;
+}

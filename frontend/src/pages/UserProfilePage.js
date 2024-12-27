@@ -12,6 +12,7 @@ import { initialItem } from "../data/mockdata_itemdetails";
 import ListedItems from "../components/profile/tabs/ListedItems";
 import FavoritesTab from "../components/profile/tabs/FavTab";
 import MessagesTab from "../components/profile/tabs/MessagesTab";
+import Header from "../components/Header";
 
 // Mock data - in a real app, this would come from an API
 const mockUser = {
@@ -67,7 +68,11 @@ function UserProfile() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.7 }}
     >
-      <div className="bg-gradient-to-r from-[var(--primaryColor)] to-[var(--secondaryColor)] pt-8 pb-32">
+      <Header
+        shadow={true}
+        className="text-[var(--foreGroundColor)] !fixed bg-transparent overflow-hidden fill-[var(--foreGroundColor)]"
+      />{" "}
+      <div className="bg-gradient-to-r from-[var(--primaryColor)] to-[var(--secondaryColor)] pt-24 pb-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <UserInfo user={mockUser} />
           <div className="mt-6">
@@ -75,7 +80,6 @@ function UserProfile() {
           </div>
         </div>
       </div>
-
       <div className="-mt-32">
         <div className="max-w-7xl mx-auto pb-12 px-4 sm:px-6 lg:px-8">
           <div className="bg-white rounded-lg shadow px-5 py-6 sm:px-6">
