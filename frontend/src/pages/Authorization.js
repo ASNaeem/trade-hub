@@ -12,25 +12,35 @@ function LoginPage({ from }) {
 
   //#region Login Page
 
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState("");
+  const [otp, setOtp] = useState("");
+
   const handle_login = async (e) => {
     e.preventDefault();
     try {
-      // const email = e.target.email.value;
-      // const password = e.target.password.value;
+      const email = e.target.email.value;
+      const password = e.target.password.value;
 
-      // const response = await axios.post(
-      //   "http://localhost:5000/api/users/login",
-      //   {
-      //     email,
-      //     password,
-      //   }
-      // );
+      const response = await axios.post(
+        "http://localhost:5000/api/users/login",
+        {
+          email,
+          password,
+        }
+      );
 
-      // // Store the token in localStorage
-      // localStorage.setItem("token", response.data.token);
-      // localStorage.setItem("user", JSON.stringify(response.data.user));
+      if (response.data.requireVerification) {
+        setVerificationEmail(email);
+        setShowOtpModal(true);
+        return;
+      }
 
+      // Store the token and user info in localStorage
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
       localStorage.setItem("loggedin", true);
+
       // Redirect based on 'from' prop
       from === "chats"
         ? (window.location.href = "/user?loggedin=true")
@@ -40,87 +50,168 @@ function LoginPage({ from }) {
     }
   };
 
-  const Login = () => (
-    <div className="w-[350px] md:w-[448px] md:h-[428px] flex items-center justify-center rounded-lg bg-gray-50">
-      <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
-        <div className="text-center">
-          <div className="flex justify-center mb-4">
-            <div className="w-10 h-10 bg-[var(--buttonColor)] text-white flex items-center justify-center rounded-full">
-              <ShoppingBag />
-            </div>
-          </div>
-          <h2 className="text-2xl font-bold text-gray-800">
-            Sign in to your account
-          </h2>
-          <p className="mt-2 text-sm text-[var(--textColorSecondary)]">
-            Don't have an account?{" "}
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                setCurrentPage("register");
-              }}
-              className="cursor-pointer text-[var(--linkTextColor)] hover:underline"
-            >
-              Sign up
-            </a>
-          </p>
-        </div>
-        <form className="mt-6" onSubmit={handle_login}>
-          <div className="mb-4">
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              placeholder="you@example.com"
-              className="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              placeholder="••••••••"
-              className="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
-            />
-          </div>
-          <div className="flex items-center justify-between mb-6">
-            <label className="inline-flex items-center">
-              <input
-                type="checkbox"
-                className="rounded border-gray-300 text-blue-600 focus:ring-rgb(156 163 175)"
-              />
-              <span className="ml-2 cursor-pointer text-sm select-none text-gray-600">
-                Remember me
-              </span>
-            </label>
-            <a
-              className="text-sm cursor-pointer text-[var(--linkTextColor)] hover:underline"
-              onClick={() => setCurrentPage("forgot_pass")}
-            >
-              Forgot your password?
-            </a>
-          </div>
+  const handleResendOTP = async () => {
+    try {
+      await axios.post("http://localhost:5000/api/users/resend-otp", {
+        email: verificationEmail,
+      });
+      alert("New verification code sent to your email");
+    } catch (error) {
+      alert(
+        error.response?.data?.message || "Failed to resend verification code"
+      );
+    }
+  };
+
+  const handleOtpSubmit = async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/users/verify-email",
+        {
+          tokenValue: otp,
+          email: verificationEmail,
+        }
+      );
+
+      if (response.data.success) {
+        // Store the token and user info in localStorage
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+        localStorage.setItem("loggedin", true);
+
+        // Redirect based on 'from' prop
+        from === "chats"
+          ? (window.location.href = "/user?loggedin=true")
+          : (window.location.href = "/user");
+      } else {
+        alert(response.data.message || "Verification failed");
+      }
+    } catch (error) {
+      alert(error.response?.data?.message || "Verification failed");
+    }
+  };
+
+  // Add OTP Modal component
+  const OtpVerificationModal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-[350px]">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">Email Verification</h3>
           <button
-            type="submit"
-            className="w-full bg-[var(--buttonColor)] text-white py-2 rounded-lg hover:bg-[var(--buttonHoverColor)] flex justify-center items-center gap-2"
+            onClick={() => setShowOtpModal(false)}
+            className="text-gray-500 hover:text-gray-700"
           >
-            Sign in
+            ×
           </button>
-        </form>
+        </div>
+        <p className="text-sm text-gray-600 mb-4">
+          Please enter the verification code sent to your email
+        </p>
+        <div className="mb-4">
+          <InputOtp value={otp} onChange={setOtp} size="lg" length={4} />
+        </div>
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={handleOtpSubmit}
+            className="w-full bg-[var(--buttonColor)] text-white py-2 rounded-lg hover:bg-[var(--buttonHoverColor)]"
+          >
+            Verify
+          </button>
+          <button
+            onClick={handleResendOTP}
+            className="text-sm text-[var(--linkTextColor)] hover:underline"
+          >
+            Resend Code
+          </button>
+        </div>
       </div>
     </div>
+  );
+
+  const Login = () => (
+    <>
+      <div className="w-[350px] md:w-[448px] md:h-[428px] flex items-center justify-center rounded-lg bg-gray-50">
+        <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
+          <div className="text-center">
+            <div className="flex justify-center mb-4">
+              <div className="w-10 h-10 bg-[var(--buttonColor)] text-white flex items-center justify-center rounded-full">
+                <ShoppingBag />
+              </div>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800">
+              Sign in to your account
+            </h2>
+            <p className="mt-2 text-sm text-[var(--textColorSecondary)]">
+              Don't have an account?{" "}
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setCurrentPage("register");
+                }}
+                className="cursor-pointer text-[var(--linkTextColor)] hover:underline"
+              >
+                Sign up
+              </a>
+            </p>
+          </div>
+          <form className="mt-6" onSubmit={handle_login}>
+            <div className="mb-4">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Email
+              </label>
+              <input
+                type="email"
+                id="email"
+                placeholder="you@example.com"
+                className="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+              />
+            </div>
+            <div className="mb-4">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Password
+              </label>
+              <input
+                type="password"
+                id="password"
+                placeholder="••••••••"
+                className="mt-1 block w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+              />
+            </div>
+            <div className="flex items-center justify-between mb-6">
+              <label className="inline-flex items-center">
+                <input
+                  type="checkbox"
+                  className="rounded border-gray-300 text-blue-600 focus:ring-rgb(156 163 175)"
+                />
+                <span className="ml-2 cursor-pointer text-sm select-none text-gray-600">
+                  Remember me
+                </span>
+              </label>
+              <a
+                className="text-sm cursor-pointer text-[var(--linkTextColor)] hover:underline"
+                onClick={() => setCurrentPage("forgot_pass")}
+              >
+                Forgot your password?
+              </a>
+            </div>
+            <button
+              type="submit"
+              className="w-full bg-[var(--buttonColor)] text-white py-2 rounded-lg hover:bg-[var(--buttonHoverColor)] flex justify-center items-center gap-2"
+            >
+              Sign in
+            </button>
+          </form>
+        </div>
+      </div>
+      {showOtpModal && <OtpVerificationModal />}
+    </>
   );
 
   //#endregion
@@ -169,15 +260,12 @@ function LoginPage({ from }) {
         }
       );
 
-      // Store token for verification request
-      const token = registerResponse.data.token;
-
-      // Store email for OTP verification step
+      // Store email and token for OTP verification step
       setFormData({
         email,
-        verificationToken: token,
+        verificationToken: registerResponse.data.token,
       });
-      setStep(1); // Move to OTP verification step
+      setStep(2); // Move to OTP verification step
     } catch (error) {
       alert(error.response?.data?.message || "Registration failed");
     }
@@ -314,7 +402,31 @@ function LoginPage({ from }) {
   //#endregion
 
   //#region Verify OTP Page
-  const [otp, setOtp] = useState("");
+  const [isResending, setIsResending] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+
+  const handleResend = async () => {
+    try {
+      setIsResending(true);
+      await axios.post("http://localhost:5000/api/users/resend-otp", {
+        email: formData.email,
+      });
+      setCountdown(30); // Start 30 second countdown
+      const timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch (error) {
+      alert(error.response?.data?.message || "Failed to resend code");
+    } finally {
+      setIsResending(false);
+    }
+  };
 
   const VerifyOtp = () => (
     <div className="bg-white w-[350px] md:w-[448px] md:h-[428px] rounded-lg flex flex-col justify-center items-center">
@@ -326,12 +438,12 @@ function LoginPage({ from }) {
         </div>
         <h2 className="text-2xl font-bold text-gray-800">OTP Verification</h2>
         <p className="text-gray-500">
-          An <strong>OTP</strong> has been sent please check your Email
+          An <strong>OTP</strong> has been sent to {formData.email}
         </p>
       </div>
       <form
         className="w-[350px] md:w-[400px] flex flex-col justify-center items-center"
-        onSubmit={handleSubmit}
+        onSubmit={handleOtpVerification}
       >
         <div className="flex flex-col gap-3 pb-5">
           <h1 className="text-center font-semibold">Enter OTP</h1>
@@ -351,6 +463,26 @@ function LoginPage({ from }) {
           <BadgeCheck />
           Verify OTP
         </button>
+
+        <div className="mt-4 text-center">
+          <p className="text-sm text-gray-600 mb-2">Didn't receive the code?</p>
+          <button
+            type="button"
+            onClick={handleResend}
+            disabled={countdown > 0 || isResending}
+            className={`text-sm ${
+              countdown > 0 || isResending
+                ? "text-gray-400 cursor-not-allowed"
+                : "text-[var(--linkTextColor)] hover:underline cursor-pointer"
+            }`}
+          >
+            {isResending
+              ? "Sending..."
+              : countdown > 0
+              ? `Resend in ${countdown}s`
+              : "Resend Code"}
+          </button>
+        </div>
       </form>
     </div>
   );

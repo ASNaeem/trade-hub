@@ -177,4 +177,17 @@ router.delete("/profile", authMiddleware, async (req, res) => {
   }
 });
 
+// Resend OTP
+router.post("/resend-otp", async (req, res) => {
+  try {
+    const { email } = req.body;
+    const result = await userService.resendOTP(email);
+    res.status(200).json(result);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error resending OTP", error: error.message });
+  }
+});
+
 module.exports = router;

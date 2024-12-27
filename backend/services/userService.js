@@ -3,6 +3,8 @@ const UserModel = require("../models/userSchema");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const config = require("../config/test.config");
+const tokenService = require("./tokenService");
+const emailService = require("./emailService");
 
 const UserService = {
   async createUnverifiedUser(name, email, phone, password) {
@@ -33,18 +35,24 @@ const UserService = {
         email: email.toLowerCase(),
         phone,
         password: hashedPassword,
+        isEmailVerified: false,
       });
 
       await user.save();
 
-      // Create JWT
-      const token = jwt.sign({ id: user._id }, config.JWT_SECRET, {
-        expiresIn: "24h",
-      });
+      // Generate verification token
+      const token = await tokenService.createToken(
+        user._id,
+        "verification",
+        15
+      );
+
+      // Send OTP via email
+      await emailService.sendOTP(email, token.tokenValue);
 
       return {
-        user,
-        token,
+        token: token.tokenValue,
+        email: user.email,
       };
     } catch (error) {
       throw error;
@@ -125,33 +133,54 @@ const UserService = {
   },
 
   async authenticateUser(email, password) {
-    const userDocument = await UserModel.findOne({ email });
-    if (!userDocument) {
-      throw new Error("Invalid credentials");
+    try {
+      const user = await UserModel.findOne({ email: email.toLowerCase() });
+      if (!user) {
+        throw new Error("Invalid credentials");
+      }
+
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        throw new Error("Invalid credentials");
+      }
+
+      // Check if email is verified
+      if (!user.isEmailVerified) {
+        // Generate new verification token and send it
+        const token = await tokenService.createToken(
+          user._id,
+          "verification",
+          15
+        );
+        await emailService.sendOTP(email, token.tokenValue);
+
+        return {
+          requireVerification: true,
+          email: user.email,
+          message: "Email not verified. Verification code sent.",
+        };
+      }
+
+      const token = jwt.sign(
+        { id: user._id, email: user.email },
+        config.JWT_SECRET,
+        { expiresIn: "1h" }
+      );
+
+      return {
+        user: new UserClass(
+          user._id,
+          user.name,
+          user.email,
+          user.phone,
+          user.password,
+          user.createdAt
+        ),
+        token,
+      };
+    } catch (error) {
+      throw error;
     }
-
-    const isMatch = await bcrypt.compare(password, userDocument.password);
-    if (!isMatch) {
-      throw new Error("Invalid credentials");
-    }
-
-    const token = jwt.sign(
-      { id: userDocument._id, email: userDocument.email },
-      config.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-
-    return {
-      user: new UserClass(
-        userDocument._id,
-        userDocument.name,
-        userDocument.email,
-        userDocument.phone,
-        userDocument.password,
-        userDocument.createdAt
-      ),
-      token,
-    };
   },
 
   async findUserById(userId) {
@@ -165,7 +194,12 @@ const UserService = {
         userDocument.email,
         userDocument.phone,
         userDocument.password,
-        userDocument.createdAt
+        userDocument.createdAt,
+        userDocument.profilePicture,
+        userDocument.govtDocument,
+        userDocument.isDocumentVerified,
+        userDocument.city,
+        userDocument.isEmailVerified
       );
     } catch (error) {
       throw new Error(`Error finding user: ${error.message}`);
@@ -182,7 +216,12 @@ const UserService = {
       userDocument.email,
       userDocument.phone,
       userDocument.password,
-      userDocument.createdAt
+      userDocument.createdAt,
+      userDocument.profilePicture,
+      userDocument.govtDocument,
+      userDocument.isDocumentVerified,
+      userDocument.city,
+      userDocument.isEmailVerified
     );
   },
   async updateUser(userId, updates) {
@@ -225,7 +264,8 @@ const UserService = {
         updatedDocument.profilePicture,
         updatedDocument.govtDocument,
         updatedDocument.isDocumentVerified,
-        updatedDocument.city
+        updatedDocument.city,
+        updatedDocument.isEmailVerified
       );
     } catch (error) {
       console.error("Error updating user:", error);
@@ -250,6 +290,90 @@ const UserService = {
 
   async findUserByPhone(phone) {
     return await UserModel.findOne({ phone });
+  },
+
+  async verifyUserEmail(email, tokenValue) {
+    try {
+      const user = await UserModel.findOne({ email });
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      // Verify the token
+      const verifiedToken = await tokenService.verifyToken(
+        tokenValue,
+        "verification"
+      );
+      if (
+        !verifiedToken ||
+        verifiedToken.userId.toString() !== user._id.toString()
+      ) {
+        return {
+          success: false,
+          message: "Invalid or expired verification code",
+        };
+      }
+
+      user.isEmailVerified = true;
+      await user.save();
+
+      const authToken = jwt.sign(
+        { id: user._id, email: user.email },
+        config.JWT_SECRET,
+        { expiresIn: "1h" }
+      );
+
+      return {
+        success: true,
+        user: new UserClass(
+          user._id,
+          user.name,
+          user.email,
+          user.phone,
+          user.password,
+          user.createdAt
+        ),
+        token: authToken,
+      };
+    } catch (error) {
+      if (error.message === "Invalid or expired verification code") {
+        return { success: false, message: error.message };
+      }
+      throw error;
+    }
+  },
+
+  async resendOTP(email) {
+    try {
+      const user = await UserModel.findOne({ email });
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      // Delete any existing verification tokens for this user
+      await tokenService.deleteAllUserTokens(user._id, "verification");
+
+      // Generate new verification token
+      const token = await tokenService.createToken(
+        user._id,
+        "verification",
+        15
+      );
+
+      // Send new OTP via email
+      const emailSent = await emailService.sendOTP(email, token.tokenValue);
+      if (!emailSent) {
+        throw new Error("Failed to send verification code");
+      }
+
+      return {
+        success: true,
+        message: "New verification code sent",
+        email: user.email,
+      };
+    } catch (error) {
+      throw error;
+    }
   },
 };
 

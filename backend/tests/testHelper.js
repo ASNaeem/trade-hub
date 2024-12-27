@@ -1,16 +1,11 @@
 const mongoose = require("mongoose");
+const app = require("../app");
+
+const TEST_MONGODB_URI = "mongodb://localhost:27017/tradehub_test";
 
 const setupTestDB = async () => {
   try {
-    await mongoose.connect("mongodb://localhost:27017/tradehub-test", {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    // Clear all collections
-    const collections = await mongoose.connection.db.collections();
-    for (let collection of collections) {
-      await collection.deleteMany({});
-    }
+    await mongoose.connect(TEST_MONGODB_URI);
   } catch (error) {
     console.error("Error connecting to test database:", error);
     throw error;
@@ -27,7 +22,16 @@ const teardownTestDB = async () => {
   }
 };
 
+const clearDatabase = async () => {
+  const collections = mongoose.connection.collections;
+  for (const key in collections) {
+    await collections[key].deleteMany();
+  }
+};
+
 module.exports = {
   setupTestDB,
   teardownTestDB,
+  clearDatabase,
+  app,
 };
