@@ -28,6 +28,7 @@ function UserProfile() {
   const [activeTab, setActiveTab] = useState("selling");
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -82,6 +83,10 @@ function UserProfile() {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const l = params.get("loggedin");
+    const s = params.get("settings");
+    if (s) {
+      setIsEditModalOpen(true);
+    }
     if (l) {
       setActiveTab("messages");
     }
@@ -133,7 +138,10 @@ function UserProfile() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <UserInfo user={user} />
           <div className="mt-6">
-            <UserActions />
+            <UserActions
+              isEditModalOpen={isEditModalOpen}
+              setIsEditModalOpen={setIsEditModalOpen}
+            />
           </div>
         </div>
       </div>

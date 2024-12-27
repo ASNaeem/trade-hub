@@ -23,7 +23,7 @@ const ContactUsPage = () => {
     <div className="flex flex-col min-h-screen font-sans bg-gradient-to-b from-white to-gray-50">
       <Header
         shadow={true}
-        className="text-black !fixed bg-[var(--foreGroundColor)] overflow-hidden fill-[var(--buttonColor)]"
+        className="text-black !fixed bg-[var(--foreGroundColor)] fill-[var(--buttonColor)]"
       />
 
       <div className="container mx-auto px-4 pt-24 pb-12">

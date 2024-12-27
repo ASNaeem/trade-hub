@@ -6,6 +6,7 @@
   display: flex;
   align-items: center;
   justify-content: end;
+  overflow: visible !important;
 
   ul {
     display: flex;
@@ -15,21 +16,6 @@
     li {
       position: relative;
 
-      &::before {
-        content: "";
-        position: absolute;
-        left: 0;
-        bottom: 0;
-        width: 0;
-        height: 1px;
-        background-color: var(--accentColor);
-        transition: width 0.2s ease-in-out;
-      }
-
-      &:hover::before {
-        width: 100%;
-      }
-
       a {
         display: flex;
         gap: 4px;
@@ -37,4 +23,10 @@
       }
     }
   }
+}
+
+a {
+  display: flex;
+  gap: 12px !important;
+  border-radius: 4px;
 }

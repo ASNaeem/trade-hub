@@ -16,7 +16,7 @@ const ItemDetailsPage = () => {
     <div className="min-h-screen bg-[#fefefe]">
       <Header
         shadow={true}
-        className="text-black bg-[#FFF] overflow-hidden fill-[var(--buttonColor)]"
+        className="text-black bg-[#FFF] fill-[var(--buttonColor)]"
       />
       <div className="max-w-7xl mx-auto flex flex-col pt-[100px] px-4 py-8">
         <ItemDetails item={itemData} seller={sellerData} />

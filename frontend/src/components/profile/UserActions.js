@@ -1,9 +1,8 @@
-import { React, useState } from "react";
+import { React } from "react";
 import { Settings, LogOut, Globe } from "lucide-react";
 import EditProfileModal from "./edit_profile/EditProfileModal";
 
-const UserActions = () => {
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+const UserActions = ({ isEditModalOpen, setIsEditModalOpen }) => {
   return (
     <>
       <div className="flex gap-4 justify-end mb-4">

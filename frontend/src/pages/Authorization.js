@@ -147,10 +147,9 @@ function LoginPage({ from }) {
             <h2 className="text-2xl font-bold text-gray-800">
               Sign in to your account
             </h2>
-            <p className="mt-2 text-sm text-[var(--textColorSecondary)]">
+            <p className=" mt-2 text-sm text-[var(--textColorSecondary)]">
               Don't have an account?{" "}
-              <a
-                href="#"
+              <sign_up
                 onClick={(e) => {
                   e.preventDefault();
                   setCurrentPage("register");
@@ -158,7 +157,7 @@ function LoginPage({ from }) {
                 className="cursor-pointer text-[var(--linkTextColor)] hover:underline"
               >
                 Sign up
-              </a>
+              </sign_up>
             </p>
           </div>
           <form className="mt-6" onSubmit={handle_login}>
@@ -324,8 +323,7 @@ function LoginPage({ from }) {
               </h2>
               <p className="mt-2 text-sm text-gray-500">
                 Already have an account?{" "}
-                <a
-                  href="#"
+                <sign_in
                   onClick={(e) => {
                     e.preventDefault();
                     setCurrentPage("login");
@@ -333,7 +331,7 @@ function LoginPage({ from }) {
                   className="cursor-pointer text-[var(--linkTextColor)] hover:underline"
                 >
                   Sign in
-                </a>
+                </sign_in>
               </p>
             </div>
             <form onSubmit={handleSubmit}>
