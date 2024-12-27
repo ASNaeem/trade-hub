@@ -214,7 +214,7 @@ function LoginPage({ from }) {
           </form>
         </div>
       </div>
-      {showOtpModal && <OtpVerificationModal />}
+      {showOtpModal && <VerifyOtp />}
     </>
   );
 
