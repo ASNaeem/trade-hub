@@ -1,5 +1,6 @@
 import React from "react";
 import { Input } from "@nextui-org/react";
+import { motion } from "framer-motion";
 
 export default function InputField({
   placeholder,
@@ -10,7 +11,11 @@ export default function InputField({
   type = "text",
 }) {
   return (
-    <div>
+    <motion.div
+      initial={{ x: -20, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      transition={{ duration: 0.6 }}
+    >
       <label
         htmlFor={name}
         className="block text-sm pb-2 font-medium text-[var(--primaryColor)] "
@@ -26,6 +31,6 @@ export default function InputField({
         onChange={onChange}
         radius="sm"
       />
-    </div>
+    </motion.div>
   );
 }

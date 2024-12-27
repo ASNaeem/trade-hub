@@ -3,6 +3,8 @@ import FormField from "./FormField";
 import ImageUpload from "./ImageUpload";
 import { Select, SelectItem, Input, Checkbox } from "@nextui-org/react";
 import { conditions } from "../../data/mockdata_itemdetails";
+import { motion } from "framer-motion";
+
 const CATEGORIES = [
   "Electronics",
   "Clothing",
@@ -54,8 +56,11 @@ const ListingForm = ({ className }) => {
   };
 
   return (
-    <div
+    <motion.div
       className={`w-screen min-h-screen p-5 bg-[#F3F4F6] rounded-lg ${className}`}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1 }}
     >
       <div className="max-w-4xl mx-auto pl-6 pt-2 rounded-t-md flex justify-between items-center bg-[var(--buttonHoverColor)]">
         <h2 className="text-2xl font-bold text-[#fff] mb-6">
@@ -90,10 +95,15 @@ const ListingForm = ({ className }) => {
             />
           </FormField>
 
-          <FormField label="Condition" required>
-            <div className="flex flex-wrap gap-3 md:gap-7">
-              {conditions.map((condition) => (
-                <label key={condition} className="flex items-center">
+          <div className="flex flex-wrap gap-3 md:gap-7">
+            {conditions.map((condition, index) => (
+              <motion.div
+                key={condition}
+                initial={{ x: -20 * (index + 1), opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ duration: 0.6 }}
+              >
+                <label className="flex items-center">
                   <Checkbox
                     className=""
                     isRequired={true && !formData.condition}
@@ -108,9 +118,9 @@ const ListingForm = ({ className }) => {
                   />
                   <span className="capitalize">{condition}</span>
                 </label>
-              ))}
-            </div>
-          </FormField>
+              </motion.div>
+            ))}
+          </div>
 
           <FormField label="Features">
             <Input
@@ -218,7 +228,7 @@ const ListingForm = ({ className }) => {
           </div>
         </div>
       </form>
-    </div>
+    </motion.div>
   );
 };
 
