@@ -6,11 +6,11 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import { ring } from "ldrs";
+import { InputOtp } from "@nextui-org/input-otp";
+import axios from "axios";
 
 ring.register();
 
-import { InputOtp } from "@nextui-org/input-otp";
-import axios from "axios";
 function LoginPage({ from }) {
   const [CurrentPage, setCurrentPage] = useState("login");
 
