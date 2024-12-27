@@ -1,6 +1,5 @@
 import React from "react";
 import ItemDetails from "../components/item_details/ItemDetails";
-import SellerInfo from "../components/item_details/SellerInfo";
 import SimilarItems from "../components/item_details/SimilarItems";
 import Header from "../components/Header";
 
@@ -14,14 +13,13 @@ import {
 
 const ItemDetailsPage = () => {
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-[#fefefe]">
       <Header
         shadow={true}
         className="text-black bg-[#FFF] overflow-hidden fill-[var(--buttonColor)]"
       />
-      <div className="max-w-7xl mx-auto pt-[100px] px-4 py-8">
-        <ItemDetails item={itemData} />
-        <SellerInfo seller={sellerData} />
+      <div className="max-w-7xl mx-auto flex flex-col pt-[100px] px-4 py-8">
+        <ItemDetails item={itemData} seller={sellerData} />
         <SimilarItems items={similarItems} />
       </div>
     </div>
