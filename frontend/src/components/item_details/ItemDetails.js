@@ -14,10 +14,25 @@ import { useNavigate } from "react-router-dom";
 export default function ItemDetails({ item, seller }) {
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const navigate = useNavigate();
 
   const handleReport = () => {
     // Handle report submission logic here
     setIsReportDialogOpen(false);
+  };
+
+  // Helper function to get image source
+  const getImageSrc = (imageObj) => {
+    if (!imageObj) return "";
+    if (imageObj.type === "url") return imageObj.url;
+    if (imageObj.type === "buffer" && imageObj.data) {
+      return `data:${imageObj.contentType};base64,${imageObj.data}`;
+    }
+    return "";
+  };
+
+  const handleContactSeller = () => {
+    navigate(`/inbox?userId=${item.sellerId}`);
   };
 
   return (
@@ -26,7 +41,7 @@ export default function ItemDetails({ item, seller }) {
         {/* Image Gallery */}
         <div className="space-y-4">
           <img
-            src={item.images[selectedImageIndex]}
+            src={getImageSrc(item.images[selectedImageIndex])}
             alt={item.title}
             className="w-full h-[300px] md:h-[400px] object-cover rounded-lg border border-gray-100"
           />
@@ -42,7 +57,7 @@ export default function ItemDetails({ item, seller }) {
                 }`}
               >
                 <img
-                  src={image}
+                  src={getImageSrc(image)}
                   alt={`${item.title} ${index + 1}`}
                   className="w-full h-20 object-cover cursor-pointer transition-all duration-200"
                 />
@@ -76,7 +91,7 @@ export default function ItemDetails({ item, seller }) {
               </span>
               <span className="flex items-center bg-[var(--pricingColor)] px-3 py-1 rounded-full">
                 <Calendar className="h-4 w-4 mr-1 text-[var(--iconColor)]" />
-                Listed {item.listedDate}
+                Listed {new Date(item.createdAt).toLocaleDateString()}
               </span>
             </div>
 
@@ -125,7 +140,10 @@ export default function ItemDetails({ item, seller }) {
 
                 {/* Action Buttons */}
                 <div className="space-y-3 min-w-[200px]">
-                  <button className="w-full flex items-center justify-center bg-[var(--buttonColor)] text-white px-6 py-2.5 rounded-lg hover:opacity-90 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow-md">
+                  <button
+                    onClick={handleContactSeller}
+                    className="w-full flex items-center justify-center bg-[var(--buttonColor)] text-white px-6 py-2.5 rounded-lg hover:opacity-90 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow-md"
+                  >
                     <MessageCircleCode className="h-4 w-4 mr-2" />
                     Contact Seller
                   </button>

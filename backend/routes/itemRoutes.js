@@ -5,6 +5,7 @@ const authMiddleware = require("../middleware/authMiddleware");
 const sellerCheckMiddleware = require("../middleware/sellerCheckMiddleware");
 
 // Public Routes (No authentication required)
+// 1. Fixed routes first
 router.get("/", async (req, res) => {
   try {
     // Parse array parameters
@@ -46,6 +47,45 @@ router.get("/", async (req, res) => {
   }
 });
 
+// 2. Similar items route (must come before /:itemId)
+router.get("/similar", async (req, res) => {
+  try {
+    const {
+      category,
+      minPrice,
+      maxPrice,
+      conditions,
+      locations,
+      limit,
+      excludeId,
+    } = req.query;
+
+    const filters = {
+      category,
+      minPrice: minPrice ? Number(minPrice) : undefined,
+      maxPrice: maxPrice ? Number(maxPrice) : undefined,
+      conditions: conditions
+        ? Array.isArray(conditions)
+          ? conditions
+          : [conditions]
+        : [],
+      locations: locations
+        ? Array.isArray(locations)
+          ? locations
+          : [locations]
+        : [],
+      limit: limit ? Number(limit) : 4,
+    };
+
+    const similarItems = await itemService.getSimilarItems(excludeId, filters);
+    res.json(similarItems);
+  } catch (error) {
+    console.error("Error in GET /items/similar:", error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// 3. Parameter routes last
 router.get("/:itemId", async (req, res) => {
   try {
     const item = await itemService.getItemById(req.params.itemId);

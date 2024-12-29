@@ -272,6 +272,86 @@ const ItemService = {
       throw new Error(`Error deleting item: ${error.message}`);
     }
   },
+
+  async getSimilarItems(itemId, filters = {}) {
+    try {
+      const {
+        category,
+        minPrice,
+        maxPrice,
+        conditions = [],
+        locations = [],
+        limit = 4,
+      } = filters;
+
+      // Build the query
+      const query = {
+        _id: { $ne: itemId }, // Exclude the current item
+      };
+
+      if (category) {
+        query.category = category;
+      }
+
+      if (minPrice !== undefined || maxPrice !== undefined) {
+        query.price = {};
+        if (minPrice !== undefined) {
+          query.price.$gte = Number(minPrice);
+        }
+        if (maxPrice !== undefined) {
+          query.price.$lte = Number(maxPrice);
+        }
+      }
+
+      if (conditions.length > 0) {
+        query.condition = { $in: conditions };
+      }
+
+      if (locations.length > 0) {
+        query.location = { $in: locations };
+      }
+
+      // Find similar items
+      const items = await ItemModel.find(query)
+        .sort({ createdAt: -1 }) // Sort by newest first
+        .limit(limit);
+
+      // If we don't have enough items, try a broader search without location constraint
+      if (items.length < limit) {
+        delete query.location;
+        const additionalItems = await ItemModel.find({
+          ...query,
+          _id: {
+            $ne: itemId, // Keep excluding the current item
+            $nin: items.map((item) => item._id), // Also exclude items we already have
+          },
+        })
+          .sort({ createdAt: -1 })
+          .limit(limit - items.length);
+
+        items.push(...additionalItems);
+      }
+
+      // Convert to class instances and return summaries
+      return items.map((item) =>
+        new ItemClass(
+          item._id,
+          item.title,
+          item.description,
+          item.price,
+          item.brand,
+          item.category,
+          item.condition,
+          item.images,
+          item.location,
+          item.sellerId,
+          item.createdAt
+        ).getSummary()
+      );
+    } catch (error) {
+      throw new Error(`Error getting similar items: ${error.message}`);
+    }
+  },
 };
 
 module.exports = ItemService;

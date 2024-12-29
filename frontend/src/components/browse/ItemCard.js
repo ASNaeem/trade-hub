@@ -1,7 +1,9 @@
 import React from "react";
 import { Tag, MapPin } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export const ItemCard = ({
+  id,
   title,
   price,
   brand,
@@ -9,11 +11,13 @@ export const ItemCard = ({
   location,
   imageUrl,
 }) => {
+  const navigate = useNavigate();
+
   return (
     <div
       className="bg-white cursor-pointer rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:scale-[1.02]"
       onClick={() => {
-        window.location.href = `/item?item=${title}`;
+        navigate(`/item?id=${id}`);
       }}
     >
       <div className="relative h-48 overflow-hidden">

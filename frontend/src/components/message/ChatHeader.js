@@ -20,9 +20,9 @@ export function ChatHeader({ name, status = "online", lastSeen }) {
           <span className="text-sm text-gray-500">
             {status === "online"
               ? "Online"
-              //: lastSeen
-              //? `Last seen ${formatLastSeen(lastSeen)}`
-              : "Offline"}
+              : //: lastSeen
+                //? `Last seen ${formatLastSeen(lastSeen)}`
+                "Offline"}
           </span>
         </div>
       </div>

@@ -113,6 +113,34 @@ const ItemService = {
       );
     }
   },
+
+  // Get similar items based on current item
+  getSimilarItems: async (currentItem, limit = 4) => {
+    try {
+      // Calculate price range (±20%)
+      const minPrice = currentItem.price * 0.8;
+      const maxPrice = currentItem.price * 1.2;
+
+      const filters = {
+        category: currentItem.category,
+        minPrice,
+        maxPrice,
+        conditions: [currentItem.condition],
+        locations: [currentItem.location],
+        limit,
+        // Exclude current item from results
+        excludeId: currentItem._id,
+      };
+
+      const response = await api.get("/items/similar", { params: filters });
+      return response.data;
+    } catch (error) {
+      console.error("Error in getSimilarItems:", error);
+      throw new Error(
+        error.response?.data?.message || "Failed to fetch similar items"
+      );
+    }
+  },
 };
 
 export default ItemService;
