@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import axios from "axios";
+import { Package, Heart, MessageCircle } from "lucide-react";
 
 import UserInfo from "../components/profile/UserInfo";
 import UserStats from "../components/profile/UserStats";
@@ -24,6 +25,12 @@ const mockStats = {
 };
 
 function UserProfile() {
+  const [Tabs, setTabs] = useState([
+    { id: "selling", label: "Selling", icon: Package, count: 12 },
+    { id: "favorites", label: "Favorites", icon: Heart, count: 12 },
+    { id: "messages", label: "Messages", icon: MessageCircle, count: 12 },
+  ]);
+
   const location = useLocation();
   const [activeTab, setActiveTab] = useState("selling");
   const [user, setUser] = useState(null);
@@ -67,6 +74,19 @@ function UserProfile() {
         };
 
         setUser(userData);
+        setTabs(
+          Tabs.map((tab) =>
+            tab.id === "favorites"
+              ? {
+                  ...tab,
+                  count:
+                    response.data.favourites.length == 0
+                      ? " 0"
+                      : response.data.favourites.length,
+                }
+              : tab
+          )
+        );
       } catch (error) {
         console.error("Error fetching user data:", error);
         if (error.response?.status === 401) {
@@ -150,7 +170,11 @@ function UserProfile() {
           <div className="bg-white rounded-lg shadow px-5 py-6 sm:px-6">
             <UserStats stats={mockStats} />
             <div className="mt-8">
-              <ProfileTabs activeTab={activeTab} onTabChange={setActiveTab} />
+              <ProfileTabs
+                tabs={Tabs}
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+              />
             </div>
             <div className="mt-6">{renderTabContent()}</div>
           </div>

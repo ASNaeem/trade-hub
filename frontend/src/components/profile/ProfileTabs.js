@@ -1,13 +1,6 @@
 import React from "react";
-import { Package, Heart, MessageCircle } from "lucide-react";
 
-const tabs = [
-  { id: "selling", label: "Selling", icon: Package, count: 12 },
-  { id: "favorites", label: "Favorites", icon: Heart, count: 24 },
-  { id: "messages", label: "Messages", icon: MessageCircle, count: 3 },
-];
-
-const ProfileTabs = ({ activeTab, onTabChange }) => {
+const ProfileTabs = ({ tabs, activeTab, onTabChange }) => {
   return (
     <div className="border-b border-gray-200">
       <nav

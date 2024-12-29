@@ -36,6 +36,7 @@ const UserService = {
         phone,
         password: hashedPassword,
         isEmailVerified: false,
+        favourites: [],
       });
 
       await user.save();
@@ -82,7 +83,8 @@ const UserService = {
         name,
         email,
         phone,
-        password
+        password,
+        favorites
       );
 
       const salt = await bcrypt.genSalt(10);
@@ -93,6 +95,7 @@ const UserService = {
         email: userClassInstance.email.toLowerCase(),
         phone: userClassInstance.phone,
         password: userClassInstance.password,
+        favorites: userClassInstance.favorites,
       });
 
       const savedUser = await userDocument.save();
@@ -199,7 +202,8 @@ const UserService = {
         userDocument.govtDocument,
         userDocument.isDocumentVerified,
         userDocument.city,
-        userDocument.isEmailVerified
+        userDocument.isEmailVerified,
+        userDocument.favourites
       );
     } catch (error) {
       throw new Error(`Error finding user: ${error.message}`);
@@ -221,7 +225,8 @@ const UserService = {
       userDocument.govtDocument,
       userDocument.isDocumentVerified,
       userDocument.city,
-      userDocument.isEmailVerified
+      userDocument.isEmailVerified,
+      userDocument.favourites
     );
   },
   async updateUser(userId, updates) {
@@ -265,7 +270,8 @@ const UserService = {
         updatedDocument.govtDocument,
         updatedDocument.isDocumentVerified,
         updatedDocument.city,
-        updatedDocument.isEmailVerified
+        updatedDocument.isEmailVerified,
+        userDocument.favourites
       );
     } catch (error) {
       console.error("Error updating user:", error);
@@ -331,7 +337,8 @@ const UserService = {
           user.email,
           user.phone,
           user.password,
-          user.createdAt
+          user.createdAt,
+          user.favorites
         ),
         token: authToken,
       };
@@ -395,6 +402,43 @@ const UserService = {
 
       // Update password
       user.password = hashedPassword;
+      await user.save();
+
+      return true;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async addFavourite(userId, itemId) {
+    try {
+      const user = await UserModel.findById(userId);
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      user.favourites.push(itemId);
+      await user.save();
+
+      return true;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async deleteFavourite(userId, itemId) {
+    try {
+      const user = await UserModel.findById(userId);
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      const index = user.favourites.indexOf(itemId);
+      if (index === -1) {
+        throw new Error("Favorite not found");
+      }
+
+      user.favourites.splice(index, 1);
       await user.save();
 
       return true;

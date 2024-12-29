@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Heart,
   DollarSign,
@@ -9,11 +9,39 @@ import {
   Shield,
 } from "lucide-react";
 import AlertDialog from "../AlertDialog";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 export default function ItemDetails({ item, seller }) {
+  const [isFavorite, setIsFavorite] = useState(false);
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+  useEffect(() => {
+    async function getFavorites() {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          window.location.href = "/auth";
+          return;
+        }
+
+        const response = await axios.get(
+          "http://localhost:5000/api/users/favourites",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setIsFavorite(response.data.includes(item._id));
+      } catch (e) {}
+    }
+
+    getFavorites();
+  }, [isFavorite]);
+
   const navigate = useNavigate();
 
   const handleReport = () => {
@@ -33,6 +61,52 @@ export default function ItemDetails({ item, seller }) {
 
   const handleContactSeller = () => {
     navigate(`/inbox?userId=${item.sellerId}`);
+  };
+
+  const ToggleFavorites = async () => {
+    try {
+      if (isFavorite) {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          window.location.href = "/auth";
+          return;
+        }
+
+        const response = await axios.delete(
+          "http://localhost:5000/api/users/delete-favorite",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            data: {
+              itemId: item._id,
+            },
+          }
+        );
+
+        setIsFavorite(false);
+        return;
+      }
+      const token = localStorage.getItem("token");
+      if (!token) {
+        window.location.href = "/auth";
+        return;
+      }
+
+      const response = await axios.put(
+        "http://localhost:5000/api/users/add-favorite",
+        {
+          itemId: item._id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setIsFavorite(true);
+    } catch (e) {}
   };
 
   return (
@@ -78,8 +152,15 @@ export default function ItemDetails({ item, seller }) {
                   <DollarSign className="inline h-6 w-6" />
                   {item.price}
                 </span>
-                <button className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200">
-                  <Heart className="h-6 w-6 text-[var(--errorColor)]" />
+                <button
+                  className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
+                  onClick={ToggleFavorites}
+                >
+                  <Heart
+                    className={`h-6 w-6 ${
+                      isFavorite ? "fill-[var(--errorColor)]" : ""
+                    } text-[var(--errorColor)]`}
+                  />
                 </button>
               </div>
             </div>

@@ -12,7 +12,8 @@ class User extends Person {
     govtDocument = null,
     isDocumentVerified = false,
     city = null,
-    isEmailVerified = false
+    isEmailVerified = false,
+    favourites = []
   ) {
     super(id, name, email, password, createdAt);
     this._phone = phone;
@@ -22,6 +23,7 @@ class User extends Person {
     this._isDocumentVerified = isDocumentVerified;
     this._city = city;
     this._isEmailVerified = isEmailVerified;
+    this._favourites = favourites;
   }
 
   // Getter and Setter for Phone
@@ -89,6 +91,13 @@ class User extends Person {
     this._isEmailVerified = value;
   }
 
+  get favourites() {
+    return this._favourites;
+  }
+
+  set favourites(newFavorites) {
+    this._favourites = newFavorites;
+  }
   getSummary() {
     return {
       id: this.id,
@@ -101,6 +110,7 @@ class User extends Person {
       isEmailVerified: this.isEmailVerified,
       city: this.city,
       createdAt: this.createdAt,
+      favourites: this.favourites,
     };
   }
 }

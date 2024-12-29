@@ -1,10 +1,18 @@
 class Person {
-  constructor(id, name, email, password, createdAt = new Date()) {
+  constructor(
+    id,
+    name,
+    email,
+    password,
+    createdAt = new Date(),
+    favourites = []
+  ) {
     this._id = id;
     this._name = name;
     this._email = email;
     this._password = password; // Shared field
     this._createdAt = createdAt;
+    this._favourites = favourites;
   }
 
   // Getter for ID
@@ -32,7 +40,7 @@ class Person {
 
   // Getter and Setter for Password (restricted access)
   get password() {
-    return this._password
+    return this._password;
   }
 
   set password(newPassword) {
@@ -47,6 +55,14 @@ class Person {
     return this._createdAt;
   }
 
+  get favourites() {
+    return this.favourites;
+  }
+
+  set favourites(newFavorites) {
+    this.favourites = newFavorites;
+  }
+
   // Method to return a safe summary of the Person (for logging, etc.)
   getSummary() {
     return {
@@ -54,6 +70,7 @@ class Person {
       name: this._name,
       email: this._email,
       createdAt: this._createdAt,
+      favourites: this.favourites,
     };
   }
 }
