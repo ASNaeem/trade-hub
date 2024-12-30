@@ -2,6 +2,19 @@ import React from "react";
 import { Tag, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+const getImageSrc = (image) => {
+  if (!image) return "";
+
+  if (image.type === "base64" && image.data) {
+    if (image.data.startsWith("data:")) {
+      return image.data;
+    }
+    return `data:${image.contentType};base64,${image.data}`;
+  }
+
+  return image.url || "";
+};
+
 export const ItemCard = ({
   id,
   title,
@@ -9,7 +22,7 @@ export const ItemCard = ({
   brand,
   condition,
   location,
-  imageUrl,
+  image,
 }) => {
   const navigate = useNavigate();
 
@@ -22,7 +35,7 @@ export const ItemCard = ({
     >
       <div className="relative h-48 overflow-hidden">
         <img
-          src={imageUrl}
+          src={getImageSrc(image)}
           alt={title}
           className="w-full h-full object-cover"
         />

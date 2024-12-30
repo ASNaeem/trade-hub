@@ -197,7 +197,7 @@ const BrowsePage = () => {
               brand={item.brand}
               condition={item.condition}
               location={item.location}
-              imageUrl={item.images[0]?.url}
+              image={item.images[0]}
             />
           ))}
         </div>
