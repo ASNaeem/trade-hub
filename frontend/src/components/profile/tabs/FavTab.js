@@ -42,7 +42,6 @@ const favorites = [
 const FavTab = () => {
   const [favorites, setFavorites] = useState([]);
   useEffect(() => {
-    console.log("Fetching favorites");
     const fetchFavorites = async () => {
       try {
         const token = localStorage.getItem("token");
@@ -126,9 +125,7 @@ const FavTab = () => {
       ))}
 
       {favorites.length == 0 ? (
-        <p className="!min-w-7xl text-center text-sm text-gray-500">
-          No favorites yet
-        </p>
+        <p className="text-center text-sm text-gray-500">No favorites yet</p>
       ) : null}
     </div>
   );
