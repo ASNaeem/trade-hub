@@ -9,7 +9,7 @@ const UserInfo = ({ user }) => {
         <div className="flex-shrink-0">
           <img
             className="mx-auto h-20 w-20 object-cover rounded-full"
-            src={user.avatar}
+            src={user.profilePicture}
             alt={user.name}
           />
         </div>

@@ -26,7 +26,8 @@ const useMessages = () => {
     try {
       setError(null);
       const newMessage = await MessageService.sendMessage(receiverId, content);
-      setMessages((prev) => [...prev, newMessage]);
+      setMessages((prev) => [newMessage, ...prev]);
+      messages.reverse();
       return newMessage;
     } catch (err) {
       console.error("Error sending message:", err);

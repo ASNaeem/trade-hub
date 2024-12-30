@@ -33,10 +33,13 @@ router.get("/", authMiddleware, async (req, res) => {
 
 router.put("/:messageId/read", authMiddleware, async (req, res) => {
   try {
+    console.log(req.user.id);
+    console.log(req.params.messageId);
     const message = await messageService.markMessageAsRead(
       req.params.messageId,
       req.user.id
     );
+    console.log("fired");
     res.status(200).json(message);
   } catch (error) {
     if (error.message.includes("not found")) {

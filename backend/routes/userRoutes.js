@@ -131,10 +131,7 @@ router.put("/profile", authMiddleware, async (req, res) => {
     // Handle profile picture
     if (updates.profilePicture) {
       if (updates.profilePicture.data) {
-        updates.profilePicture = {
-          data: Buffer.from(updates.profilePicture.data),
-          contentType: updates.profilePicture.contentType || "image/jpeg",
-        };
+        updates.profilePicture = updates.profilePicture;
       }
     }
 
@@ -281,6 +278,34 @@ router.delete("/delete-favorite", authMiddleware, async (req, res) => {
     await userService.deleteFavourite(req.user.id, itemId);
 
     res.status(200).json({ message: "Favorite deleted successfully" });
+  } catch (error) {
+    console.error(`Error in ${req.originalUrl} -`, error.message);
+    res.status(400).json({ message: error.message });
+  }
+});
+
+router.get("/favourites", authMiddleware, async (req, res) => {
+  try {
+    const user = await userService.findUserById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json(user.favourites);
+  } catch (error) {
+    console.error(`Error in ${req.originalUrl} -`, error.message);
+    res.status(400).json({ message: error.message });
+  }
+});
+
+// User
+router.get("/:userId", authMiddleware, async (req, res) => {
+  try {
+    const user = await userService.findUserById(req.params.userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json(user.getUserSummary());
   } catch (error) {
     console.error(`Error in ${req.originalUrl} -`, error.message);
     res.status(400).json({ message: error.message });

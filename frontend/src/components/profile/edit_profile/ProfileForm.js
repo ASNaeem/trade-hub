@@ -25,7 +25,7 @@ const ProfileForm = forwardRef((props, ref) => {
   const [originalData, setOriginalData] = useState(null);
   const [hasChanges, setHasChanges] = useState(false);
   const [profileImage, setProfileImage] = useState(
-    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400"
+    "https://files.catbox.moe/aq0wd6.jpg"
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -62,12 +62,6 @@ const ProfileForm = forwardRef((props, ref) => {
 
         setProfileData(userData);
         setOriginalData(userData);
-
-        if (response.data.profilePicture?.data) {
-          setProfileImage(
-            `data:${response.data.profilePicture.contentType};base64,${response.data.profilePicture.data}`
-          );
-        }
       } catch (err) {
         setError(err.message);
         console.error("Error fetching user data:", err);
@@ -156,20 +150,40 @@ const ProfileForm = forwardRef((props, ref) => {
         const reader = new FileReader();
         reader.onloadend = async () => {
           const base64Data = reader.result.split(",")[1];
+          const formData = new FormData();
+          formData.append("image", base64Data);
+          formData.append("expiration", "600");
+          formData.append("key", "96ad74aae5c8f60fcc66797aa9bf5820");
 
-          const token = localStorage.getItem("token");
-          await axios.put(
-            "http://localhost:5000/api/users/profile",
-            {
-              profilePicture: {
-                data: base64Data,
-                contentType: file.type,
-              },
-            },
-            {
-              headers: { Authorization: `Bearer ${token}` },
+          try {
+            const response = await fetch("https://api.imgbb.com/1/upload", {
+              method: "POST",
+              body: formData,
+            });
+
+            if (!response.ok) {
+              const error = await response.json();
+              throw new Error(error.error.message);
             }
-          );
+
+            const data = await response.json();
+            const imageUrl = data.data.url;
+
+            const token = localStorage.getItem("token");
+            await axios.put(
+              "http://localhost:5000/api/users/profile",
+              {
+                profilePicture: imageUrl,
+              },
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              }
+            );
+            setProfileImage(imageUrl);
+          } catch (error) {
+            console.error("Error uploading image:", error);
+            setError("Failed to update profile picture");
+          }
 
           setProfileImage(reader.result);
         };

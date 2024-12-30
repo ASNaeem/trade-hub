@@ -13,7 +13,7 @@ import ListedItems from "../components/profile/tabs/ListedItems";
 import FavoritesTab from "../components/profile/tabs/FavTab";
 import MessagesTab from "../components/profile/tabs/MessagesTab";
 import Header from "../components/Header";
-
+import useMessages from "../hooks/useMessages";
 // Keep mock stats since we don't have this data yet
 const mockStats = {
   itemsSold: 245,
@@ -28,14 +28,16 @@ function UserProfile() {
   const [Tabs, setTabs] = useState([
     { id: "selling", label: "Selling", icon: Package, count: 12 },
     { id: "favorites", label: "Favorites", icon: Heart, count: 12 },
-    { id: "messages", label: "Messages", icon: MessageCircle, count: 12 },
+    { id: "messages", label: "Messages", icon: MessageCircle, count: " 0" },
   ]);
 
   const location = useLocation();
   const [activeTab, setActiveTab] = useState("selling");
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [isloading, setisloading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const { messages, loading, error } = useMessages();
+  const [inbox, setInbox] = useState([]);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -58,11 +60,12 @@ function UserProfile() {
         // Combine real user data with mock fields we don't have yet
         const userData = {
           ...response.data,
-          avatar:
-            "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400",
           location: response.data.city || "Location not set",
           isVerified: response.data.isDocumentVerified,
-          rating: 4.9,
+          profilePicture:
+            response.data.profilePicture != "null"
+              ? response.data.profilePicture
+              : "https://files.catbox.moe/aq0wd6.jpg",
           reviewCount: 120,
           joinedDate: new Date(response.data.createdAt).toLocaleDateString(
             "en-US",
@@ -87,18 +90,107 @@ function UserProfile() {
               : tab
           )
         );
+
+        const filteredMessages = messages.filter(
+          (msg) => msg.senderId !== response.data.id
+        );
+
+        const uniqueSenderIds = [
+          ...new Set(filteredMessages.map((msg) => msg.senderId)),
+        ];
+
+        const new_inbox_state = [];
+        uniqueSenderIds.forEach((senderId) => {
+          if (senderId) {
+            axios
+              .get(`http://localhost:5000/api/users/${senderId}`, {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              })
+              .then((res) => {
+                new_inbox_state.push({
+                  id: res.data.id,
+                  name: res.data.name,
+                  profilePicture: !res.data.profilePicture
+                    ? "https://files.catbox.moe/k4ao9t.png"
+                    : res.data.profilePicture,
+                  lastMessage: filteredMessages[0],
+                });
+              })
+              .finally(() => {
+                setInbox(new_inbox_state);
+                setTabs(
+                  Tabs.map((tab) =>
+                    tab.id === "messages"
+                      ? {
+                          ...tab,
+                          count:
+                            new_inbox_state.length < 0
+                              ? " 0"
+                              : new_inbox_state.length,
+                        }
+                      : tab
+                  )
+                );
+              });
+          }
+        });
+
+        const UniqueUnReadUserIDs = [
+          ...new Set(messages.map((msg) => msg.receiverId)),
+        ];
+
+        if (filteredMessages.length <= 0) {
+          UniqueUnReadUserIDs.forEach((receiverId, index) => {
+            if (receiverId) {
+              axios
+                .get(`http://localhost:5000/api/users/${receiverId}`, {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                })
+                .then((res) => {
+                  new_inbox_state.push({
+                    id: res.data.id,
+                    name: res.data.name,
+                    profilePicture: !res.data.profilePicture
+                      ? "https://files.catbox.moe/k4ao9t.png"
+                      : res.data.profilePicture,
+                    lastMessage: messages[index],
+                  });
+                })
+                .finally(() => {
+                  setInbox(new_inbox_state);
+                  setTabs(
+                    Tabs.map((tab) =>
+                      tab.id === "messages"
+                        ? {
+                            ...tab,
+                            count:
+                              new_inbox_state.length < 0
+                                ? " 0"
+                                : new_inbox_state.length,
+                          }
+                        : tab
+                    )
+                  );
+                });
+            }
+          });
+        }
       } catch (error) {
         console.error("Error fetching user data:", error);
         if (error.response?.status === 401) {
           window.location.href = "/auth";
         }
       } finally {
-        setLoading(false);
+        setisloading(false);
       }
     };
 
     fetchUserData();
-  }, []);
+  }, [loading]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -119,13 +211,13 @@ function UserProfile() {
       case "favorites":
         return <FavoritesTab />;
       case "messages":
-        return <MessagesTab />;
+        return <MessagesTab inbox={inbox} />;
       default:
         return null;
     }
   };
 
-  if (loading) {
+  if (isloading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-lg text-gray-600">Loading...</div>

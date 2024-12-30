@@ -37,6 +37,7 @@ const UserService = {
         password: hashedPassword,
         isEmailVerified: false,
         favourites: [],
+        profilePicture: "null",
       });
 
       await user.save();
@@ -84,7 +85,8 @@ const UserService = {
         email,
         phone,
         password,
-        favorites
+        favorites,
+        profilePicture
       );
 
       const salt = await bcrypt.genSalt(10);
@@ -96,6 +98,7 @@ const UserService = {
         phone: userClassInstance.phone,
         password: userClassInstance.password,
         favorites: userClassInstance.favorites,
+        profilePicture: userClassInstance.profilePicture,
       });
 
       const savedUser = await userDocument.save();
@@ -112,7 +115,8 @@ const UserService = {
           savedUser.email,
           savedUser.phone,
           savedUser.password,
-          savedUser.createdAt
+          savedUser.createdAt,
+          savedUser.profilePicture
         ),
         token,
       };
@@ -240,10 +244,7 @@ const UserService = {
       }
 
       if (updates.profilePicture?.data) {
-        updates.profilePicture.data = Buffer.from(
-          updates.profilePicture.data,
-          "base64"
-        );
+        updates.profilePicture.data = updates.profilePicture.data;
       }
 
       if (updates.govtDocument?.documentImage?.data) {
