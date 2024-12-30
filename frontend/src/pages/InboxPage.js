@@ -13,12 +13,12 @@ export default function InboxPage() {
   const { messages, loading, error, sendMessage, markAsRead } = useMessages();
 
   // Mark messages as read when they are viewed
-  useEffect(() => {
-    const unreadMessages = messages.filter(
-      (msg) => !msg.isRead && msg.receiverId === receiverId
-    );
-    unreadMessages.forEach((msg) => markAsRead(msg._id));
-  }, [messages, markAsRead, receiverId]);
+  // useEffect(() => {
+  //   const unreadMessages = messages.filter(
+  //     (msg) => !msg.isRead && msg.receiverId === receiverId
+  //   );
+  //   unreadMessages.forEach((msg) => markAsRead(msg._id));
+  // }, []);
 
   const handleSendMessage = async (text, images) => {
     if (!receiverId) {
@@ -30,6 +30,7 @@ export default function InboxPage() {
       // For now, we'll just send the text content
       // TODO: Implement image upload functionality
       await sendMessage(receiverId, text);
+      console.log(messages);
     } catch (err) {
       console.error("Failed to send message:", err);
     }
@@ -69,6 +70,7 @@ export default function InboxPage() {
             (msg) =>
               msg.senderId === receiverId || msg.receiverId === receiverId
           )
+          .reverse()
           .map((message) => (
             <Message
               key={message._id}

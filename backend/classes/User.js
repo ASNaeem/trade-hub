@@ -113,6 +113,14 @@ class User extends Person {
       favourites: this.favourites,
     };
   }
+
+  getUserSummary() {
+    return {
+      id: this.id,
+      name: this.name,
+      profilePicture: this.profilePicture,
+    };
+  }
 }
 
 module.exports = User;

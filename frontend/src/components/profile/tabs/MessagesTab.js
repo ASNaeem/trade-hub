@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Circle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import useMessages from "../../../hooks/useMessages";
 
-const MessagesTab = () => {
+const MessagesTab = ({ inbox }) => {
   const navigate = useNavigate();
   const { messages, loading, error } = useMessages();
 
@@ -32,57 +32,49 @@ const MessagesTab = () => {
   }
 
   // Group messages by conversation partner
-  const conversations = messages.reduce((acc, message) => {
-    const partnerId =
-      message.senderId === localStorage.getItem("userId")
-        ? message.receiverId
-        : message.senderId;
+  // const conversations = messages.reduce((acc, message) => {
+  //   const partnerId =
+  //     message.senderId === localStorage.getItem("userId")
+  //       ? message.receiverId
+  //       : message.senderId;
 
-    if (!acc[partnerId]) {
-      acc[partnerId] = {
-        lastMessage: message,
-        unreadCount: message.isRead ? 0 : 1,
-      };
-    } else {
-      if (message.createdAt > acc[partnerId].lastMessage.createdAt) {
-        acc[partnerId].lastMessage = message;
-      }
-      if (!message.isRead) {
-        acc[partnerId].unreadCount++;
-      }
-    }
-    return acc;
-  }, {});
+  //   if (!acc[partnerId]) {
+  //     acc[partnerId] = {
+  //       lastMessage: message,
+  //       unreadCount: message.isRead ? 0 : 1,
+  //     };
+  //   } else {
+  //     if (message.createdAt > acc[partnerId].lastMessage.createdAt) {
+  //       acc[partnerId].lastMessage = message;
+  //     }
+  //     if (!message.isRead) {
+  //       acc[partnerId].unreadCount++;
+  //     }
+  //   }
+  //   return acc;
+  // }, {});
 
   return (
     <div className="space-y-4">
-      {Object.entries(conversations).map(([partnerId, data]) => (
+      {inbox.map((data, index) => (
         <div
-          key={partnerId}
-          className={`p-4 rounded-lg ${
-            data.unreadCount > 0 ? "bg-blue-50" : "bg-white"
-          } hover:bg-gray-50 cursor-pointer`}
-          onClick={() => navigate(`/inbox?userId=${partnerId}`)}
+          key={index}
+          className={`p-4 rounded-lg hover:bg-gray-50 cursor-pointer`}
+          onClick={() => navigate(`/inbox?userId=${data.id}`)}
         >
           <div className="flex items-center space-x-4">
             <div className="flex-shrink-0">
-              <div className="h-12 w-12 bg-gray-200 rounded-full flex items-center justify-center">
-                <span className="text-gray-600 font-medium">
-                  {partnerId.slice(0, 2).toUpperCase()}
-                </span>
+              <div className="h-12 w-12 bg-gray-200 rounded-full overflow-hidden flex items-center justify-center">
+                {/* User avatar */}
+                <img src={data.profilePicture} />
               </div>
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-medium text-gray-900">
-                  User {partnerId.slice(0, 8)}
+                  {data.name.slice(0, 8)}
                 </p>
                 <div className="flex items-center">
-                  {data.unreadCount > 0 && (
-                    <span className="bg-blue-500 text-white text-xs rounded-full px-2 py-1 mr-2">
-                      {data.unreadCount}
-                    </span>
-                  )}
                   <span className="text-sm text-gray-500">
                     {new Date(data.lastMessage.createdAt).toLocaleDateString()}
                   </span>

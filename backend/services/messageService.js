@@ -3,6 +3,7 @@ const MessageModel = require("../models/messageSchema");
 const UserModel = require("../models/userSchema");
 const globalPolicySettingsService = require("../services/globalPolicySettingsService");
 const DisputeModel = require("../models/disputeSchema");
+const mongoose = require("mongoose");
 
 const MessageService = {
   async createMessage(senderId, receiverId, content) {
@@ -119,9 +120,32 @@ const MessageService = {
 
   async markMessageAsRead(messageId, userId) {
     try {
+      // Convert string ID to MongoDB ObjectId
+      const objectId = mongoose.Types.ObjectId.isValid(messageId)
+        ? new mongoose.Types.ObjectId(messageId)
+        : null;
+
+      if (!objectId) {
+        throw new Error("Invalid message ID format");
+      }
+
+      // First, let's find the message to debug
+      const existingMessage = await MessageModel.findById(objectId);
+      if (!existingMessage) {
+        throw new Error("Message does not exist");
+      }
+
+      // Log the message state
+      console.log("Message state:", {
+        messageId: existingMessage._id,
+        receiverId: existingMessage.receiverId,
+        currentUserId: userId,
+        isRead: existingMessage.isRead,
+      });
+
       const message = await MessageModel.findOneAndUpdate(
         {
-          _id: messageId,
+          _id: objectId,
           receiverId: userId,
           isRead: false,
         },
@@ -130,7 +154,15 @@ const MessageService = {
       );
 
       if (!message) {
-        throw new Error("Message not found or unauthorized");
+        throw new Error(
+          `Message not found or unauthorized. Conditions not met: ${
+            existingMessage.receiverId.toString() !== userId
+              ? "Wrong receiver"
+              : existingMessage.isRead
+              ? "Already read"
+              : "Unknown reason"
+          }`
+        );
       }
 
       return new MessageClass(
