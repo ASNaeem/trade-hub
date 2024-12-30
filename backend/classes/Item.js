@@ -19,7 +19,12 @@ class Item {
     this._brand = brand;
     this._category = category;
     this._condition = condition;
-    this._images = images;
+    this._images = images.map((img) => ({
+      type: img.type,
+      url: img.url || null,
+      data: img.data || null,
+      contentType: img.contentType || null,
+    }));
     this._location = location;
     this._sellerId = sellerId;
     this._createdAt = createdAt;
@@ -183,7 +188,12 @@ class Item {
       brand: this._brand,
       category: this._category,
       condition: this._condition,
-      images: this._images,
+      images: this._images.map((img) => ({
+        type: img.type,
+        url: img.url,
+        data: img.data,
+        contentType: img.contentType,
+      })),
       location: this._location,
       sellerId: this._sellerId,
       createdAt: this._createdAt,

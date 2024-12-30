@@ -144,7 +144,7 @@ const UserService = {
         throw new Error("Invalid credentials");
       }
 
-      // Check if email is verified
+      // Only check email verification if user exists and password matches
       if (!user.isEmailVerified) {
         // Generate new verification token and send it
         const token = await tokenService.createToken(

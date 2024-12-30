@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { WarningBanner } from "../components/message/WarningBanner";
 import { MessageInput } from "../components/message/MessageInput";
@@ -11,6 +11,15 @@ export default function InboxPage() {
   const location = useLocation();
   const receiverId = new URLSearchParams(location.search).get("userId");
   const { messages, loading, error, sendMessage, markAsRead } = useMessages();
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   // Mark messages as read when they are viewed
   useEffect(() => {
@@ -62,14 +71,14 @@ export default function InboxPage() {
       );
     }
 
+    const filteredMessages = messages.filter(
+      (msg) => msg.senderId === receiverId || msg.receiverId === receiverId
+    );
+
     return (
-      <div className="h-[600px] overflow-x-hidden overflow-y-auto p-4">
-        {messages
-          .filter(
-            (msg) =>
-              msg.senderId === receiverId || msg.receiverId === receiverId
-          )
-          .map((message) => (
+      <div className="h-[600px] overflow-x-hidden overflow-y-auto p-4 bg-gray-50">
+        <div className="space-y-2">
+          {filteredMessages.map((message) => (
             <Message
               key={message._id}
               text={message.content}
@@ -78,6 +87,8 @@ export default function InboxPage() {
               senderName={message.senderId === receiverId ? "Them" : "You"}
             />
           ))}
+          <div ref={messagesEndRef} />
+        </div>
       </div>
     );
   };
@@ -91,9 +102,13 @@ export default function InboxPage() {
       <div className="max-w-4xl mx-auto p-4 pt-20">
         <WarningBanner />
 
-        <div className="bg-white rounded-lg shadow-lg">
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           <ChatHeader
-            name={receiverId ? "Chat" : "Select a conversation"}
+            name={
+              receiverId
+                ? `Chat with ${receiverId.slice(0, 8)}`
+                : "Select a conversation"
+            }
             status={receiverId ? "online" : "offline"}
           />
 

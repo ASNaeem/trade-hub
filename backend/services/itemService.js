@@ -12,6 +12,43 @@ const ItemService = {
         throw new Error("User not found");
       }
 
+      // Convert image data if it's a blob URL
+      if (itemData.images) {
+        console.log(
+          "Processing images in backend:",
+          itemData.images.map((img) => ({
+            type: img.type,
+            hasData: !!img.data,
+            hasUrl: !!img.url,
+            contentType: img.contentType,
+            dataPreview: img.data?.substring(0, 100) + "...",
+          }))
+        );
+
+        itemData.images = itemData.images.map((image) => {
+          // Ensure we're using the correct type and data
+          if (image.type === "base64" && image.data) {
+            return {
+              type: "base64",
+              data: image.data,
+              contentType: image.contentType || "image/jpeg",
+              url: null,
+            };
+          }
+          return image;
+        });
+
+        console.log(
+          "Processed images:",
+          itemData.images.map((img) => ({
+            type: img.type,
+            hasData: !!img.data,
+            hasUrl: !!img.url,
+            contentType: img.contentType,
+          }))
+        );
+      }
+
       // Prepare complete item data
       const completeItemData = {
         ...itemData,
@@ -54,7 +91,17 @@ const ItemService = {
       });
 
       const savedItem = await itemDocument.save();
-      const itemInstance = new ItemClass(
+      console.log(
+        "Saved item images:",
+        savedItem.images.map((img) => ({
+          type: img.type,
+          hasData: !!img.data,
+          hasUrl: !!img.url,
+          contentType: img.contentType,
+        }))
+      );
+
+      return new ItemClass(
         savedItem._id,
         savedItem.title,
         savedItem.description,
@@ -66,10 +113,10 @@ const ItemService = {
         savedItem.location,
         savedItem.sellerId,
         savedItem.createdAt
-      );
-      return itemInstance.getSummary();
+      ).getSummary();
     } catch (error) {
-      throw new Error(`Error creating item: ${error.message}`);
+      console.error("Error in createItem:", error);
+      throw error;
     }
   },
 

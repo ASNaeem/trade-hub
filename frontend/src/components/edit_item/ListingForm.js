@@ -4,17 +4,22 @@ import ImageUpload from "./ImageUpload";
 import { Select, SelectItem, Input, Checkbox } from "@nextui-org/react";
 import { conditions } from "../../data/mockdata_itemdetails";
 import { motion } from "framer-motion";
+import ItemService from "../../services/itemService";
+import { useNavigate } from "react-router-dom";
 
 const CATEGORIES = [
   "Electronics",
   "Clothing",
   "Furniture",
   "Books",
-  "Bports",
+  "Sports",
   "Other",
 ];
 
 const ListingForm = ({ className }) => {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     title: "",
     condition: "",
@@ -51,8 +56,52 @@ const ListingForm = ({ className }) => {
     setPreviewUrls(newPreviewUrls);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      // Validate required fields
+      if (
+        !formData.title ||
+        !formData.description ||
+        !formData.price ||
+        !formData.condition ||
+        !formData.location ||
+        !formData.category
+      ) {
+        throw new Error("Please fill in all required fields");
+      }
+
+      if (formData.images.length === 0) {
+        throw new Error("Please add at least one image");
+      }
+
+      // Create FormData for image upload
+      const apiFormData = {
+        title: formData.title,
+        description: formData.description,
+        price: Number(formData.price),
+        brand: formData.brand,
+        category: formData.category,
+        condition: formData.condition,
+        location: formData.location,
+        features: formData.features,
+        images: formData.images.map((_, index) => ({
+          type: "url",
+          url: previewUrls[index], // Using preview URLs for now
+        })),
+      };
+
+      // Create the listing
+      const response = await ItemService.createItem(apiFormData);
+      navigate(`/item?id=${response._id}`);
+    } catch (err) {
+      setError(err.message || "Failed to create listing");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -71,6 +120,12 @@ const ListingForm = ({ className }) => {
         onSubmit={handleSubmit}
         className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg"
       >
+        {error && (
+          <div className="text-sm text-red-600 bg-red-50 p-3 rounded-lg mb-4">
+            {error}
+          </div>
+        )}
+
         <div className="space-y-6">
           <FormField label="Location" required>
             <Input
@@ -150,7 +205,7 @@ const ListingForm = ({ className }) => {
               required
               rows={4}
               placeholder="Add a description"
-              className="w-full px-4 py-2 border text-sm border-none rounded-lg outline-none transition-all duration-200 ease-in-out  placeholder:text-[#71717A] bg-[#F4F4F5] hover:bg-[#FAFAFA]"
+              className="w-full px-4 py-2 border text-sm border-none rounded-lg outline-none transition-all duration-200 ease-in-out placeholder:text-[#71717A] bg-[#F4F4F5] hover:bg-[#FAFAFA]"
               value={formData.description}
               onChange={(e) =>
                 setFormData({ ...formData, description: e.target.value })
@@ -168,7 +223,7 @@ const ListingForm = ({ className }) => {
                 required
                 min="0"
                 step="0.01"
-                className="w-full pl-8 py-2 border text-sm border-none rounded-lg outline-none transition-all duration-200 ease-in-out  placeholder:text-[#71717A] bg-[#F4F4F5] hover:bg-[#FAFAFA]"
+                className="w-full pl-8 py-2 border text-sm border-none rounded-lg outline-none transition-all duration-200 ease-in-out placeholder:text-[#71717A] bg-[#F4F4F5] hover:bg-[#FAFAFA]"
                 value={formData.price}
                 onChange={(e) =>
                   setFormData({ ...formData, price: e.target.value })
@@ -193,7 +248,7 @@ const ListingForm = ({ className }) => {
               onChange={(e) =>
                 setFormData({ ...formData, category: e.target.value })
               }
-              label="Select an category"
+              label="Select a category"
             >
               {CATEGORIES.map((category, index) => (
                 <SelectItem key={index}>{category}</SelectItem>
@@ -221,9 +276,10 @@ const ListingForm = ({ className }) => {
           <div className="flex justify-end">
             <button
               type="submit"
-              className="px-6 py-2 bg-[var(--buttonColor)] text-white rounded-md hover:bg-[var(--buttonHoverColor)] transition-colors duration-200"
+              disabled={loading}
+              className="px-6 py-2 bg-[var(--buttonColor)] text-white rounded-md hover:bg-[var(--buttonHoverColor)] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Create Listing
+              {loading ? "Creating..." : "Create Listing"}
             </button>
           </div>
         </div>

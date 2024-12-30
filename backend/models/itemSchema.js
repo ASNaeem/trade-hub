@@ -27,21 +27,21 @@ const itemSchema = new mongoose.Schema(
     condition: {
       type: String,
       required: true,
-      enum: ["New", "Used", "Refurbished"],
+      enum: ["New", "Like New", "Used", "Refurbished"],
     },
     images: [
       {
         type: {
           type: String,
           required: true,
-          enum: ["url", "buffer"],
+          enum: ["url", "buffer", "base64"],
           default: "url",
         },
         url: {
           type: String,
         },
         data: {
-          type: Buffer,
+          type: String,
         },
         contentType: {
           type: String,
