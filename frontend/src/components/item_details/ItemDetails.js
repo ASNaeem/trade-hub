@@ -9,10 +9,10 @@ import {
   Shield,
 } from "lucide-react";
 import AlertDialog from "../AlertDialog";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
-export default function ItemDetails({ item, seller }) {
+import UserService from "../../services/userService";
+import axios from "axios";
+export default function ItemDetails({ item }) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -27,7 +27,7 @@ export default function ItemDetails({ item, seller }) {
         }
 
         const response = await axios.get(
-          "http://localhost:5000/api/users/favourites",
+          "http://localhost:5000/api/users/my-favourites",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -36,13 +36,45 @@ export default function ItemDetails({ item, seller }) {
         );
 
         setIsFavorite(response.data.includes(item._id));
-      } catch (e) {}
+      } catch (error) {
+        console.error("Error fetching favorites:", error);
+      }
     }
 
     getFavorites();
-  }, [isFavorite]);
+  }, [item._id]);
 
+  const [seller, setSeller] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchSellerDetails = async () => {
+      if (!item?.sellerId) {
+        setLoading(false);
+        setError("No seller information available");
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+        const sellerData = await UserService.getUserById(item.sellerId);
+        if (!sellerData) {
+          throw new Error("Seller not found");
+        }
+        setSeller(sellerData);
+      } catch (error) {
+        console.error("Failed to fetch seller details:", error);
+        setError("Failed to load seller information");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSellerDetails();
+  }, [item?.sellerId]); // Only re-run if sellerId changes
 
   const handleReport = () => {
     // Handle report submission logic here
@@ -50,28 +82,44 @@ export default function ItemDetails({ item, seller }) {
   };
 
   // Helper function to get image source
-  const getImageSrc = (imageObj) => {
-    if (!imageObj) return "";
-    if (imageObj.type === "url") return imageObj.url;
-    if (imageObj.type === "buffer" && imageObj.data) {
-      return `data:${imageObj.contentType};base64,${imageObj.data}`;
+  const getImageSrc = (image) => {
+    if (!image) return "";
+
+    console.log("Processing image in ItemDetails:", {
+      type: image.type,
+      hasData: !!image.data,
+      hasUrl: !!image.url,
+      contentType: image.contentType,
+      dataPreview: image.data?.substring(0, 100) + "...",
+    });
+
+    if (image.type === "base64" && image.data) {
+      // If the data is already a complete data URL, return it
+      if (image.data.startsWith("data:")) {
+        return image.data;
+      }
+      // Otherwise, construct the data URL
+      return `data:${image.contentType};base64,${image.data}`;
     }
-    return "";
+
+    return image.url || "";
   };
 
   const handleContactSeller = () => {
-    navigate(`/inbox?userId=${item.sellerId}`);
+    if (item?.sellerId) {
+      navigate(`/inbox?userId=${item.sellerId}`);
+    }
   };
 
   const ToggleFavorites = async () => {
     try {
-      if (isFavorite) {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          window.location.href = "/auth";
-          return;
-        }
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/auth");
+        return;
+      }
 
+      if (isFavorite) {
         const response = await axios.delete(
           "http://localhost:5000/api/users/delete-favorite",
           {
@@ -83,31 +131,52 @@ export default function ItemDetails({ item, seller }) {
             },
           }
         );
-
+        console.log("Removed from favorites:", response.data);
         setIsFavorite(false);
-        return;
-      }
-      const token = localStorage.getItem("token");
-      if (!token) {
-        window.location.href = "/auth";
-        return;
-      }
-
-      const response = await axios.put(
-        "http://localhost:5000/api/users/add-favorite",
-        {
-          itemId: item._id,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
+      } else {
+        const response = await axios.put(
+          "http://localhost:5000/api/users/add-favorite",
+          {
+            itemId: item._id,
           },
-        }
-      );
-
-      setIsFavorite(true);
-    } catch (e) {}
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log("Added to favorites:", response.data);
+        setIsFavorite(true);
+      }
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+      // Add error handling UI if needed
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--buttonColor)]"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px] text-red-500">
+        {error}
+      </div>
+    );
+  }
+
+  if (!item) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        Item not found
+      </div>
+    );
+  }
 
   return (
     <>
@@ -153,13 +222,13 @@ export default function ItemDetails({ item, seller }) {
                   {item.price}
                 </span>
                 <button
-                  className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
                   onClick={ToggleFavorites}
+                  className={`p-2 rounded-full transition-colors duration-200 ${
+                    isFavorite ? "text-red-600" : "hover:bg-gray-100"
+                  }`}
                 >
                   <Heart
-                    className={`h-6 w-6 ${
-                      isFavorite ? "fill-[var(--errorColor)]" : ""
-                    } text-[var(--errorColor)]`}
+                    className={`h-6 w-6 ${isFavorite ? "fill-current" : ""}`}
                   />
                 </button>
               </div>
@@ -186,58 +255,63 @@ export default function ItemDetails({ item, seller }) {
             </div>
 
             {/* Seller Info and Action Buttons Section */}
-            <div className="py-4">
-              <div className="flex justify-between items-start">
-                {/* Seller Info */}
-                <div className="space-y-4">
-                  <h2 className="text-lg font-semibold text-[var(--textColorPrimary)]">
-                    Seller Information
-                  </h2>
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-[var(--buttonColor)] text-white rounded-full flex items-center justify-center">
-                      <span className="text-xl font-bold">
-                        {seller.name[0]}
-                      </span>
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-semibold text-[var(--textColorPrimary)]">
-                        {seller.name}
-                      </h2>
-                      <div className="flex items-center pt-1 space-x-2">
-                        <Shield className="h-4 w-4 text-[var(--buttonColor)]" />
-                        <span className="text-[var(--buttonColor)]">
-                          Verified Seller
+            {seller && (
+              <div className="py-4">
+                <div className="flex justify-between items-start">
+                  {/* Seller Info */}
+                  <div className="space-y-4">
+                    <h2 className="text-lg font-semibold text-[var(--textColorPrimary)]">
+                      Seller Information
+                    </h2>
+                    <div className="flex items-center space-x-4">
+                      <div className="w-12 h-12 bg-[var(--buttonColor)] text-white rounded-full flex items-center justify-center">
+                        <span className="text-xl font-bold">
+                          {seller.name ? seller.name[0].toUpperCase() : "?"}
                         </span>
                       </div>
+                      <div>
+                        <h2 className="text-xl font-semibold text-[var(--textColorPrimary)]">
+                          {seller.name || "Unknown Seller"}
+                        </h2>
+                        {seller.isVerified && (
+                          <div className="flex items-center pt-1 space-x-2">
+                            <Shield className="h-4 w-4 text-[var(--buttonColor)]" />
+                            <span className="text-[var(--buttonColor)]">
+                              Verified Seller
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Calendar className="h-4 w-4 text-[var(--iconColor)]" />
+                      <span className="text-[var(--textColorSecondary)]">
+                        Member since{" "}
+                        {new Date(seller.createdAt).toLocaleDateString()}
+                      </span>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Calendar className="h-4 w-4 text-[var(--iconColor)]" />
-                    <span className="text-[var(--textColorSecondary)]">
-                      Member since {seller.memberSince}
-                    </span>
+
+                  {/* Action Buttons */}
+                  <div className="space-y-3 min-w-[200px]">
+                    <button
+                      onClick={handleContactSeller}
+                      className="w-full flex items-center justify-center bg-[var(--buttonColor)] text-white px-6 py-2.5 rounded-lg hover:opacity-90 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow-md"
+                    >
+                      <MessageCircleCode className="h-4 w-4 mr-2" />
+                      Contact Seller
+                    </button>
+                    <button
+                      className="w-full flex items-center justify-center px-6 py-2.5 bg-white border border-gray-200 rounded-lg shadow-sm font-medium text-sm text-gray-700 hover:bg-gray-50 focus:outline-none transition-all duration-200"
+                      onClick={() => setIsReportDialogOpen(true)}
+                    >
+                      <FlagIcon className="h-4 w-4 mr-2 text-gray-500" />
+                      Report Listing
+                    </button>
                   </div>
                 </div>
-
-                {/* Action Buttons */}
-                <div className="space-y-3 min-w-[200px]">
-                  <button
-                    onClick={handleContactSeller}
-                    className="w-full flex items-center justify-center bg-[var(--buttonColor)] text-white px-6 py-2.5 rounded-lg hover:opacity-90 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow-md"
-                  >
-                    <MessageCircleCode className="h-4 w-4 mr-2" />
-                    Contact Seller
-                  </button>
-                  <button
-                    className="w-full flex items-center justify-center px-6 py-2.5 bg-white border border-gray-200 rounded-lg shadow-sm font-medium text-sm text-gray-700 hover:bg-gray-50 focus:outline-none transition-all duration-200"
-                    onClick={() => setIsReportDialogOpen(true)}
-                  >
-                    <FlagIcon className="h-4 w-4 mr-2 text-gray-500" />
-                    Report Listing
-                  </button>
-                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

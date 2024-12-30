@@ -26,10 +26,7 @@ const listItems = async (filters = {}) => {
       query.price = { ...query.price, $lte: parseFloat(filters.maxPrice) };
     }
 
-    const items = await ItemModel.find(query).populate(
-      "sellerId",
-      "name email"
-    );
+    const items = await ItemModel.find(query);
     console.log("\nTotal items:", items.length);
     items.forEach((item) => {
       console.log(`\nID: ${item._id}`);
@@ -39,8 +36,15 @@ const listItems = async (filters = {}) => {
       console.log(`Price: $${item.price}`);
       console.log(`Condition: ${item.condition}`);
       console.log(`Location: ${item.location}`);
-      console.log(`Seller: ${item.sellerId.name} (${item.sellerId.email})`);
-      console.log(`Images: ${item.images.length}`);
+      console.log(`Seller ID: ${item.sellerId}`);
+      console.log("Images:");
+      item.images.forEach((img, idx) => {
+        console.log(`  Image ${idx + 1}:`);
+        console.log(`    Type: ${img.type}`);
+        console.log(`    URL: ${img.url}`);
+        console.log(`    Content Type: ${img.contentType}`);
+        console.log(`    Has Data: ${img.data ? "Yes" : "No"}`);
+      });
       console.log(`Created: ${item.createdAt}`);
       console.log("------------------------");
     });

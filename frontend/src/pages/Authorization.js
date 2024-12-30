@@ -35,6 +35,7 @@ function LoginPage({ from }) {
         }
       );
 
+      // Only proceed with OTP if email verification is required
       if (response.data.requireVerification) {
         setVerificationEmail(email);
         setShowOtpModal(true);
@@ -46,12 +47,16 @@ function LoginPage({ from }) {
       localStorage.setItem("user", JSON.stringify(response.data.user));
       localStorage.setItem("loggedin", true);
 
-      // Redirect based on 'from' prop
-      from === "chats"
-        ? (window.location.href = "/user?loggedin=true")
-        : (window.location.href = "/user");
+      // Redirect to appropriate page
+      window.location.href = from === "chats" ? "/user?loggedin=true" : "/user";
     } catch (error) {
-      alert(error.response?.data?.message || "Login failed");
+      const errorMessage = error.response?.data?.message || "Login failed";
+      // Show error in a more user-friendly way
+      alert(
+        errorMessage === "Invalid credentials"
+          ? "Invalid email or password"
+          : errorMessage
+      );
     }
   };
 

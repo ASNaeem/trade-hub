@@ -1,57 +1,38 @@
 import React, { useState, useEffect } from "react";
 import { Heart, ExternalLink } from "lucide-react";
 import axios from "axios";
-//#region Fake Data
+import { useNavigate } from "react-router-dom";
 
-const favorites = [
-  {
-    id: 1,
-    title: "Vintage Camera",
-    price: 299,
-    image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400",
-    seller: "Retro Collectibles",
-    likes: 45,
-  },
-  {
-    id: 2,
-    title: "Designer Watch",
-    price: 199,
-    image: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400",
-    seller: "Luxury Timepieces",
-    likes: 32,
-  },
-  {
-    id: 2,
-    title: "Designer Watch",
-    price: 199,
-    image: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400",
-    seller: "Luxury Timepieces",
-    likes: 32,
-  },
-  {
-    id: 2,
-    title: "Designer Watch",
-    price: 199,
-    image: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400",
-    seller: "Luxury Timepieces",
-    likes: 32,
-  },
-];
-//#endregion
+const getImageSrc = (image) => {
+  if (!image) return "";
+
+  if (image.type === "base64" && image.data) {
+    if (image.data.startsWith("data:")) {
+      return image.data;
+    }
+    return `data:${image.contentType};base64,${image.data}`;
+  }
+
+  return image.url || "";
+};
 
 const FavTab = () => {
   const [favorites, setFavorites] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+
   useEffect(() => {
     const fetchFavorites = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
-          window.location.href = "/auth";
+          navigate("/auth");
           return;
         }
 
-        const response = await axios.get(
-          "http://localhost:5000/api/users/favourites",
+        const favResponse = await axios.get(
+          "http://localhost:5000/api/users/my-favourites",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -59,42 +40,35 @@ const FavTab = () => {
           }
         );
 
-        let req_tabs = [];
+        const itemPromises = favResponse.data.map((itemId) =>
+          axios.get(`http://localhost:5000/api/items/${itemId}`)
+        );
 
-        response.data.forEach((item) => {
-          req_tabs.push(
-            new Promise((resolve) => {
-              axios
-                .get(`http://localhost:5000/api/items/${item}`)
-                .then((res) => resolve(res.data));
-            })
-          );
-        });
-
-        const tabsdata = await Promise.all(req_tabs);
-
-        setFavorites(tabsdata);
+        const itemResponses = await Promise.all(itemPromises);
+        const favoriteItems = itemResponses.map((response) => response.data);
+        setFavorites(favoriteItems);
       } catch (error) {
-        console.error("Error fetching user data:", error);
-        if (error.response?.status === 401) {
-          window.location.href = "/auth";
-        }
+        console.error("Error fetching favorites:", error);
+        setError("Failed to load favorite items");
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchFavorites();
-  }, []);
+  }, [navigate]);
+
   return (
     <div
       className={`grid grid-cols-1  ${
-        favorites.length != 0 ? "sm:grid-cols-2 lg:grid-cols-3" : ""
+        favorites.length !== 0 ? "sm:grid-cols-2 lg:grid-cols-3" : ""
       } gap-6`}
     >
       {favorites.map((item) => (
         <div key={item._id} className="group relative">
           <div className="relative aspect-square overflow-hidden rounded-lg">
             <img
-              src={item.images[0].url}
+              src={getImageSrc(item.images[0])}
               alt={item.title}
               className="h-full w-full object-cover object-center group-hover:scale-105 transition"
             />
@@ -124,9 +98,11 @@ const FavTab = () => {
         </div>
       ))}
 
-      {favorites.length == 0 ? (
-        <p className="text-center text-sm text-gray-500">No favorites yet</p>
-      ) : null}
+      {favorites.length === 0 && (
+        <div className="col-span-full text-center py-10">
+          <p className="text-gray-500">No favorites yet</p>
+        </div>
+      )}
     </div>
   );
 };

@@ -83,7 +83,7 @@ function UserProfile() {
               ? {
                   ...tab,
                   count:
-                    response.data.favourites.length == 0
+                    response.data.favourites.length === 0
                       ? " 0"
                       : response.data.favourites.length,
                 }
