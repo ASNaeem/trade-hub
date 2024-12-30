@@ -13,8 +13,35 @@ import { useNavigate } from "react-router-dom";
 import UserService from "../../services/userService";
 
 export default function ItemDetails({ item }) {
+  const [isFavorite, setIsFavorite] = useState(false);
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+  useEffect(() => {
+    async function getFavorites() {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          window.location.href = "/auth";
+          return;
+        }
+
+        const response = await axios.get(
+          "http://localhost:5000/api/users/favourites",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setIsFavorite(response.data.includes(item._id));
+      } catch (e) {}
+    }
+
+    getFavorites();
+  }, [isFavorite]);
+
   const [seller, setSeller] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -76,6 +103,52 @@ export default function ItemDetails({ item }) {
     if (item?.sellerId) {
       navigate(`/inbox?userId=${item.sellerId}`);
     }
+  };
+
+  const ToggleFavorites = async () => {
+    try {
+      if (isFavorite) {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          window.location.href = "/auth";
+          return;
+        }
+
+        const response = await axios.delete(
+          "http://localhost:5000/api/users/delete-favorite",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            data: {
+              itemId: item._id,
+            },
+          }
+        );
+
+        setIsFavorite(false);
+        return;
+      }
+      const token = localStorage.getItem("token");
+      if (!token) {
+        window.location.href = "/auth";
+        return;
+      }
+
+      const response = await axios.put(
+        "http://localhost:5000/api/users/add-favorite",
+        {
+          itemId: item._id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setIsFavorite(true);
+    } catch (e) {}
   };
 
   if (loading) {

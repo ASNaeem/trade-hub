@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Heart, ExternalLink } from "lucide-react";
-
+import axios from "axios";
 //#region Fake Data
 
 const favorites = [
@@ -40,13 +40,61 @@ const favorites = [
 //#endregion
 
 const FavTab = () => {
+  const [favorites, setFavorites] = useState([]);
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          window.location.href = "/auth";
+          return;
+        }
+
+        const response = await axios.get(
+          "http://localhost:5000/api/users/favourites",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        let req_tabs = [];
+
+        response.data.forEach((item) => {
+          req_tabs.push(
+            new Promise((resolve) => {
+              axios
+                .get(`http://localhost:5000/api/items/${item}`)
+                .then((res) => resolve(res.data));
+            })
+          );
+        });
+
+        const tabsdata = await Promise.all(req_tabs);
+
+        setFavorites(tabsdata);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        if (error.response?.status === 401) {
+          window.location.href = "/auth";
+        }
+      }
+    };
+
+    fetchFavorites();
+  }, []);
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div
+      className={`grid grid-cols-1  ${
+        favorites.length != 0 ? "sm:grid-cols-2 lg:grid-cols-3" : ""
+      } gap-6`}
+    >
       {favorites.map((item) => (
-        <div key={item.id} className="group relative">
+        <div key={item._id} className="group relative">
           <div className="relative aspect-square overflow-hidden rounded-lg">
             <img
-              src={item.image}
+              src={item.images[0].url}
               alt={item.title}
               className="h-full w-full object-cover object-center group-hover:scale-105 transition"
             />
@@ -62,7 +110,7 @@ const FavTab = () => {
                 ${item.price}
               </p>
               <a
-                href="/item"
+                href={`item?id=${item._id}`}
                 className="text-sm text-[var(--linkTextColor)] hover:text-[var(--linkTextHoverColor)] flex items-center"
               >
                 View <ExternalLink className="h-4 w-4 ml-1" />
@@ -75,6 +123,10 @@ const FavTab = () => {
           </div>
         </div>
       ))}
+
+      {favorites.length == 0 ? (
+        <p className="text-center text-sm text-gray-500">No favorites yet</p>
+      ) : null}
     </div>
   );
 };

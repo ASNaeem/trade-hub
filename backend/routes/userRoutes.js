@@ -235,4 +235,55 @@ router.get("/:userId", async (req, res) => {
   }
 });
 
+// Add favorites route
+router.put("/add-favorite", authMiddleware, async (req, res) => {
+  try {
+    const { itemId } = req.body;
+
+    const user = await userService.findUserById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    await userService.addFavourite(req.user.id, itemId);
+
+    res.status(200).json({ message: "Favorite added successfully" });
+  } catch (error) {
+    console.error(`Error in ${req.originalUrl} -`, error.message);
+    res.status(400).json({ message: error.message });
+  }
+});
+
+router.delete("/delete-favorite", authMiddleware, async (req, res) => {
+  try {
+    const { itemId } = req.body;
+
+    const user = await userService.findUserById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    await userService.deleteFavourite(req.user.id, itemId);
+
+    res.status(200).json({ message: "Favorite deleted successfully" });
+  } catch (error) {
+    console.error(`Error in ${req.originalUrl} -`, error.message);
+    res.status(400).json({ message: error.message });
+  }
+});
+
+router.get("/favourites", authMiddleware, async (req, res) => {
+  try {
+    const user = await userService.findUserById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json(user.favourites);
+  } catch (error) {
+    console.error(`Error in ${req.originalUrl} -`, error.message);
+    res.status(400).json({ message: error.message });
+  }
+});
+
 module.exports = router;

@@ -31,6 +31,11 @@ const userSchema = new mongoose.Schema({
     data: Buffer,
     contentType: String,
   },
+  favourites: {
+    type: [String],
+    required: true,
+    default: [],
+  },
   govtDocument: {
     documentType: {
       type: String,
