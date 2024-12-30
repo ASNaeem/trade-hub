@@ -219,6 +219,21 @@ router.put("/change-password", authMiddleware, async (req, res) => {
   }
 });
 
+// Move the favourites route before the :userId route to prevent path conflicts
+router.get("/my-favourites", authMiddleware, async (req, res) => {
+  try {
+    const user = await userService.findUserById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json(user.favourites);
+  } catch (error) {
+    console.error(`Error in ${req.originalUrl} -`, error.message);
+    res.status(400).json({ message: error.message });
+  }
+});
+
 // Get user by ID
 router.get("/:userId", async (req, res) => {
   try {
@@ -266,20 +281,6 @@ router.delete("/delete-favorite", authMiddleware, async (req, res) => {
     await userService.deleteFavourite(req.user.id, itemId);
 
     res.status(200).json({ message: "Favorite deleted successfully" });
-  } catch (error) {
-    console.error(`Error in ${req.originalUrl} -`, error.message);
-    res.status(400).json({ message: error.message });
-  }
-});
-
-router.get("/favourites", authMiddleware, async (req, res) => {
-  try {
-    const user = await userService.findUserById(req.user.id);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    res.status(200).json(user.favourites);
   } catch (error) {
     console.error(`Error in ${req.originalUrl} -`, error.message);
     res.status(400).json({ message: error.message });

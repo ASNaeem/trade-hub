@@ -11,7 +11,7 @@ import {
 import AlertDialog from "../AlertDialog";
 import { useNavigate } from "react-router-dom";
 import UserService from "../../services/userService";
-
+import axios from "axios";
 export default function ItemDetails({ item }) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
@@ -27,7 +27,7 @@ export default function ItemDetails({ item }) {
         }
 
         const response = await axios.get(
-          "http://localhost:5000/api/users/favourites",
+          "http://localhost:5000/api/users/my-favourites",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -36,11 +36,13 @@ export default function ItemDetails({ item }) {
         );
 
         setIsFavorite(response.data.includes(item._id));
-      } catch (e) {}
+      } catch (error) {
+        console.error("Error fetching favorites:", error);
+      }
     }
 
     getFavorites();
-  }, [isFavorite]);
+  }, [item._id]);
 
   const [seller, setSeller] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -92,7 +94,11 @@ export default function ItemDetails({ item }) {
     });
 
     if (image.type === "base64" && image.data) {
-      // Construct the complete data URL
+      // If the data is already a complete data URL, return it
+      if (image.data.startsWith("data:")) {
+        return image.data;
+      }
+      // Otherwise, construct the data URL
       return `data:${image.contentType};base64,${image.data}`;
     }
 
@@ -107,13 +113,13 @@ export default function ItemDetails({ item }) {
 
   const ToggleFavorites = async () => {
     try {
-      if (isFavorite) {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          window.location.href = "/auth";
-          return;
-        }
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/auth");
+        return;
+      }
 
+      if (isFavorite) {
         const response = await axios.delete(
           "http://localhost:5000/api/users/delete-favorite",
           {
@@ -125,30 +131,27 @@ export default function ItemDetails({ item }) {
             },
           }
         );
-
+        console.log("Removed from favorites:", response.data);
         setIsFavorite(false);
-        return;
-      }
-      const token = localStorage.getItem("token");
-      if (!token) {
-        window.location.href = "/auth";
-        return;
-      }
-
-      const response = await axios.put(
-        "http://localhost:5000/api/users/add-favorite",
-        {
-          itemId: item._id,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
+      } else {
+        const response = await axios.put(
+          "http://localhost:5000/api/users/add-favorite",
+          {
+            itemId: item._id,
           },
-        }
-      );
-
-      setIsFavorite(true);
-    } catch (e) {}
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log("Added to favorites:", response.data);
+        setIsFavorite(true);
+      }
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+      // Add error handling UI if needed
+    }
   };
 
   if (loading) {
@@ -218,8 +221,15 @@ export default function ItemDetails({ item }) {
                   <DollarSign className="inline h-6 w-6" />
                   {item.price}
                 </span>
-                <button className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-200">
-                  <Heart className="h-6 w-6 text-[var(--errorColor)]" />
+                <button
+                  onClick={ToggleFavorites}
+                  className={`p-2 rounded-full transition-colors duration-200 ${
+                    isFavorite ? "text-red-600" : "hover:bg-gray-100"
+                  }`}
+                >
+                  <Heart
+                    className={`h-6 w-6 ${isFavorite ? "fill-current" : ""}`}
+                  />
                 </button>
               </div>
             </div>
