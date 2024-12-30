@@ -93,8 +93,7 @@ export default function InboxPage() {
               senderName={message.senderId === receiverId ? "Them" : "You"}
             />
           ))}
-          <div ref={messagesEndRef} />
-        </div>
+        <div ref={messagesEndRef} />
       </div>
     );
   };
