@@ -26,7 +26,7 @@ const mockStats = {
 
 function UserProfile() {
   const [Tabs, setTabs] = useState([
-    { id: "selling", label: "Selling", icon: Package, count: 12 },
+    { id: "selling", label: "Selling", icon: Package, count: " 0" },
     { id: "favorites", label: "Favorites", icon: Heart, count: 12 },
     { id: "messages", label: "Messages", icon: MessageCircle, count: " 0" },
   ]);
@@ -189,6 +189,32 @@ function UserProfile() {
             }
           });
         }
+
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        await axios
+          .get("http://localhost:5000/api/items", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          })
+          .then((res) => {
+            const myItems = res.data.items.filter(
+              (item) => item.sellerId === response.data.id
+            );
+            setTabs(
+              Tabs.map((tab) =>
+                tab.id === "selling"
+                  ? {
+                      ...tab,
+                      count:
+                        myItems.length == 0 ? " 0" : myItems.length.toString(),
+                    }
+                  : tab
+              )
+            );
+            console.log(Tabs);
+          });
       } catch (error) {
         console.error("Error fetching user data:", error);
         if (error.response?.status === 401) {

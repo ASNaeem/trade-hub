@@ -3,6 +3,7 @@ import { PlusIcon } from "lucide-react";
 import Modal from "../../edit_item/Modal";
 import ItemEditForm from "../../edit_item/ItemEditForm.js";
 import userService from "../../../services/userService";
+import axios from "axios";
 
 function ListedItems() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -58,8 +59,43 @@ function ListedItems() {
   //   fetchUserItems();
   // }, []);
 
-  const handleSave = () => {
+  useEffect(() => {
+    async function getUserItems() {
+      try {
+        axios
+          .get(
+            "http://localhost:5000/api/users/6773fdb6b39d11b3ba1aacbb/items",
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            }
+          )
+          .then((res) => {
+            setItems(res.data);
+            setLoading(false);
+          });
+      } catch (err) {
+        console.error("Error fetching user items:", err);
+      }
+    }
+
+    getUserItems();
+  }, []);
+
+  const handleSave = async (new_item) => {
     setIsModalOpen(false);
+
+    await axios.put(
+      `http://localhost:5000/api/items/${new_item._id}`,
+      new_item,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+
     // Refresh the items list after saving
     const userStr = localStorage.getItem("user");
     if (userStr) {
@@ -82,8 +118,6 @@ function ListedItems() {
     }
 
     try {
-      console.log("Processing image:", image);
-
       // Handle base64 images
       if (image.type === "base64" && image.data) {
         console.log("Processing base64 image");
@@ -97,7 +131,6 @@ function ListedItems() {
 
       // Handle URL images
       if (image.type === "url" && image.url) {
-        console.log("Processing URL image");
         return image.url;
       }
 
@@ -180,8 +213,18 @@ function ListedItems() {
               <ItemEditForm
                 item={item}
                 onSave={handleSave}
-                onDelete={() => {
+                onDelete={async () => {
                   setIsModalOpen(false);
+                  await axios.delete(
+                    "http://localhost:5000/api/items/" + item._id,
+                    {
+                      headers: {
+                        Authorization: `Bearer ${localStorage.getItem(
+                          "token"
+                        )}`,
+                      },
+                    }
+                  );
                   // Refresh the items list after deleting
                   const userStr = localStorage.getItem("user");
                   if (userStr) {

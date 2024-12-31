@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { X, Upload } from "lucide-react";
 
 export default function ImageGallery({ images, onRemoveImage, onAddImage }) {
@@ -7,10 +7,12 @@ export default function ImageGallery({ images, onRemoveImage, onAddImage }) {
     inputRef.current.click();
   }
   function handleOnaddImage(e) {
-    const file = e.target.files[0];
-    const filePath = URL.createObjectURL(file);
-    onAddImage(filePath);
+    onAddImage(e.target.files[0]);
   }
+
+  useEffect(() => {
+    console.log(images);
+  }, [images]);
 
   return (
     <div className="space-y-4">
@@ -21,7 +23,7 @@ export default function ImageGallery({ images, onRemoveImage, onAddImage }) {
         {images.map((img, index) => (
           <div key={index} className="relative group">
             <img
-              src={img}
+              src={img.url}
               alt={`Product ${index + 1}`}
               className="h-40 w-full object-cover rounded-lg"
             />

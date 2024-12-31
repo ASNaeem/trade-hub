@@ -123,6 +123,7 @@ router.put("/:itemId", authMiddleware, async (req, res) => {
       req.body,
       req.user.id
     );
+    console.log(updatedItem);
     if (!updatedItem) {
       return res.status(404).json({ message: "Item not found" });
     }

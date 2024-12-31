@@ -54,12 +54,29 @@ export default function ItemEditForm({
     });
   };
 
-  const handleAddImage = (image) => {
+  const handleAddImage = async (image) => {
     if (item.images.length >= 5) return;
+    const formData = new FormData();
+    formData.append("image", image);
+    formData.append("expiration", "600");
+    formData.append("key", "96ad74aae5c8f60fcc66797aa9bf5820");
+
+    const response = await fetch("https://api.imgbb.com/1/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error.message);
+    }
+
+    const data = await response.json();
     setItem({
       ...item,
-      images: [...item.images, image],
+      images: [...item.images, { type: "url", url: data.data.url }],
     });
+    console.log(item);
   };
 
   return (

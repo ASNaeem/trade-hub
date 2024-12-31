@@ -35,17 +35,39 @@ const ListingForm = ({ className }) => {
 
   const [previewUrls, setPreviewUrls] = useState([]);
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const files = Array.from(e.target.files || []);
     if (files.length + formData.images.length > 5) {
       alert("Maximum 5 images allowed");
       return;
     }
 
-    const newImages = [...formData.images, ...files];
+    const newPreviewUrls = await Promise.all(
+      files.map(async (file) => {
+        const formData = new FormData();
+        formData.append("image", file);
+        formData.append("expiration", "600");
+        formData.append("key", "96ad74aae5c8f60fcc66797aa9bf5820");
+
+        const response = await fetch("https://api.imgbb.com/1/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error.message);
+        }
+
+        const data = await response.json();
+        return data.data.url;
+      })
+    );
+
+    const newImages = [...formData.images, ...newPreviewUrls];
+
     setFormData({ ...formData, images: newImages });
 
-    const newPreviewUrls = files.map((file) => URL.createObjectURL(file));
     setPreviewUrls([...previewUrls, ...newPreviewUrls]);
   };
 
