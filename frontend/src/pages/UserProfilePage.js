@@ -91,104 +91,70 @@ function UserProfile() {
           )
         );
 
-        const filteredMessages = messages.filter(
-          (msg) => msg.senderId !== response.data.id
-        );
-
+        // Find all messages for each unique sender
         const uniqueSenderIds = [
-          ...new Set(filteredMessages.map((msg) => msg.senderId)),
+          ...new Set(
+            messages.map((msg) =>
+              msg.senderId === response.data.id ? msg.receiverId : msg.senderId
+            )
+          ),
         ];
 
         const new_inbox_state = [];
-        uniqueSenderIds.forEach((senderId) => {
-          if (senderId) {
-            axios
-              .get(`http://localhost:5000/api/users/${senderId}`, {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              })
-              .then((res) => {
-                let lastMessage = "";
-                for (let i = 0; i < messages.length; i++) {
-                  if (messages[i].senderId == res.data.id) {
-                    lastMessage = messages[i];
-                    break;
-                  }
-                }
-                new_inbox_state.push({
-                  id: res.data.id,
-                  name: res.data.name,
-                  profilePicture: !res.data.profilePicture
-                    ? "https://files.catbox.moe/k4ao9t.png"
-                    : res.data.profilePicture,
-                  lastMessage: lastMessage,
-                });
-              })
-              .finally(() => {
-                setInbox(new_inbox_state);
-                setTabs(
-                  Tabs.map((tab) =>
-                    tab.id === "messages"
-                      ? {
-                          ...tab,
-                          count:
-                            new_inbox_state.length < 0
-                              ? " 0"
-                              : new_inbox_state.length,
-                        }
-                      : tab
-                  )
-                );
-              });
-          }
-        });
 
-        const UniqueUnReadUserIDs = [
-          ...new Set(messages.map((msg) => msg.receiverId)),
-        ];
-
-        if (filteredMessages.length >= 0) {
-          UniqueUnReadUserIDs.forEach((receiverId, index) => {
-            if (receiverId == user.id) {
-              return;
-            }
-            if (receiverId) {
-              axios
-                .get(`http://localhost:5000/api/users/${receiverId}`, {
+        for (const partnerId of uniqueSenderIds) {
+          if (partnerId) {
+            try {
+              const partnerResponse = await axios.get(
+                `http://localhost:5000/api/users/${partnerId}`,
+                {
                   headers: {
                     Authorization: `Bearer ${token}`,
                   },
-                })
-                .then((res) => {
-                  new_inbox_state.push({
-                    id: res.data.id,
-                    name: res.data.name,
-                    profilePicture: !res.data.profilePicture
-                      ? "https://files.catbox.moe/k4ao9t.png"
-                      : res.data.profilePicture,
-                    lastMessage: messages[index],
-                  });
-                })
-                .finally(() => {
-                  setInbox(new_inbox_state);
-                  setTabs(
-                    Tabs.map((tab) =>
-                      tab.id === "messages"
-                        ? {
-                            ...tab,
-                            count:
-                              new_inbox_state.length < 0
-                                ? " 0"
-                                : new_inbox_state.length,
-                          }
-                        : tab
-                    )
-                  );
+                }
+              );
+
+              // Get all messages between current user and this partner
+              const conversationMessages = messages.filter(
+                (msg) =>
+                  (msg.senderId === partnerId &&
+                    msg.receiverId === response.data.id) ||
+                  (msg.senderId === response.data.id &&
+                    msg.receiverId === partnerId)
+              );
+
+              // Sort messages by date and get the latest one
+              const sortedMessages = conversationMessages.sort(
+                (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+              );
+
+              if (sortedMessages.length > 0) {
+                new_inbox_state.push({
+                  id: partnerResponse.data.id,
+                  name: partnerResponse.data.name,
+                  profilePicture:
+                    partnerResponse.data.profilePicture ||
+                    "https://files.catbox.moe/k4ao9t.png",
+                  lastMessage: sortedMessages[0],
                 });
+              }
+            } catch (error) {
+              console.error(`Error fetching user ${partnerId}:`, error);
             }
-          });
+          }
         }
+
+        setInbox(new_inbox_state);
+        setTabs((prevTabs) =>
+          prevTabs.map((tab) =>
+            tab.id === "messages"
+              ? {
+                  ...tab,
+                  count: new_inbox_state.length || "0",
+                }
+              : tab
+          )
+        );
       } catch (error) {
         console.error("Error fetching user data:", error);
         if (error.response?.status === 401) {
