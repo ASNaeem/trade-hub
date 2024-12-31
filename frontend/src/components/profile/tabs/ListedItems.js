@@ -11,52 +11,52 @@ function ListedItems() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchUserItems = async () => {
-      try {
-        const userStr = localStorage.getItem("user");
-        if (!userStr) {
-          setError("User not found in localStorage");
-          setLoading(false);
-          return;
-        }
+  // useEffect(() => {
+  //   const fetchUserItems = async () => {
+  //     try {
+  //       const userStr = localStorage.getItem("user");
+  //       if (!userStr) {
+  //         setError("User not found in localStorage");
+  //         setLoading(false);
+  //         return;
+  //       }
 
-        const user = JSON.parse(userStr);
-        console.log("User from localStorage:", user);
+  //       const user = JSON.parse(userStr);
+  //       console.log("User from localStorage:", user);
 
-        // Handle both id and _id formats
-        const userId = user._id || user.id;
-        if (!userId) {
-          setError("Invalid user data: missing user ID");
-          setLoading(false);
-          return;
-        }
+  //       // Handle both id and _id formats
+  //       const userId = user._id || user.id;
+  //       if (!userId) {
+  //         setError("Invalid user data: missing user ID");
+  //         setLoading(false);
+  //         return;
+  //       }
 
-        console.log("Fetching items for user ID:", userId);
-        const userItems = await userService.getUserItems(userId);
-        console.log("Fetched items:", userItems);
+  //       console.log("Fetching items for user ID:", userId);
+  //       const userItems = await userService.getUserItems(userId);
+  //       console.log("Fetched items:", userItems);
 
-        // Validate image data
-        userItems.forEach((item, index) => {
-          console.log(`Item ${index} images:`, item.images);
-          if (item.images && item.images.length > 0) {
-            console.log(`First image of item ${index}:`, item.images[0]);
-          }
-        });
+  //       // Validate image data
+  //       userItems.forEach((item, index) => {
+  //         console.log(`Item ${index} images:`, item.images);
+  //         if (item.images && item.images.length > 0) {
+  //           console.log(`First image of item ${index}:`, item.images[0]);
+  //         }
+  //       });
 
-        setItems(userItems);
-        setLoading(false);
-      } catch (err) {
-        console.error("Error fetching user items:", err);
-        setError(
-          `Error fetching items: ${err.response?.data?.error || err.message}`
-        );
-        setLoading(false);
-      }
-    };
+  //       setItems(userItems);
+  //       setLoading(false);
+  //     } catch (err) {
+  //       console.error("Error fetching user items:", err);
+  //       setError(
+  //         `Error fetching items: ${err.response?.data?.error || err.message}`
+  //       );
+  //       setLoading(false);
+  //     }
+  //   };
 
-    fetchUserItems();
-  }, []);
+  //   fetchUserItems();
+  // }, []);
 
   const handleSave = () => {
     setIsModalOpen(false);

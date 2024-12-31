@@ -63,7 +63,7 @@ function UserProfile() {
           location: response.data.city || "Location not set",
           isVerified: response.data.isDocumentVerified,
           profilePicture:
-            response.data.profilePicture !== "null"
+            response.data.profilePicture != "null"
               ? response.data.profilePicture
               : "https://files.catbox.moe/aq0wd6.jpg",
           reviewCount: 120,
@@ -77,14 +77,15 @@ function UserProfile() {
         };
 
         setUser(userData);
-
-        // Initialize tabs with loading state for favorites
         setTabs(
           Tabs.map((tab) =>
             tab.id === "favorites"
               ? {
                   ...tab,
-                  count: "...",
+                  count:
+                    response.data.favourites.length == 0
+                      ? " 0"
+                      : response.data.favourites.length,
                 }
               : tab
           )
@@ -208,22 +209,7 @@ function UserProfile() {
       case "selling":
         return <ListedItems items={initialItem} />;
       case "favorites":
-        return (
-          <FavoritesTab
-            onFavoritesUpdate={(count) => {
-              setTabs(
-                Tabs.map((tab) =>
-                  tab.id === "favorites"
-                    ? {
-                        ...tab,
-                        count: count === 0 ? " 0" : count,
-                      }
-                    : tab
-                )
-              );
-            }}
-          />
-        );
+        return <FavoritesTab />;
       case "messages":
         return <MessagesTab inbox={inbox} />;
       default:

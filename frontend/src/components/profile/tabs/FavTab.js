@@ -1,38 +1,57 @@
 import React, { useState, useEffect } from "react";
 import { Heart, ExternalLink } from "lucide-react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+//#region Fake Data
 
-const getImageSrc = (image) => {
-  if (!image) return "";
+const favorites = [
+  {
+    id: 1,
+    title: "Vintage Camera",
+    price: 299,
+    image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400",
+    seller: "Retro Collectibles",
+    likes: 45,
+  },
+  {
+    id: 2,
+    title: "Designer Watch",
+    price: 199,
+    image: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400",
+    seller: "Luxury Timepieces",
+    likes: 32,
+  },
+  {
+    id: 2,
+    title: "Designer Watch",
+    price: 199,
+    image: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400",
+    seller: "Luxury Timepieces",
+    likes: 32,
+  },
+  {
+    id: 2,
+    title: "Designer Watch",
+    price: 199,
+    image: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400",
+    seller: "Luxury Timepieces",
+    likes: 32,
+  },
+];
+//#endregion
 
-  if (image.type === "base64" && image.data) {
-    if (image.data.startsWith("data:")) {
-      return image.data;
-    }
-    return `data:${image.contentType};base64,${image.data}`;
-  }
-
-  return image.url || "";
-};
-
-const FavTab = ({ onFavoritesUpdate }) => {
+const FavTab = () => {
   const [favorites, setFavorites] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const navigate = useNavigate();
-
   useEffect(() => {
+    console.log("Fetching favorites");
     const fetchFavorites = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
-          navigate("/auth");
+          window.location.href = "/auth";
           return;
         }
 
-        // First get the list of favorite item IDs
-        const favResponse = await axios.get(
+        const response = await axios.get(
           "http://localhost:5000/api/users/my-favourites",
           {
             headers: {
@@ -41,74 +60,42 @@ const FavTab = ({ onFavoritesUpdate }) => {
           }
         );
 
-        // Then fetch each item with error handling
-        const favoriteItems = [];
-        const deletedItemIds = [];
+        let req_tabs = [];
 
-        for (const itemId of favResponse.data) {
-          try {
-            const itemResponse = await axios.get(
-              `http://localhost:5000/api/items/${itemId}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-            );
-            favoriteItems.push(itemResponse.data);
-          } catch (itemError) {
-            if (itemError.response?.status === 404) {
-              // Item was deleted, add to cleanup list
-              deletedItemIds.push(itemId);
-            }
-            console.error(`Error fetching item ${itemId}:`, itemError);
-          }
-        }
+        response.data.forEach((item) => {
+          req_tabs.push(
+            new Promise((resolve) => {
+              axios
+                .get(`http://localhost:5000/api/items/${item}`)
+                .then((res) => resolve(res.data));
+            })
+          );
+        });
 
-        // Clean up deleted items from favorites
-        if (deletedItemIds.length > 0) {
-          try {
-            for (const itemId of deletedItemIds) {
-              await axios.delete(
-                "http://localhost:5000/api/users/delete-favorite",
-                {
-                  headers: {
-                    Authorization: `Bearer ${token}`,
-                  },
-                  data: { itemId },
-                }
-              );
-            }
-          } catch (cleanupError) {
-            console.error("Error cleaning up deleted favorites:", cleanupError);
-          }
-        }
+        const tabsdata = await Promise.all(req_tabs);
 
-        setFavorites(favoriteItems);
-        // Update the favorites count in the parent component
-        onFavoritesUpdate(favoriteItems.length);
+        setFavorites(tabsdata);
       } catch (error) {
-        console.error("Error fetching favorites:", error);
-        setError("Failed to load favorite items");
-      } finally {
-        setLoading(false);
+        console.error("Error fetching user data:", error);
+        if (error.response?.status === 401) {
+          window.location.href = "/auth";
+        }
       }
     };
 
     fetchFavorites();
-  }, [navigate, onFavoritesUpdate]);
-
+  }, []);
   return (
     <div
       className={`grid grid-cols-1  ${
-        favorites.length !== 0 ? "sm:grid-cols-2 lg:grid-cols-3" : ""
+        favorites.length != 0 ? "sm:grid-cols-2 lg:grid-cols-3" : ""
       } gap-6`}
     >
       {favorites.map((item) => (
         <div key={item._id} className="group relative">
           <div className="relative aspect-square overflow-hidden rounded-lg">
             <img
-              src={getImageSrc(item.images[0])}
+              src={item.images[0].url}
               alt={item.title}
               className="h-full w-full object-cover object-center group-hover:scale-105 transition"
             />
@@ -138,11 +125,11 @@ const FavTab = ({ onFavoritesUpdate }) => {
         </div>
       ))}
 
-      {favorites.length === 0 && (
-        <div className="col-span-full text-center py-10">
-          <p className="text-gray-500">No favorites yet</p>
-        </div>
-      )}
+      {favorites.length == 0 ? (
+        <p className="!min-w-7xl text-center text-sm text-gray-500">
+          No favorites yet
+        </p>
+      ) : null}
     </div>
   );
 };
