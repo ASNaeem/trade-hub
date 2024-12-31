@@ -6,18 +6,16 @@ const globalPolicySettingSchema = new mongoose.Schema({
     required: true,
     unique: true,
     enum: [
-      "maxItemsPerUser",
-      "maxPriceUnverified",
-      "maxImagesPerItem",
       "minItemPrice",
       "maxItemPrice",
-      "maxDisputesBeforeBan",
-      "maxReportsBeforeReview",
+      "maxPriceUnverified",
+      "maxActiveListings",
     ],
   },
   value: {
-    type: mongoose.Schema.Types.Mixed,
+    type: Number,
     required: true,
+    min: 0,
   },
   description: {
     type: String,
@@ -28,29 +26,13 @@ const globalPolicySettingSchema = new mongoose.Schema({
     ref: "Admin",
     required: true,
   },
-  updatedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Admin",
-  },
   createdAt: {
     type: Date,
     default: Date.now,
   },
-  updatedAt: {
-    type: Date,
-  },
 });
 
-// Add virtual id
-globalPolicySettingSchema.virtual("id").get(function () {
-  return this._id.toHexString();
-});
-
-// Ensure virtuals are included in JSON
-globalPolicySettingSchema.set("toJSON", { virtuals: true });
-
-const GlobalPolicySetting = mongoose.model(
+module.exports = mongoose.model(
   "GlobalPolicySetting",
   globalPolicySettingSchema
 );
-module.exports = GlobalPolicySetting;

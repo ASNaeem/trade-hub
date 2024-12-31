@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "../components/Header";
 import {
   Pencil,
@@ -12,101 +12,76 @@ import {
   ThumbsDown,
   Search,
   Package,
+  LogOut,
 } from "lucide-react";
 import AlertDialog from "../components/AlertDialog";
-
-// Demo data
-const DEMO_USERS = [
-  {
-    id: 1,
-    username: "john_doe",
-    email: "john@example.com",
-    status: "active",
-    listings: [
-      { id: 1, title: "iPhone 13 Pro" },
-      { id: 2, title: "MacBook Air M1" },
-    ],
-  },
-  {
-    id: 2,
-    username: "jane_smith",
-    email: "jane@example.com",
-    status: "suspended",
-    listings: [{ id: 3, title: "Gaming Chair" }],
-  },
-  {
-    id: 3,
-    username: "mike_wilson",
-    email: "mike@example.com",
-    status: "active",
-    listings: [],
-  },
-];
-
-const DEMO_DISPUTES = [
-  {
-    id: "DISP001",
-    reportedBy: "jane_smith",
-    status: "pending",
-    description: "Item received was not as described in the listing",
-    createdAt: "2024-03-15",
-  },
-  {
-    id: "DISP002",
-    reportedBy: "mike_wilson",
-    status: "pending",
-    description: "Seller not responding to messages",
-    createdAt: "2024-03-16",
-  },
-  {
-    id: "DISP003",
-    reportedBy: "john_doe",
-    status: "resolved",
-    description: "Payment issue with transaction",
-    resolution: "upheld",
-    createdAt: "2024-03-14",
-  },
-];
-
-const DEMO_POLICIES = [
-  {
-    id: 1,
-    policyName: "Maximum Listing Price (Unverified Users)",
-    value: 10000,
-    updatedAt: "2024-03-15",
-  },
-  {
-    id: 2,
-    policyName: "Minimum Listing Price",
-    value: 100,
-    updatedAt: "2024-03-14",
-  },
-  {
-    id: 3,
-    policyName: "Maximum Active Listings Per User",
-    value: 50,
-    updatedAt: "2024-03-16",
-  },
-];
+import AdminService from "../services/adminService";
+import { useNavigate } from "react-router-dom";
 
 const AdminPage = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("users");
+  const [data, setData] = useState({ users: [], disputes: [], policies: [] });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [users, setUsers] = useState(DEMO_USERS);
-  const [disputes, setDisputes] = useState(DEMO_DISPUTES);
-  const [policies, setPolicies] = useState(DEMO_POLICIES);
-  const [editingPolicy, setEditingPolicy] = useState(null);
   const [alertDialog, setAlertDialog] = useState({
     isOpen: false,
     title: "",
     message: "",
-    type: "warning",
+    type: "",
     onConfirm: () => {},
   });
+  const [editingPolicy, setEditingPolicy] = useState(null);
 
-  const filteredUsers = users.filter(
+  useEffect(() => {
+    // Check if admin is logged in
+    if (!AdminService.isAdminLoggedIn()) {
+      navigate("/admin/login");
+      return;
+    }
+
+    fetchData();
+  }, [activeTab, navigate]);
+
+  const fetchData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      let newData = {};
+
+      switch (activeTab) {
+        case "users":
+          newData.users = await AdminService.getUsers();
+          break;
+        case "disputes":
+          newData.disputes = await AdminService.getDisputes();
+          break;
+        case "policies":
+          newData.policies = await AdminService.getPolicies();
+          break;
+        default:
+          break;
+      }
+
+      setData((prevData) => ({ ...prevData, ...newData }));
+    } catch (err) {
+      console.error(`Error fetching ${activeTab}:`, err);
+      if (err.response?.status === 401) {
+        // If unauthorized, redirect to login
+        AdminService.logout();
+        navigate("/admin/login");
+        return;
+      }
+      setError(err.message || `Failed to fetch ${activeTab}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredUsers = data.users.filter(
     (user) =>
-      user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -127,7 +102,7 @@ const AdminPage = () => {
     setAlertDialog((prev) => ({ ...prev, isOpen: false }));
   };
 
-  const handleUserAction = (userId, action) => {
+  const handleUserAction = async (userId, action) => {
     const actionMessages = {
       ban: {
         title: "Ban User",
@@ -151,87 +126,80 @@ const AdminPage = () => {
 
     const { title, message, type } = actionMessages[action];
 
-    showAlert(title, message, type, () => {
-      setUsers(
-        users.map((user) => {
-          if (user.id === userId) {
-            return {
-              ...user,
-              status: action === "activate" ? "active" : action,
-            };
-          }
-          return user;
-        })
-      );
+    showAlert(title, message, type, async () => {
+      try {
+        await AdminService.updateUserStatus(userId, action);
+        setData((prevData) => ({
+          ...prevData,
+          users: prevData.users.map((user) =>
+            user.id === userId ? { ...user, status: action } : user
+          ),
+        }));
+      } catch (err) {
+        setError(err.message);
+        console.error("Error updating user status:", err);
+      }
     });
   };
 
-  const handleDeleteListing = (userId, listingId) => {
-    showAlert(
-      "Delete Listing",
-      "Are you sure you want to delete this listing? This action cannot be undone.",
-      "danger",
-      () => {
-        setUsers(
-          users.map((user) => {
-            if (user.id === userId) {
-              return {
+  const handleDeleteListing = async (userId, listingId) => {
+    try {
+      await AdminService.deleteUserListing(userId, listingId);
+      setData((prevData) => ({
+        ...prevData,
+        users: prevData.users.map((user) =>
+          user.id === userId
+            ? {
                 ...user,
                 listings: user.listings.filter(
                   (listing) => listing.id !== listingId
                 ),
-              };
-            }
-            return user;
-          })
-        );
-      }
-    );
+              }
+            : user
+        ),
+      }));
+    } catch (err) {
+      setError(err.message);
+      console.error("Error deleting listing:", err);
+    }
   };
 
-  const handleResolveDispute = (disputeId, resolution) => {
-    const resolutionMessages = {
-      upheld: {
-        title: "Uphold Dispute",
-        message:
-          "Are you sure you want to uphold this dispute? This will favor the reporter's claim.",
-        type: "warning",
-      },
-      rejected: {
-        title: "Reject Dispute",
-        message:
-          "Are you sure you want to reject this dispute? This will dismiss the reporter's claim.",
-        type: "danger",
-      },
-    };
-
-    const { title, message, type } = resolutionMessages[resolution];
-
-    showAlert(title, message, type, () => {
-      setDisputes(
-        disputes.map((dispute) =>
+  const handleResolveDispute = async (disputeId, resolution) => {
+    try {
+      await AdminService.resolveDispute(disputeId, resolution);
+      setData((prevData) => ({
+        ...prevData,
+        disputes: prevData.disputes.map((dispute) =>
           dispute.id === disputeId
             ? { ...dispute, status: "resolved", resolution }
             : dispute
-        )
-      );
-    });
+        ),
+      }));
+    } catch (err) {
+      setError(err.message);
+      console.error("Error resolving dispute:", err);
+    }
   };
 
-  const handlePolicyUpdate = (policyId, newValue) => {
-    if (newValue < 0) return;
-    setPolicies(
-      policies.map((policy) =>
-        policy.id === policyId
-          ? {
-              ...policy,
-              value: Number(newValue),
-              updatedAt: new Date().toISOString().split("T")[0],
-            }
-          : policy
-      )
-    );
-    setEditingPolicy(null);
+  const handleUpdatePolicy = async (policyId, value) => {
+    try {
+      await AdminService.updatePolicy(policyId, value);
+      setData((prevData) => ({
+        ...prevData,
+        policies: prevData.policies.map((policy) =>
+          policy.id === policyId ? { ...policy, value } : policy
+        ),
+      }));
+      setEditingPolicy(null);
+    } catch (err) {
+      setError(err.message);
+      console.error("Error updating policy:", err);
+    }
+  };
+
+  const handleLogout = () => {
+    AdminService.logout();
+    navigate("/admin/login");
   };
 
   return (
@@ -243,9 +211,18 @@ const AdminPage = () => {
 
       <div className="min-h-screen bg-gray-100 p-6">
         <div className="max-w-7xl pt-20 mx-auto">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">
-            Admin Dashboard
-          </h1>
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">
+              Admin Dashboard
+            </h1>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-4 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+            >
+              <LogOut size={20} />
+              <span>Logout</span>
+            </button>
+          </div>
 
           {/* Tabs */}
           <div className="mb-6 border-b border-gray-200">
@@ -370,7 +347,7 @@ const AdminPage = () => {
           {/* Disputes Tab */}
           {activeTab === "disputes" && (
             <div className="bg-white rounded-lg shadow">
-              {disputes.map((dispute) => (
+              {data.disputes.map((dispute) => (
                 <div
                   key={dispute.id}
                   className="p-4 sm:p-6 border-b border-gray-200"
@@ -449,72 +426,121 @@ const AdminPage = () => {
                   Global Policy Settings
                 </h2>
                 <div className="space-y-4">
-                  {policies.map((policy) => (
-                    <div
-                      key={policy.id}
-                      className="bg-gray-50 p-4 sm:p-6 rounded-lg border border-gray-200 transition-all hover:shadow-md"
-                    >
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div className="flex-grow">
-                          <h3 className="text-base sm:text-lg font-medium text-gray-900">
-                            {policy.policyName}
-                          </h3>
-                          <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                            Last updated: {policy.updatedAt}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          {editingPolicy === policy.id ? (
-                            <div className="flex items-center gap-2">
-                              <input
-                                type="number"
-                                value={policy.value}
-                                onChange={(e) =>
-                                  setPolicies(
-                                    policies.map((p) =>
-                                      p.id === policy.id
-                                        ? { ...p, value: e.target.value }
-                                        : p
+                  {data.policies.map((policy) => {
+                    // Map policy names to user-friendly titles and descriptions
+                    const policyInfo = {
+                      minItemPrice: {
+                        title: "Minimum Item Price",
+                        description:
+                          "The minimum price that can be set for any item listing",
+                        prefix: "৳",
+                      },
+                      maxPriceUnverified: {
+                        title: "Maximum Price for Unverified Users",
+                        description:
+                          "Maximum price limit for users who haven't verified their government documents",
+                        prefix: "৳",
+                      },
+                      maxActiveListings: {
+                        title: "Maximum Active Listings per User",
+                        description:
+                          "Maximum number of active item listings allowed per user",
+                        prefix: "",
+                      },
+                    };
+
+                    const info = policyInfo[policy.name] || {
+                      title: policy.name,
+                      description: "Policy setting",
+                      prefix: "",
+                    };
+
+                    return (
+                      <div
+                        key={policy.id}
+                        className="bg-gray-50 p-4 sm:p-6 rounded-lg border border-gray-200 transition-all hover:shadow-md"
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                          <div className="flex-grow">
+                            <h3 className="text-base sm:text-lg font-medium text-gray-900">
+                              {info.title}
+                            </h3>
+                            <p className="text-sm text-gray-600 mt-1">
+                              {info.description}
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              Last updated:{" "}
+                              {new Date(policy.updatedAt).toLocaleString()}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            {editingPolicy === policy.id ? (
+                              <div className="flex items-center gap-2">
+                                <div className="relative">
+                                  {info.prefix && (
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                                      {info.prefix}
+                                    </span>
+                                  )}
+                                  <input
+                                    type="number"
+                                    value={policy.value}
+                                    onChange={(e) =>
+                                      setData((prevData) => ({
+                                        ...prevData,
+                                        policies: prevData.policies.map((p) =>
+                                          p.id === policy.id
+                                            ? { ...p, value: e.target.value }
+                                            : p
+                                        ),
+                                      }))
+                                    }
+                                    className={`w-32 p-2 text-sm border border-gray-300 rounded-md focus:ring-primary focus:border-primary ${
+                                      info.prefix ? "pl-7" : "pl-3"
+                                    }`}
+                                    min="0"
+                                  />
+                                </div>
+                                <button
+                                  onClick={() =>
+                                    handleUpdatePolicy(
+                                      policy.id,
+                                      Number(policy.value)
                                     )
-                                  )
-                                }
-                                className="w-24 sm:w-32 p-2 text-sm border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
-                              />
-                              <button
-                                onClick={() =>
-                                  handlePolicyUpdate(policy.id, policy.value)
-                                }
-                                className="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-full transition-colors"
-                                title="Save"
-                              >
-                                <Check className="w-5 h-5 stroke-[1.5]" />
-                              </button>
-                              <button
-                                onClick={() => setEditingPolicy(null)}
-                                className="p-2 text-gray-600 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
-                                title="Cancel"
-                              >
-                                <X className="w-5 h-5 stroke-[1.5]" />
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-3">
-                              <span className="text-base sm:text-lg font-semibold text-gray-700 min-w-[60px] text-right">
-                                {policy.value}
-                              </span>
-                              <button
-                                onClick={() => setEditingPolicy(policy.id)}
-                                className="p-2 text-[var(--iconColor)] hover:text-teal-700 hover:bg-blue-50 rounded-full transition-colors"
-                                title="Edit"
-                              >
-                                <Pencil className="w-4 h-4 sm:w-5 sm:h-5 stroke-[1.5]" />
-                              </button>
-                            </div>
-                          )}
+                                  }
+                                  className="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-full transition-colors"
+                                  title="Save"
+                                >
+                                  <Check className="w-5 h-5 stroke-[1.5]" />
+                                </button>
+                                <button
+                                  onClick={() => setEditingPolicy(null)}
+                                  className="p-2 text-gray-600 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+                                  title="Cancel"
+                                >
+                                  <X className="w-5 h-5 stroke-[1.5]" />
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-3">
+                                <span className="text-base sm:text-lg font-semibold text-gray-700 min-w-[80px] text-right">
+                                  {info.prefix}
+                                  {policy.value}
+                                </span>
+                                <button
+                                  onClick={() => setEditingPolicy(policy.id)}
+                                  className="p-2 text-[var(--iconColor)] hover:text-teal-700 hover:bg-blue-50 rounded-full transition-colors"
+                                  title="Edit"
+                                >
+                                  <Pencil className="w-4 h-4 sm:w-5 sm:h-5 stroke-[1.5]" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
 
 const adminSchema = new mongoose.Schema({
   name: {
@@ -15,12 +16,13 @@ const adminSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true,
-    minlength: 8,
+    minlength: [8, "Password must be at least 8 characters long"],
   },
   role: {
     type: String,
     enum: ["admin", "superadmin"],
     default: "admin",
+    required: true,
   },
   createdAt: {
     type: Date,
@@ -33,6 +35,14 @@ adminSchema.virtual("id").get(function () {
 });
 
 adminSchema.set("toJSON", { virtuals: true });
+
+adminSchema.methods.comparePassword = async function (candidatePassword) {
+  try {
+    return await bcrypt.compare(candidatePassword, this.password);
+  } catch (error) {
+    throw new Error("Error comparing passwords");
+  }
+};
 
 const Admin = mongoose.model("Admin", adminSchema);
 module.exports = Admin;

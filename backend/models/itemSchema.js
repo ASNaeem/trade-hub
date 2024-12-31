@@ -10,6 +10,7 @@ const itemSchema = new mongoose.Schema(
     description: {
       type: String,
       required: true,
+      trim: true,
     },
     price: {
       type: Number,
@@ -19,49 +20,58 @@ const itemSchema = new mongoose.Schema(
     brand: {
       type: String,
       trim: true,
+      default: null,
     },
     category: {
       type: String,
       required: true,
+      trim: true,
     },
     condition: {
       type: String,
       required: true,
-      enum: ["New", "Like New", "Used", "Refurbished"],
+      enum: ["New", "Used", "Refurbished"],
     },
     images: [
       {
         type: {
           type: String,
+          enum: ["url", "base64"],
           required: true,
-          enum: ["url", "buffer", "base64"],
-          default: "url",
         },
-        url: {
-          type: String,
-        },
-        data: {
-          type: String,
-        },
-        contentType: {
-          type: String,
-        },
+        url: String,
+        data: String,
+        contentType: String,
       },
     ],
     location: {
       type: String,
       required: true,
+      trim: true,
     },
     sellerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
+    status: {
+      type: String,
+      enum: ["active", "sold", "deleted"],
+      default: "active",
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
   },
   {
     timestamps: true,
   }
 );
+
+itemSchema.virtual("id").get(function () {
+  return this._id.toHexString();
+});
 
 itemSchema.set("toJSON", { virtuals: true });
 

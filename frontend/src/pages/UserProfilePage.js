@@ -63,7 +63,7 @@ function UserProfile() {
           location: response.data.city || "Location not set",
           isVerified: response.data.isDocumentVerified,
           profilePicture:
-            response.data.profilePicture != "null"
+            response.data.profilePicture !== "null"
               ? response.data.profilePicture
               : "https://files.catbox.moe/aq0wd6.jpg",
           reviewCount: 120,

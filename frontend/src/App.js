@@ -15,6 +15,8 @@ import InboxPage from "./pages/InboxPage";
 import ContactUsPage from "./pages/ContactUsPage";
 import TermsPage from "./pages/TermsOfServicesPage";
 import AdminPage from "./pages/AdminPage";
+import AdminLoginPage from "./pages/AdminLoginPage";
+import AdminRoute from "./components/auth/AdminRoute";
 //#endregion
 
 const App = () => {
@@ -43,6 +45,15 @@ const App = () => {
             <Route path="/contact" element={<ContactUsPage />} />
             {/* Terms of Services Page */}
             <Route path="/terms" element={<TermsPage />} />
+            <Route path="/admin/login" element={<AdminLoginPage />} />
+            <Route
+              path="/admin/*"
+              element={
+                <AdminRoute>
+                  <AdminPage />
+                </AdminRoute>
+              }
+            />
           </Routes>
           <Footer /> {/* Footer with important information */}
         </div>
