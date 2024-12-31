@@ -5,11 +5,12 @@ const authMiddleware = require("../middleware/authMiddleware");
 
 router.post("/", authMiddleware, async (req, res) => {
   try {
-    const { receiverId, content } = req.body;
+    const { receiverId, content, images } = req.body;
     const message = await messageService.createMessage(
       req.user.id,
       receiverId,
-      content
+      content,
+      images
     );
     console.log(message);
     res.status(201).json(message);

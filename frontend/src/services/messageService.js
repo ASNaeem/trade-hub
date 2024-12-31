@@ -15,9 +15,13 @@ const MessageService = {
   },
 
   // Send a new message
-  sendMessage: async (receiverId, content) => {
+  sendMessage: async (receiverId, content, images = []) => {
     try {
-      const response = await api.post("/messages", { receiverId, content });
+      const response = await api.post("/messages", {
+        receiverId,
+        content,
+        images,
+      });
       return response.data;
     } catch (error) {
       console.error("Error in sendMessage:", error);

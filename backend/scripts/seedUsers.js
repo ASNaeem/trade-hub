@@ -10,6 +10,7 @@ const DEMO_USERS = [
     phone: "+1234567890",
     password: "demo123", // Will be hashed
     city: "New York",
+    isEmailVerified: true,
     isDocumentVerified: true,
   },
   {
@@ -18,6 +19,7 @@ const DEMO_USERS = [
     phone: "+1987654321",
     password: "demo123", // Will be hashed
     city: "Los Angeles",
+    isEmailVerified: true,
     isDocumentVerified: true,
   },
   {
@@ -26,6 +28,7 @@ const DEMO_USERS = [
     phone: "+1122334455",
     password: "demo123", // Will be hashed
     city: "Chicago",
+    isEmailVerified: true,
     isDocumentVerified: true,
   },
 ];
