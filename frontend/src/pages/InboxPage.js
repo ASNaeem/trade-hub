@@ -23,25 +23,14 @@ export default function InboxPage() {
     });
   }, [messages]);
 
-  // Mark messages as read when they are viewed
-  // useEffect(() => {
-  //   const unreadMessages = messages.filter(
-  //     (msg) => !msg.isRead && msg.receiverId === receiverId
-  //   );
-  //   unreadMessages.forEach((msg) => markAsRead(msg._id));
-  // }, []);
-
-  const handleSendMessage = async (text, images) => {
+  const handleSendMessage = async (text, images = []) => {
     if (!receiverId) {
       console.error("No receiver ID provided");
       return;
     }
 
     try {
-      // For now, we'll just send the text content
-      // TODO: Implement image upload functionality
-      await sendMessage(receiverId, text);
-      console.log(messages);
+      await sendMessage(receiverId, text, images);
     } catch (err) {
       console.error("Failed to send message:", err);
     }
@@ -86,6 +75,7 @@ export default function InboxPage() {
             <Message
               key={message._id}
               text={message.content}
+              images={message.images}
               timestamp={new Date(message.createdAt)}
               isOwn={message.senderId !== receiverId}
               senderName={message.senderId === receiverId ? "Them" : "You"}

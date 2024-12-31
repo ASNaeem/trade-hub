@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Circle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import useMessages from "../../../hooks/useMessages";
@@ -6,6 +6,15 @@ import useMessages from "../../../hooks/useMessages";
 const MessagesTab = ({ inbox }) => {
   const navigate = useNavigate();
   const { messages, loading, error } = useMessages();
+
+  const getMessagePreview = (message) => {
+    if (message.images && message.images.length > 0) {
+      return message.images.length === 1
+        ? "📷 Sent an image"
+        : `📷 Sent ${message.images.length} images`;
+    }
+    return message.content;
+  };
 
   if (loading) {
     return (
@@ -63,7 +72,7 @@ const MessagesTab = ({ inbox }) => {
                 </div>
               </div>
               <p className="text-sm text-gray-500 truncate">
-                {data.lastMessage.content}
+                {getMessagePreview(data.lastMessage)}
               </p>
             </div>
           </div>

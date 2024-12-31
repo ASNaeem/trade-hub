@@ -4,6 +4,7 @@ class Message {
     senderId,
     receiverId,
     content,
+    images = [],
     isRead = false,
     isReported = false,
     reportStatus = "none",
@@ -13,6 +14,7 @@ class Message {
     this._senderId = senderId;
     this._receiverId = receiverId;
     this._content = content;
+    this._images = images;
     this._isRead = isRead;
     this._isReported = isReported;
     this._reportStatus = reportStatus;
@@ -52,12 +54,35 @@ class Message {
     return this._reportStatus;
   }
 
+  get images() {
+    return this._images;
+  }
+
   // Setter for Content
   set content(newContent) {
-    if (!newContent || newContent.length === 0) {
-      throw new Error("Message content cannot be empty.");
+    if (!newContent && this._images.length === 0) {
+      throw new Error("Message must have either content or images.");
     }
     this._content = newContent;
+  }
+
+  // Add/Remove images
+  addImage(imageUrl) {
+    this._images.push(imageUrl);
+  }
+
+  removeImage(imageUrl) {
+    this._images = this._images.filter((img) => img !== imageUrl);
+  }
+
+  // Get message preview text
+  getPreviewText() {
+    if (this._images.length > 0) {
+      return this._images.length === 1
+        ? "📷 Sent an image"
+        : `📷 Sent ${this._images.length} images`;
+    }
+    return this._content;
   }
 
   // Mark Message as Read
@@ -86,10 +111,12 @@ class Message {
       senderId: this._senderId,
       receiverId: this._receiverId,
       content: this._content,
+      images: this._images,
       isRead: this._isRead,
       isReported: this._isReported,
       reportStatus: this._reportStatus,
       createdAt: this._createdAt,
+      previewText: this.getPreviewText(),
     };
   }
 

@@ -22,12 +22,15 @@ const useMessages = () => {
   }, []);
 
   // Send a new message
-  const sendMessage = async (receiverId, content) => {
+  const sendMessage = async (receiverId, content, images = []) => {
     try {
       setError(null);
-      const newMessage = await MessageService.sendMessage(receiverId, content);
+      const newMessage = await MessageService.sendMessage(
+        receiverId,
+        content,
+        images
+      );
       setMessages((prev) => [newMessage, ...prev]);
-      messages.reverse();
       return newMessage;
     } catch (err) {
       console.error("Error sending message:", err);

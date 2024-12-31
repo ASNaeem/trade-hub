@@ -6,7 +6,7 @@ const DisputeModel = require("../models/disputeSchema");
 const mongoose = require("mongoose");
 
 const MessageService = {
-  async createMessage(senderId, receiverId, content) {
+  async createMessage(senderId, receiverId, content, images = []) {
     try {
       // Verify both users exist
       const [sender, receiver] = await Promise.all([
@@ -34,41 +34,26 @@ const MessageService = {
         throw error;
       }
 
-      // Check if user has too many disputes
-      const maxDisputesPolicy = await globalPolicySettingsService
-        .getPolicyByName("maxDisputesBeforeBan")
-        .catch(() => null);
-      if (maxDisputesPolicy) {
-        const userDisputes = await DisputeModel.countDocuments({
-          reportedId: senderId,
-          status: "resolved",
-          resolution: { $in: ["warning", "ban"] },
-        });
-
-        if (userDisputes >= maxDisputesPolicy.value) {
-          // Ban the user
-          await UserModel.findByIdAndUpdate(senderId, {
-            isBanned: true,
-            banReason: "Exceeded maximum allowed disputes",
-          });
-
-          const error = new Error("Account has been banned");
-          error.statusCode = 403;
-          throw error;
-        }
+      // Validate that either content or images are provided
+      if (!content && (!images || images.length === 0)) {
+        const error = new Error("Message must have either content or images");
+        error.statusCode = 400;
+        throw error;
       }
 
       const messageClassInstance = new MessageClass(
         null,
         senderId,
         receiverId,
-        content
+        content,
+        images
       );
 
       const messageDocument = new MessageModel({
         senderId: messageClassInstance.senderId,
         receiverId: messageClassInstance.receiverId,
         content: messageClassInstance.content,
+        images: messageClassInstance.images,
         isRead: messageClassInstance.isRead,
         createdAt: messageClassInstance.createdAt,
       });
@@ -79,6 +64,7 @@ const MessageService = {
         savedMessage.senderId,
         savedMessage.receiverId,
         savedMessage.content,
+        savedMessage.images,
         savedMessage.isRead,
         savedMessage.isReported,
         savedMessage.reportStatus,
@@ -106,6 +92,7 @@ const MessageService = {
           msg.senderId,
           msg.receiverId,
           msg.content,
+          msg.images,
           msg.isRead,
           msg.isReported,
           msg.reportStatus,
@@ -169,6 +156,7 @@ const MessageService = {
         message.senderId,
         message.receiverId,
         message.content,
+        message.images,
         message.isRead,
         message.isReported,
         message.reportStatus,

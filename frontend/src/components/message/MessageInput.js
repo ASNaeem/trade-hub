@@ -14,10 +14,13 @@ export function MessageInput({ onSendMessage }) {
     clearImages,
   } = useImageUpload();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (message.trim() || selectedImages.length > 0) {
-      onSendMessage(message, selectedImages);
+      // Convert selected images to URLs (assuming they're already uploaded)
+      const imageUrls = selectedImages.map((image) => image.url);
+
+      await onSendMessage(message, imageUrls);
       setMessage("");
       clearImages();
     }

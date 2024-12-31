@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { ImageModal } from "./ImageModal";
 import { formatMessageTime } from "../../frontend_util/DateUtils";
 
-export function Message({ text, timestamp, imageUrls, isOwn, senderName }) {
+export function Message({ text, timestamp, images = [], isOwn, senderName }) {
   const [selectedImage, setSelectedImage] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
 
@@ -33,16 +33,17 @@ export function Message({ text, timestamp, imageUrls, isOwn, senderName }) {
           {/* Message Content */}
           <div className="space-y-2">
             {text && <p className="break-words text-sm">{text}</p>}
-            {imageUrls && imageUrls.length > 0 && (
-              <div className="flex flex-col flex-wrap gap-2">
-                {imageUrls.map((url, index) => (
-                  <img
-                    key={index}
-                    src={url}
-                    alt={`Message attachment ${index + 1}`}
-                    className="max-w-xs rounded cursor-pointer hover:opacity-90 transition-opacity transform hover:scale-[1.02] duration-200"
-                    onClick={() => setSelectedImage(url)}
-                  />
+            {images && images.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {images.map((url, index) => (
+                  <div key={index} className="relative group">
+                    <img
+                      src={url}
+                      alt={`Message attachment ${index + 1}`}
+                      className="max-w-[200px] h-auto rounded cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => setSelectedImage(url)}
+                    />
+                  </div>
                 ))}
               </div>
             )}
