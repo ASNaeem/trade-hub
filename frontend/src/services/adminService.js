@@ -1,123 +1,222 @@
-import axios from "axios";
-
-const API_URL = "http://localhost:5000/api";
-
-const axiosInstance = axios.create({
-  baseURL: API_URL,
-});
-
-// Add request interceptor to automatically add admin token
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("adminToken");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+import api from "./api";
 
 const AdminService = {
   // Authentication
-  async login(email, password) {
-    const response = await axiosInstance.post(`/admin/login`, {
-      email,
-      password,
-    });
-    // Store all admin info
-    const { token, id, name, email: adminEmail, role } = response.data;
-    localStorage.setItem("adminToken", token);
-    localStorage.setItem("adminId", id);
-    localStorage.setItem("adminName", name);
-    localStorage.setItem("adminEmail", adminEmail);
-    localStorage.setItem("adminRole", role);
-    return response.data;
+  login: async (credentials) => {
+    try {
+      const response = await api.post("/admin/login", credentials);
+      if (response.data.token) {
+        // Store admin-specific token and role
+        localStorage.setItem("adminToken", response.data.token);
+        localStorage.setItem("adminRole", response.data.role);
+      }
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || "Login failed");
+    }
   },
 
-  // Check if user is logged in as admin
-  isAdminLoggedIn() {
-    const adminToken = localStorage.getItem("adminToken");
-    const adminRole = localStorage.getItem("adminRole");
-    return !!(adminToken && adminRole);
-  },
-
-  // Get admin info
-  getAdminInfo() {
-    return {
-      id: localStorage.getItem("adminId"),
-      name: localStorage.getItem("adminName"),
-      email: localStorage.getItem("adminEmail"),
-      role: localStorage.getItem("adminRole"),
-    };
-  },
-
-  // Get admin token
-  getAdminToken() {
-    return localStorage.getItem("adminToken");
-  },
-
-  // Get admin role
-  getAdminRole() {
-    return localStorage.getItem("adminRole");
-  },
-
-  // Logout
-  logout() {
+  logout: () => {
     localStorage.removeItem("adminToken");
-    localStorage.removeItem("adminId");
-    localStorage.removeItem("adminName");
-    localStorage.removeItem("adminEmail");
     localStorage.removeItem("adminRole");
   },
 
+  isAdminLoggedIn: () => {
+    const adminToken = localStorage.getItem("adminToken");
+    const adminRole = localStorage.getItem("adminRole");
+    // Check both token and role exist
+    return !!(adminToken && adminRole);
+  },
+
+  // Check if user has admin privileges
+  hasAdminPrivileges: () => {
+    const adminRole = localStorage.getItem("adminRole");
+    return adminRole === "admin" || adminRole === "superadmin";
+  },
+
   // User Management
-  async getUsers() {
-    const response = await axiosInstance.get(`/admin/users`);
-    return response.data;
+  getUsers: async () => {
+    try {
+      const response = await api.get("/admin/users", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+      });
+      return response.data.map((user) => ({
+        ...user,
+        listings: user.listings || [], // Ensure listings is always an array
+        status: user.isBanned
+          ? "banned"
+          : user.isUnderReview
+          ? "suspended"
+          : "active",
+      }));
+    } catch (error) {
+      throw new Error(error.response?.data?.message || "Failed to fetch users");
+    }
   },
 
-  async updateUserStatus(userId, status) {
-    const response = await axiosInstance.put(`/admin/users/${userId}/status`, {
-      status,
-    });
-    return response.data;
+  updateUserStatus: async (userId, status) => {
+    try {
+      const response = await api.put(
+        `/admin/users/${userId}/status`,
+        {
+          status, // Send the status directly as the backend expects
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(
+        error.response?.data?.message || "Failed to update user status"
+      );
+    }
   },
 
-  async deleteUserListing(userId, listingId) {
-    const response = await axiosInstance.delete(
-      `/admin/users/${userId}/listings/${listingId}`
-    );
-    return response.data;
+  deleteUserListing: async (userId, listingId) => {
+    try {
+      const response = await api.delete(
+        `/admin/users/${userId}/listings/${listingId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(
+        error.response?.data?.message || "Failed to delete listing"
+      );
+    }
+  },
+
+  // Document Verification
+  getPendingVerifications: async () => {
+    try {
+      const response = await api.get("/admin/verifications/pending", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(
+        error.response?.data?.message || "Failed to fetch pending verifications"
+      );
+    }
+  },
+
+  verifyDocument: async (userId, isApproved, reason = "") => {
+    try {
+      const response = await api.put(
+        `/admin/users/${userId}/verify-document`,
+        {
+          isApproved,
+          reason,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(
+        error.response?.data?.message || "Failed to verify document"
+      );
+    }
+  },
+
+  getDocumentFile: async (userId) => {
+    try {
+      const response = await api.get(`/admin/users/${userId}/document`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+        responseType: "blob",
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(
+        error.response?.data?.message || "Failed to fetch document"
+      );
+    }
   },
 
   // Dispute Management
-  async getDisputes() {
-    const response = await axiosInstance.get(`/admin/disputes`);
-    return response.data;
+  getDisputes: async () => {
+    try {
+      const response = await api.get("/admin/disputes", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(
+        error.response?.data?.message || "Failed to fetch disputes"
+      );
+    }
   },
 
-  async resolveDispute(disputeId, resolution) {
-    const response = await axiosInstance.put(
-      `/admin/disputes/${disputeId}/resolve`,
-      { resolution }
-    );
-    return response.data;
+  resolveDispute: async (disputeId, resolution) => {
+    try {
+      const response = await api.put(
+        `/admin/disputes/${disputeId}/resolve`,
+        { resolution },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(
+        error.response?.data?.message || "Failed to resolve dispute"
+      );
+    }
   },
 
   // Policy Management
-  async getPolicies() {
-    const response = await axiosInstance.get(`/admin/policies`);
-    return response.data;
+  getPolicies: async () => {
+    try {
+      const response = await api.get("/admin/policies", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(
+        error.response?.data?.message || "Failed to fetch policies"
+      );
+    }
   },
 
-  async updatePolicy(policyId, value) {
-    const response = await axiosInstance.put(`/admin/policies/${policyId}`, {
-      value,
-    });
-    return response.data;
+  updatePolicy: async (policyId, value) => {
+    try {
+      const response = await api.put(
+        `/admin/policies/${policyId}`,
+        { value },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(
+        error.response?.data?.message || "Failed to update policy"
+      );
+    }
   },
 };
 

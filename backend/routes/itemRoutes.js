@@ -16,6 +16,7 @@ router.get("/", async (req, res) => {
       brand: req.query.brand,
       minPrice: req.query.minPrice ? Number(req.query.minPrice) : undefined,
       maxPrice: req.query.maxPrice ? Number(req.query.maxPrice) : undefined,
+      search: req.query.search || "",
     };
 
     // Handle array parameters

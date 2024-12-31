@@ -3,16 +3,48 @@ import { Tag, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const getImageSrc = (image) => {
-  if (!image) return "";
-
-  if (image.type === "base64" && image.data) {
-    if (image.data.startsWith("data:")) {
-      return image.data;
-    }
-    return `data:${image.contentType};base64,${image.data}`;
+  if (!image) {
+    console.log("No image provided");
+    return "/placeholder-image.jpg";
   }
 
-  return image.url || "";
+  try {
+    console.log("Processing image in ItemCard:", image);
+
+    // Handle base64 images
+    if (image.type === "base64" && image.data) {
+      // If data is already a complete data URL, return it as is
+      if (image.data.startsWith("data:")) {
+        return image.data;
+      }
+      // Otherwise, construct the data URL
+      return `data:${image.contentType || "image/jpeg"};base64,${image.data}`;
+    }
+
+    // Handle URL images
+    if (image.type === "url" && image.url) {
+      return image.url;
+    }
+
+    // Handle string URLs or base64 data
+    if (typeof image === "string") {
+      if (image.startsWith("data:")) {
+        return image;
+      }
+      if (image.startsWith("http")) {
+        return image;
+      }
+      // Assume it's a raw base64 string
+      return `data:image/jpeg;base64,${image}`;
+    }
+
+    // If we get here, log the unhandled format
+    console.warn("Unhandled image format in ItemCard:", image);
+    return "/placeholder-image.jpg";
+  } catch (err) {
+    console.error("Error processing image in ItemCard:", err);
+    return "/placeholder-image.jpg";
+  }
 };
 
 export const ItemCard = ({
@@ -23,15 +55,25 @@ export const ItemCard = ({
   condition,
   location,
   image,
+  onLoginRequired,
 }) => {
   const navigate = useNavigate();
+
+  const handleClick = () => {
+    const isLoggedIn = localStorage.getItem("loggedin") !== null;
+    if (isLoggedIn) {
+      navigate(`/item?id=${id}`);
+    } else if (onLoginRequired) {
+      onLoginRequired();
+    } else {
+      onLoginRequired();
+    }
+  };
 
   return (
     <div
       className="bg-white cursor-pointer rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:scale-[1.02]"
-      onClick={() => {
-        navigate(`/item?id=${id}`);
-      }}
+      onClick={handleClick}
     >
       <div className="relative h-48 overflow-hidden">
         <img

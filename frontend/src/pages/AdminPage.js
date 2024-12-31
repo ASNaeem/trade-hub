@@ -13,6 +13,9 @@ import {
   Search,
   Package,
   LogOut,
+  ChevronDown,
+  FileText,
+  Shield,
 } from "lucide-react";
 import AlertDialog from "../components/AlertDialog";
 import AdminService from "../services/adminService";
@@ -33,10 +36,18 @@ const AdminPage = () => {
     onConfirm: () => {},
   });
   const [editingPolicy, setEditingPolicy] = useState(null);
+  const [expandedUserId, setExpandedUserId] = useState(null);
+  const [pendingVerifications, setPendingVerifications] = useState([]);
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [verificationDialog, setVerificationDialog] = useState({
+    isOpen: false,
+    userId: null,
+    documentData: null,
+  });
 
   useEffect(() => {
-    // Check if admin is logged in
-    if (!AdminService.isAdminLoggedIn()) {
+    // Check if user is logged in as admin and has admin privileges
+    if (!AdminService.isAdminLoggedIn() || !AdminService.hasAdminPrivileges()) {
       navigate("/admin/login");
       return;
     }
@@ -53,6 +64,14 @@ const AdminPage = () => {
       switch (activeTab) {
         case "users":
           newData.users = await AdminService.getUsers();
+          try {
+            // Try to fetch verifications, but don't let it block the main user data
+            const verifications = await AdminService.getPendingVerifications();
+            setPendingVerifications(verifications);
+          } catch (verificationError) {
+            console.log("Verification system not yet implemented");
+            setPendingVerifications([]);
+          }
           break;
         case "disputes":
           newData.disputes = await AdminService.getDisputes();
@@ -68,7 +87,6 @@ const AdminPage = () => {
     } catch (err) {
       console.error(`Error fetching ${activeTab}:`, err);
       if (err.response?.status === 401) {
-        // If unauthorized, redirect to login
         AdminService.logout();
         navigate("/admin/login");
         return;
@@ -110,7 +128,7 @@ const AdminPage = () => {
           "Are you sure you want to ban this user? This action will prevent them from accessing the platform.",
         type: "danger",
       },
-      suspended: {
+      suspend: {
         title: "Suspend User",
         message:
           "Are you sure you want to suspend this user? They will be temporarily blocked from using the platform.",
@@ -132,7 +150,9 @@ const AdminPage = () => {
         setData((prevData) => ({
           ...prevData,
           users: prevData.users.map((user) =>
-            user.id === userId ? { ...user, status: action } : user
+            user.id === userId
+              ? { ...user, status: action === "suspend" ? "suspended" : action }
+              : user
           ),
         }));
       } catch (err) {
@@ -202,6 +222,36 @@ const AdminPage = () => {
     navigate("/admin/login");
   };
 
+  const handleViewDocument = async (userId) => {
+    try {
+      const documentData = await AdminService.getDocumentFile(userId);
+      setVerificationDialog({
+        isOpen: true,
+        userId,
+        documentData,
+      });
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleVerifyDocument = async (userId, isApproved, reason = "") => {
+    try {
+      await AdminService.verifyDocument(userId, isApproved, reason);
+      setPendingVerifications((prev) =>
+        prev.filter((v) => v.userId !== userId)
+      );
+      fetchData();
+      setVerificationDialog({
+        isOpen: false,
+        userId: null,
+        documentData: null,
+      });
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   return (
     <>
       <Header
@@ -257,6 +307,46 @@ const AdminPage = () => {
                 <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
               </div>
 
+              {/* Pending Verifications Section */}
+              {pendingVerifications.length > 0 && (
+                <div className="mb-6 bg-yellow-50 p-4 rounded-lg">
+                  <h3 className="text-lg font-medium text-yellow-800 mb-4">
+                    Pending Document Verifications (
+                    {pendingVerifications.length})
+                  </h3>
+                  <div className="space-y-4">
+                    {pendingVerifications.map((verification) => (
+                      <div
+                        key={verification.userId}
+                        className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm"
+                      >
+                        <div>
+                          <p className="font-medium">{verification.userName}</p>
+                          <p className="text-sm text-gray-500">
+                            Document Type: {verification.documentType}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            Document Number: {verification.documentNumber}
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() =>
+                              handleViewDocument(verification.userId)
+                            }
+                            className="inline-flex items-center gap-2 px-3 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200"
+                          >
+                            <FileText className="w-4 h-4" />
+                            View Document
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Users List */}
               <div className="bg-white rounded-lg shadow overflow-hidden">
                 {filteredUsers.map((user) => (
                   <div
@@ -265,9 +355,17 @@ const AdminPage = () => {
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div>
-                        <h3 className="text-lg font-medium text-gray-900">
-                          {user.username}
-                        </h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-lg font-medium text-gray-900">
+                            {user.name}
+                          </h3>
+                          {user.isDocumentVerified && (
+                            <Shield
+                              className="w-4 h-4 text-green-600"
+                              title="Verified User"
+                            />
+                          )}
+                        </div>
                         <p className="text-sm text-gray-500">{user.email}</p>
                         <p className="text-sm text-gray-500">
                           Status:{" "}
@@ -293,7 +391,7 @@ const AdminPage = () => {
                           <span className="hidden sm:inline">Ban</span>
                         </button>
                         <button
-                          onClick={() => handleUserAction(user.id, "suspended")}
+                          onClick={() => handleUserAction(user.id, "suspend")}
                           className="inline-flex items-center gap-2 bg-yellow-500 text-white px-4 py-2 rounded-md hover:bg-yellow-600"
                         >
                           <AlertTriangle className="w-4 h-4" />
@@ -312,30 +410,60 @@ const AdminPage = () => {
                     {/* User's Listings */}
                     {user.listings && user.listings.length > 0 && (
                       <div className="mt-4">
-                        <h4 className="text-sm font-medium text-gray-900 mb-2 flex items-center gap-2">
-                          <Package className="w-4 h-4" />
-                          Listings ({user.listings.length})
-                        </h4>
-                        <div className="space-y-2">
-                          {user.listings.map((listing) => (
-                            <div
-                              key={listing.id}
-                              className="flex items-center justify-between bg-gray-50 p-3 rounded"
-                            >
-                              <span className="text-sm text-gray-600">
-                                {listing.title}
-                              </span>
-                              <button
-                                onClick={() =>
-                                  handleDeleteListing(user.id, listing.id)
-                                }
-                                className="text-red-600 hover:text-red-800 p-1 rounded-full hover:bg-red-50"
+                        <button
+                          onClick={() =>
+                            setExpandedUserId(
+                              expandedUserId === user.id ? null : user.id
+                            )
+                          }
+                          className="w-full flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg transition-colors"
+                        >
+                          <h4 className="text-sm font-medium text-gray-900 flex items-center gap-2">
+                            <Package className="w-4 h-4" />
+                            Listings ({user.listings.length})
+                          </h4>
+                          <ChevronDown
+                            className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${
+                              expandedUserId === user.id ? "rotate-180" : ""
+                            }`}
+                          />
+                        </button>
+                        {expandedUserId === user.id && (
+                          <div className="space-y-2 mt-2">
+                            {user.listings.map((listing) => (
+                              <div
+                                key={listing.id}
+                                className="flex items-center justify-between bg-gray-50 p-3 rounded"
                               >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
+                                <div
+                                  onClick={() =>
+                                    navigate(`/item?id=${listing.id}`)
+                                  }
+                                  className="flex-1 cursor-pointer hover:text-[var(--buttonColor)] transition-colors"
+                                >
+                                  <span className="text-sm">
+                                    {listing.title}
+                                  </span>
+                                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                                    <span>${listing.price}</span>
+                                    <span>•</span>
+                                    <span>{listing.condition}</span>
+                                    <span>•</span>
+                                    <span>{listing.location}</span>
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() =>
+                                    handleDeleteListing(user.id, listing.id)
+                                  }
+                                  className="text-red-600 hover:text-red-800 p-1 rounded-full hover:bg-red-50"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -555,6 +683,63 @@ const AdminPage = () => {
         message={alertDialog.message}
         type={alertDialog.type}
       />
+      {/* Document Verification Dialog */}
+      {verificationDialog.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium">Verify Document</h3>
+                <button
+                  onClick={() =>
+                    setVerificationDialog({
+                      isOpen: false,
+                      userId: null,
+                      documentData: null,
+                    })
+                  }
+                  className="text-gray-400 hover:text-gray-500"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Document Preview */}
+              <div className="mb-4">
+                <img
+                  src={URL.createObjectURL(verificationDialog.documentData)}
+                  alt="Document"
+                  className="max-w-full h-auto rounded-lg"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() =>
+                    handleVerifyDocument(
+                      verificationDialog.userId,
+                      false,
+                      "Document rejected"
+                    )
+                  }
+                  className="px-4 py-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200"
+                >
+                  Reject
+                </button>
+                <button
+                  onClick={() =>
+                    handleVerifyDocument(verificationDialog.userId, true)
+                  }
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                >
+                  Approve
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

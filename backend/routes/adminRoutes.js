@@ -3,6 +3,7 @@ const router = express.Router();
 const adminService = require("../services/adminService");
 const authMiddleware = require("../middleware/authMiddleware");
 const adminAuthMiddleware = require("../middleware/adminAuthMiddleware");
+const User = require("../models/userSchema");
 
 // Admin registration (protected, only super admins can create new admins)
 router.post(
@@ -58,6 +59,21 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// Get all users
+router.get(
+  "/users",
+  [authMiddleware, adminAuthMiddleware],
+  async (req, res) => {
+    try {
+      const users = await adminService.getAllUsers();
+      res.status(200).json(users);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: error.message });
+    }
+  }
+);
+
 // Get admin profile
 router.get("/profile", authMiddleware, async (req, res) => {
   try {
@@ -103,20 +119,6 @@ router.put("/profile", authMiddleware, async (req, res) => {
   }
 });
 
-// Get all users
-router.get(
-  "/users",
-  [authMiddleware, adminAuthMiddleware],
-  async (req, res) => {
-    try {
-      const users = await adminService.getAllUsers();
-      res.status(200).json(users);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
-  }
-);
-
 // Update user status
 router.put(
   "/users/:userId/status",
@@ -125,9 +127,16 @@ router.put(
     try {
       const { userId } = req.params;
       const { status } = req.body;
-      const user = await adminService.updateUserStatus(userId, status);
-      res.status(200).json(user);
+
+      // Validate status
+      if (!["ban", "suspend", "activate"].includes(status)) {
+        return res.status(400).json({ message: "Invalid status value" });
+      }
+
+      const updatedUser = await adminService.updateUserStatus(userId, status);
+      res.status(200).json(updatedUser);
     } catch (error) {
+      console.error("Error updating user status:", error);
       res.status(500).json({ message: error.message });
     }
   }
@@ -204,6 +213,92 @@ router.put(
       res.status(200).json(policy);
     } catch (error) {
       res.status(500).json({ message: error.message });
+    }
+  }
+);
+
+// Document Verification Routes
+router.get(
+  "/verifications/pending",
+  [authMiddleware, adminAuthMiddleware],
+  async (req, res) => {
+    try {
+      const pendingUsers = await User.find({
+        "verification.status": "pending",
+        "verification.documentPath": { $exists: true },
+      }).select("_id name email verification");
+
+      const verifications = pendingUsers.map((user) => ({
+        userId: user._id,
+        userName: user.name,
+        email: user.email,
+        documentType: user.verification.documentType,
+        documentNumber: user.verification.documentNumber,
+        submittedAt: user.verification.submittedAt,
+      }));
+
+      res.json(verifications);
+    } catch (error) {
+      console.error("Error fetching pending verifications:", error);
+      res
+        .status(500)
+        .json({ message: "Failed to fetch pending verifications" });
+    }
+  }
+);
+
+router.get(
+  "/users/:userId/document",
+  [authMiddleware, adminAuthMiddleware],
+  async (req, res) => {
+    try {
+      const user = await User.findById(req.params.userId);
+      if (!user || !user.verification.documentPath) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+
+      // Send the document file
+      res.sendFile(user.verification.documentPath, { root: "./" });
+    } catch (error) {
+      console.error("Error fetching document:", error);
+      res.status(500).json({ message: "Failed to fetch document" });
+    }
+  }
+);
+
+router.put(
+  "/users/:userId/verify-document",
+  [authMiddleware, adminAuthMiddleware],
+  async (req, res) => {
+    try {
+      const { isApproved, reason } = req.body;
+      const user = await User.findById(req.params.userId);
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Update verification status
+      user.verification.status = isApproved ? "approved" : "rejected";
+      user.verification.reviewedAt = new Date();
+      user.verification.reviewedBy = req.admin._id;
+      user.verification.rejectionReason = isApproved ? null : reason;
+      user.isDocumentVerified = isApproved;
+
+      await user.save();
+
+      // Send notification to user about verification result
+      // This is where you would implement notification logic (email, in-app, etc.)
+
+      res.json({
+        message: `Document verification ${
+          isApproved ? "approved" : "rejected"
+        } successfully`,
+        status: user.verification.status,
+      });
+    } catch (error) {
+      console.error("Error updating verification status:", error);
+      res.status(500).json({ message: "Failed to update verification status" });
     }
   }
 );

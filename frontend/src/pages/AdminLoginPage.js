@@ -1,19 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Input, Button } from "@nextui-org/react";
-import { Lock, Mail } from "lucide-react";
 import AdminService from "../services/adminService";
+import Header from "../components/Header";
+import { Input } from "@nextui-org/react";
+import { Eye, EyeOff } from "lucide-react";
 
 const AdminLoginPage = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
   const [error, setError] = useState("");
+  const [isVisible, setIsVisible] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Redirect if already logged in
   useEffect(() => {
-    if (AdminService.isAdminLoggedIn()) {
+    // If already logged in as admin with proper privileges, redirect to admin panel
+    if (AdminService.isAdminLoggedIn() && AdminService.hasAdminPrivileges()) {
       navigate("/admin");
     }
   }, [navigate]);
@@ -24,76 +28,93 @@ const AdminLoginPage = () => {
     setLoading(true);
 
     try {
-      const response = await AdminService.login(email, password);
-      console.log("Login successful:", response);
+      const response = await AdminService.login(formData);
+
+      // Check if the user has admin privileges after login
+      if (!AdminService.hasAdminPrivileges()) {
+        setError("You do not have administrator privileges");
+        AdminService.logout(); // Clear any stored tokens
+        setLoading(false);
+        return;
+      }
+
       navigate("/admin");
-    } catch (err) {
-      console.error("Login error:", err);
-      setError(
-        err.response?.data?.message ||
-          "Failed to login. Please check your credentials and try again."
-      );
+    } catch (error) {
+      setError(error.message || "Login failed");
     } finally {
       setLoading(false);
     }
   };
 
+  const toggleVisibility = () => setIsVisible(!isVisible);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Admin Login</h1>
-          <p className="text-gray-600 mt-2">
-            Please sign in to access the admin dashboard
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
+    <>
+      <Header
+        shadow={true}
+        className="text-black !fixed bg-[var(--foreGroundColor)] overflow-hidden fill-[var(--buttonColor)]"
+      />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
           <div>
-            <Input
-              type="email"
-              label="Email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              startContent={<Mail className="text-gray-400" size={20} />}
-              isRequired
-              className="w-full"
-              isInvalid={!!error}
-            />
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+              Admin Login
+            </h2>
           </div>
-
-          <div>
-            <Input
-              type="password"
-              label="Password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              startContent={<Lock className="text-gray-400" size={20} />}
-              isRequired
-              className="w-full"
-              isInvalid={!!error}
-            />
-          </div>
-
-          {error && (
-            <div className="text-red-500 text-sm text-center bg-red-50 p-2 rounded">
-              {error}
+          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+            <div className="rounded-md shadow-sm space-y-4">
+              <Input
+                type="email"
+                label="Email"
+                placeholder="Enter your email"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+                required
+              />
+              <Input
+                label="Password"
+                placeholder="Enter your password"
+                endContent={
+                  <button
+                    className="focus:outline-none"
+                    type="button"
+                    onClick={toggleVisibility}
+                  >
+                    {isVisible ? (
+                      <EyeOff className="text-2xl text-default-400 pointer-events-none" />
+                    ) : (
+                      <Eye className="text-2xl text-default-400 pointer-events-none" />
+                    )}
+                  </button>
+                }
+                type={isVisible ? "text" : "password"}
+                value={formData.password}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
+                required
+              />
             </div>
-          )}
 
-          <Button
-            type="submit"
-            className="w-full bg-[var(--buttonColor)] text-white"
-            isLoading={loading}
-            disabled={loading || !email || !password}
-          >
-            {loading ? "Signing in..." : "Sign In"}
-          </Button>
-        </form>
+            {error && (
+              <div className="text-red-600 text-sm text-center">{error}</div>
+            )}
+
+            <div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[var(--buttonColor)] hover:bg-[var(--buttonHoverColor)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+              >
+                {loading ? "Logging in..." : "Sign in"}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

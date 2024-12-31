@@ -6,12 +6,34 @@ export default function SimilarItems({ items }) {
   const navigate = useNavigate();
 
   // Helper function to get image source
-  const getImageSrc = (imageObj) => {
-    if (!imageObj) return "";
-    if (imageObj.type === "url") return imageObj.url;
-    if (imageObj.type === "buffer" && imageObj.data) {
-      return `data:${imageObj.contentType};base64,${imageObj.data}`;
+  const getImageSrc = (image) => {
+    if (!image) return "";
+
+    // Handle base64 images
+    if (image.type === "base64" && image.data) {
+      // If the data is already a complete data URL, return it as is
+      if (image.data.startsWith("data:")) {
+        return image.data;
+      }
+      // Otherwise, construct the data URL
+      return `data:${image.contentType || "image/jpeg"};base64,${image.data}`;
     }
+
+    // Handle URL images
+    if (image.type === "url" && image.url) {
+      return image.url;
+    }
+
+    // Handle legacy format where image might be a direct URL string
+    if (typeof image === "string") {
+      return image;
+    }
+
+    // Handle buffer type images
+    if (image.type === "buffer" && image.data) {
+      return `data:${image.contentType || "image/jpeg"};base64,${image.data}`;
+    }
+
     return "";
   };
 

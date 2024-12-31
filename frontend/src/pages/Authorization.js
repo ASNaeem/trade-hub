@@ -23,6 +23,7 @@ function LoginPage({ from }) {
 
   const handle_login = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       const email = e.target.email.value;
       const password = e.target.password.value;
@@ -39,6 +40,7 @@ function LoginPage({ from }) {
       if (response.data.requireVerification) {
         setVerificationEmail(email);
         setShowOtpModal(true);
+        setIsLoading(false);
         return;
       }
 
@@ -50,13 +52,23 @@ function LoginPage({ from }) {
       // Redirect to appropriate page
       window.location.href = from === "chats" ? "/user?loggedin=true" : "/user";
     } catch (error) {
+      setIsLoading(false);
       const errorMessage = error.response?.data?.message || "Login failed";
-      // Show error in a more user-friendly way
-      alert(
-        errorMessage === "Invalid credentials"
-          ? "Invalid email or password"
-          : errorMessage
-      );
+
+      // Check for specific error messages
+      if (errorMessage === "BANNED") {
+        alert(
+          "Your account has been banned. Please contact support at support@tradehub.com for assistance."
+        );
+      } else if (errorMessage === "SUSPENDED") {
+        alert(
+          "Your account is currently suspended. The suspension will be lifted in 7 days. Please try again later."
+        );
+      } else if (errorMessage === "Invalid credentials") {
+        alert("Invalid email or password");
+      } else {
+        alert(errorMessage);
+      }
     }
   };
 

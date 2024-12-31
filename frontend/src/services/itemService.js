@@ -64,6 +64,7 @@ const ItemService = {
     conditions,
     page = 1,
     limit = 6,
+    search = "",
   } = {}) => {
     try {
       // Convert arrays to strings to avoid URL encoding issues
@@ -72,6 +73,11 @@ const ItemService = {
       // Add pagination params
       params.append("page", page);
       params.append("limit", limit);
+
+      // Add search term if exists
+      if (search && search.trim()) {
+        params.append("search", search.trim());
+      }
 
       // Add price range if exists
       if (priceRange?.minPrice !== undefined) {

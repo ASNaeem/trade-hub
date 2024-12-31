@@ -8,20 +8,28 @@ import {
   Settings,
 } from "lucide-react";
 import "../styles/Header.css";
+import { useNavigate } from "react-router-dom";
 
 const Header = ({
   user_state,
   shadow = false,
   className = "text-[var(--foreGroundColor)] fill-[var(--accentColor)]",
-  login_clicked = () => {
-    window.location.href = "/user";
-  },
+  onLoginClick = null,
 }) => {
   const [LoggedIn, setLoggedIn] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setLoggedIn(localStorage.getItem("loggedin") != null);
   }, []);
+
+  const handleLoginClick = () => {
+    if (onLoginClick) {
+      onLoginClick();
+    } else {
+      navigate("/auth");
+    }
+  };
 
   return (
     <nav
@@ -47,7 +55,7 @@ const Header = ({
         <li>
           <button
             className="flex items-center gap-2"
-            onClick={() => (window.location.href = "/admin")}
+            onClick={() => navigate("/admin")}
           >
             <LucideHammer style={{ width: "16px", height: "16px" }} />
             <h1 className="hidden md:block"> Admin </h1>
@@ -56,7 +64,7 @@ const Header = ({
         <li>
           <button
             className="flex items-center gap-2"
-            onClick={() => (window.location.href = "/browse")}
+            onClick={() => navigate("/browse")}
           >
             <Globe style={{ width: "16px", height: "16px" }} />
             <h1 className="hidden md:block"> Browse </h1>
@@ -65,37 +73,30 @@ const Header = ({
         <li className="relative group">
           <div
             onClick={() => {
-              user_state
-                ? (window.location.href = "/user")
-                : login_clicked("login");
+              if (LoggedIn) {
+                navigate("/user");
+              } else {
+                handleLoginClick();
+              }
             }}
             className="flex items-center gap-2 cursor-pointer"
           >
             <User style={{ width: "16px", height: "16px" }} />
             <h1 className="hidden md:block">
-              {" "}
-              {LoggedIn ? "Profile" : "Login"}{" "}
+              {LoggedIn ? "Profile" : "Login"}
             </h1>
           </div>
           {LoggedIn && (
             <div className="absolute left-[-30px] p-3 mt-2 w-40 flex flex-col gap-1 bg-[#16292F] overflow-hidden shadow-lg rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-250">
               <a
-                onClick={() => {
-                  LoggedIn
-                    ? (window.location.href = "/user?loggedin=true")
-                    : login_clicked("chats");
-                }}
+                onClick={() => navigate("/user?loggedin=true")}
                 className="block px-4 py-1 text-sm text-white hover:bg-gray-200 hover:text-black cursor-pointer"
               >
                 <MessageSquareText size={12} />
                 Chats
               </a>
               <a
-                onClick={() => {
-                  LoggedIn
-                    ? (window.location.href = "/user?settings=true")
-                    : login_clicked("chats");
-                }}
+                onClick={() => navigate("/user?settings=true")}
                 className="block px-4 py-1 text-sm text-white hover:bg-gray-200 hover:text-black cursor-pointer"
               >
                 <Settings size={12} />
@@ -107,7 +108,7 @@ const Header = ({
                     localStorage.removeItem("token");
                     localStorage.removeItem("user");
                     localStorage.removeItem("loggedin");
-                    window.location.href = "/";
+                    navigate("/");
                   }}
                   className="block px-4 py-1 text-sm text-red-600 hover:bg-gray-200 hover:text-black cursor-pointer"
                 >

@@ -20,20 +20,67 @@ class Item {
     this._category = category;
     this._condition = condition;
     this._images = images.map((img) => {
-      if (img.type === "base64") {
+      try {
+        console.log("Processing image in constructor:", img);
+
+        // Handle base64 images
+        if (img.type === "base64" && img.data) {
+          return {
+            type: "base64",
+            data: img.data,
+            contentType: img.contentType || "image/jpeg",
+            url: null,
+          };
+        }
+
+        // Handle URL images
+        if (img.type === "url" && img.url) {
+          return {
+            type: "url",
+            url: img.url,
+            data: null,
+            contentType: null,
+          };
+        }
+
+        // Handle string URLs or base64 data
+        if (typeof img === "string") {
+          if (img.startsWith("data:")) {
+            const [header, data] = img.split(",");
+            return {
+              type: "base64",
+              data: data,
+              contentType: header.split(";")[0].split(":")[1],
+              url: null,
+            };
+          }
+          if (img.startsWith("http")) {
+            return {
+              type: "url",
+              url: img,
+              data: null,
+              contentType: null,
+            };
+          }
+        }
+
+        // If we get here, log the unhandled format
+        console.warn("Unhandled image format in constructor:", img);
         return {
-          type: "base64",
-          data: img.data,
-          contentType: img.contentType || "image/jpeg",
-          url: null,
+          type: "url",
+          url: "/placeholder-image.jpg",
+          data: null,
+          contentType: null,
+        };
+      } catch (err) {
+        console.error("Error processing image in constructor:", err);
+        return {
+          type: "url",
+          url: "/placeholder-image.jpg",
+          data: null,
+          contentType: null,
         };
       }
-      return {
-        type: "url",
-        url: img.url || null,
-        data: null,
-        contentType: img.contentType || null,
-      };
     });
     this._location = location;
     this._sellerId = sellerId;
@@ -199,19 +246,82 @@ class Item {
       category: this._category,
       condition: this._condition,
       images: this._images.map((img) => {
-        if (img.type === "base64") {
+        // Handle base64 images
+        if (img.type === "base64" && img.data) {
+          // If data is already a complete data URL, return it as is
+          if (typeof img.data === "string" && img.data.startsWith("data:")) {
+            return {
+              type: "base64",
+              data: img.data,
+              contentType: img.contentType || "image/jpeg",
+              url: null,
+            };
+          }
+          // Otherwise, ensure it's a proper base64 string
           return {
             type: "base64",
             data: img.data,
-            contentType: img.contentType,
+            contentType: img.contentType || "image/jpeg",
             url: null,
           };
         }
+        // Handle URL images
+        if (img.type === "url" && img.url) {
+          return {
+            type: "url",
+            url: img.url,
+            data: null,
+            contentType: img.contentType || null,
+          };
+        }
+        // Handle legacy string URLs
+        if (typeof img === "string") {
+          if (img.startsWith("data:")) {
+            const [header, data] = img.split(",");
+            const contentType = header.split(";")[0].split(":")[1];
+            return {
+              type: "base64",
+              data: data,
+              contentType: contentType,
+              url: null,
+            };
+          }
+          if (img.startsWith("http")) {
+            return {
+              type: "url",
+              url: img,
+              data: null,
+              contentType: null,
+            };
+          }
+          // Assume it's a raw base64 string
+          return {
+            type: "base64",
+            data: img,
+            contentType: "image/jpeg",
+            url: null,
+          };
+        }
+        // Handle buffer type images
+        if (img.type === "buffer" && img.data) {
+          const base64Data =
+            typeof img.data === "string"
+              ? img.data
+              : Buffer.from(img.data).toString("base64");
+          return {
+            type: "base64",
+            data: base64Data,
+            contentType: img.contentType || "image/jpeg",
+            url: null,
+          };
+        }
+        // Return a placeholder if no valid format is found
+        console.warn("Invalid image format:", img);
         return {
           type: "url",
-          url: img.url,
+          url: "/placeholder-image.jpg",
           data: null,
-          contentType: img.contentType,
+          contentType: null,
         };
       }),
       location: this._location,

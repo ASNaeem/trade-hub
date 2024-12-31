@@ -77,15 +77,14 @@ function UserProfile() {
         };
 
         setUser(userData);
+
+        // Initialize tabs with loading state for favorites
         setTabs(
           Tabs.map((tab) =>
             tab.id === "favorites"
               ? {
                   ...tab,
-                  count:
-                    response.data.favourites.length === 0
-                      ? " 0"
-                      : response.data.favourites.length,
+                  count: "...",
                 }
               : tab
           )
@@ -209,7 +208,22 @@ function UserProfile() {
       case "selling":
         return <ListedItems items={initialItem} />;
       case "favorites":
-        return <FavoritesTab />;
+        return (
+          <FavoritesTab
+            onFavoritesUpdate={(count) => {
+              setTabs(
+                Tabs.map((tab) =>
+                  tab.id === "favorites"
+                    ? {
+                        ...tab,
+                        count: count === 0 ? " 0" : count,
+                      }
+                    : tab
+                )
+              );
+            }}
+          />
+        );
       case "messages":
         return <MessagesTab inbox={inbox} />;
       default:

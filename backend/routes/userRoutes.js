@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const userService = require("../services/userService");
 const authMiddleware = require("../middleware/authMiddleware");
+const itemService = require("../services/itemService");
 
 // Test route
 router.get("/", (req, res) => {
@@ -104,7 +105,10 @@ router.post("/login", async (req, res) => {
     if (error.message === "Invalid credentials") {
       return res.status(401).json({ message: error.message });
     }
-    res.status(500).json({ message: "Error logging in", error: error.message });
+    if (error.message === "BANNED" || error.message === "SUSPENDED") {
+      return res.status(403).json({ message: error.message });
+    }
+    res.status(500).json({ message: error.message });
   }
 });
 
@@ -309,6 +313,20 @@ router.get("/:userId", authMiddleware, async (req, res) => {
   } catch (error) {
     console.error(`Error in ${req.originalUrl} -`, error.message);
     res.status(400).json({ message: error.message });
+  }
+});
+
+// Get user's listed items
+router.get("/:userId/items", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const items = await itemService.getItemsBySellerId(userId);
+    res.status(200).json(items);
+  } catch (error) {
+    console.error("Error fetching user's items:", error);
+    res
+      .status(500)
+      .json({ message: "Error fetching items", error: error.message });
   }
 });
 

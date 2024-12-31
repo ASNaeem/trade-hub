@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import ItemService from "../../services/ItemService";
+import ItemService from "../../services/itemService";
 
 const ListingForm = () => {
   const navigate = useNavigate();
@@ -16,35 +16,46 @@ const ListingForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleImageSelect = (e) => {
+  const handleImageSelect = async (e) => {
     const files = Array.from(e.target.files);
+
+    // Create temporary URLs for preview
+    const previewUrls = files.map((file) => URL.createObjectURL(file));
+    setSelectedImages(previewUrls);
     setSelectedFiles(files);
-    setSelectedImages(files.map((file) => URL.createObjectURL(file))); // For preview only
+
+    // Clean up URLs when component unmounts
+    return () => {
+      previewUrls.forEach(URL.revokeObjectURL);
+    };
   };
 
-  const convertImageToBase64 = (file) => {
+  const convertImageToBase64 = async (file) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => {
-        // Get the base64 string without the data URL prefix
-        const fullData = reader.result;
-        const base64Data = fullData.split(",")[1];
+        try {
+          const fullData = reader.result;
+          const base64Data = fullData.split(",")[1];
 
-        console.log("Converting image:", {
-          type: "base64",
-          contentType: file.type,
-          hasFullData: !!fullData,
-          hasBase64: !!base64Data,
-          previewFull: fullData.substring(0, 100) + "...",
-          previewBase64: base64Data.substring(0, 100) + "...",
-        });
+          console.log("Converting image:", {
+            type: "base64",
+            contentType: file.type,
+            hasFullData: !!fullData,
+            hasBase64: !!base64Data,
+            previewBase64: base64Data?.substring(0, 50) + "...",
+          });
 
-        resolve({
-          type: "base64",
-          data: base64Data,
-          contentType: file.type,
-          url: null,
-        });
+          resolve({
+            type: "base64",
+            data: base64Data,
+            contentType: file.type,
+            url: null,
+          });
+        } catch (error) {
+          console.error("Error processing image data:", error);
+          reject(error);
+        }
       };
       reader.onerror = (error) => {
         console.error("Error reading file:", error);
@@ -53,6 +64,13 @@ const ListingForm = () => {
       reader.readAsDataURL(file);
     });
   };
+
+  useEffect(() => {
+    // Cleanup function to revoke object URLs
+    return () => {
+      selectedImages.forEach(URL.revokeObjectURL);
+    };
+  }, [selectedImages]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -77,17 +95,16 @@ const ListingForm = () => {
 
       // Convert all images to Base64
       const convertedImages = await Promise.all(
-        selectedFiles.map(async (file) => await convertImageToBase64(file))
-      );
-
-      console.log(
-        "Converted images:",
-        convertedImages.map((img) => ({
-          type: img.type,
-          contentType: img.contentType,
-          hasData: !!img.data,
-          dataPreview: img.data?.substring(0, 100) + "...",
-        }))
+        selectedFiles.map(async (file) => {
+          const converted = await convertImageToBase64(file);
+          console.log("Converted image:", {
+            type: converted.type,
+            contentType: converted.contentType,
+            hasData: !!converted.data,
+            dataPreview: converted.data?.substring(0, 50) + "...",
+          });
+          return converted;
+        })
       );
 
       const itemData = {
@@ -100,6 +117,15 @@ const ListingForm = () => {
         brand: brand ? brand.trim() : null,
         images: convertedImages,
       };
+
+      console.log("Submitting item data:", {
+        ...itemData,
+        images: itemData.images.map((img) => ({
+          type: img.type,
+          contentType: img.contentType,
+          hasData: !!img.data,
+        })),
+      });
 
       const response = await ItemService.createItem(itemData);
       console.log("Created item response:", response);

@@ -5,6 +5,7 @@ import { Pagination } from "../components/browse/Pagination";
 import { Menu, PackageSearch, Search } from "lucide-react";
 import Header from "../components/Header";
 import useItems from "../hooks/useItems";
+import LoginPage from "./Authorization";
 
 // Define filter options that match our backend data
 const FILTERS = {
@@ -26,12 +27,29 @@ const BrowsePage = () => {
   const [showFilters, setShowFilters] = React.useState(false);
   const [hasActiveFilters, setHasActiveFilters] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState("");
+  const [LoggedIn, setLoggedIn] = React.useState(false);
+  const [login_from, setLoginFrom] = React.useState("login");
+  const [isModalOpen, setisModalOpen] = React.useState(false);
 
   // Use our custom hook with initial fetch
   const { items, loading, error, totalPages, fetchItems } = useItems({
     page: currentPage,
     limit: ITEMS_PER_PAGE,
   });
+
+  React.useEffect(() => {
+    localStorage.getItem("loggedin") != null
+      ? setLoggedIn(true)
+      : setLoggedIn(false);
+
+    document
+      .getElementsByClassName("login_modal")[0]
+      .addEventListener("click", (e) => {
+        if (e.target.classList.contains("login_modal")) {
+          setisModalOpen(false);
+        }
+      });
+  }, []);
 
   // Check if any filters are active
   React.useEffect(() => {
@@ -46,13 +64,74 @@ const BrowsePage = () => {
 
   // Initial fetch when component mounts
   React.useEffect(() => {
-    fetchItems({
+    // Prepare filter parameters for API
+    const apiFilters = {
       page: currentPage,
       limit: ITEMS_PER_PAGE,
       priceRange: selectedFilters.priceRange,
-      search: searchTerm,
-    });
+    };
+
+    // Add search term if exists
+    if (searchTerm) {
+      apiFilters.search = searchTerm;
+    }
+
+    // Only add non-empty filters
+    if (selectedFilters.brands.length > 0) {
+      if (selectedFilters.brands.includes("Other")) {
+        apiFilters.brands = [
+          ...selectedFilters.brands.filter((b) => b !== "Other"),
+          null,
+        ];
+      } else {
+        apiFilters.brands = selectedFilters.brands;
+      }
+    }
+
+    if (selectedFilters.locations.length > 0) {
+      apiFilters.locations = selectedFilters.locations;
+    }
+
+    if (selectedFilters.conditions.length > 0) {
+      apiFilters.conditions = selectedFilters.conditions;
+    }
+
+    // Fetch items with all parameters
+    fetchItems(apiFilters);
   }, [currentPage, selectedFilters, searchTerm]);
+
+  // Get search param from URL on mount
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const searchParam = params.get("search");
+    if (searchParam) {
+      setSearchTerm(searchParam);
+
+      // Prepare filter parameters for API
+      const apiFilters = {
+        page: 1,
+        limit: ITEMS_PER_PAGE,
+        priceRange: selectedFilters.priceRange,
+        search: searchParam.trim(),
+      };
+
+      // Only add non-empty filters
+      if (selectedFilters.brands.length > 0) {
+        apiFilters.brands = selectedFilters.brands;
+      }
+
+      if (selectedFilters.locations.length > 0) {
+        apiFilters.locations = selectedFilters.locations;
+      }
+
+      if (selectedFilters.conditions.length > 0) {
+        apiFilters.conditions = selectedFilters.conditions;
+      }
+
+      // Fetch items with search and filters
+      fetchItems(apiFilters);
+    }
+  }, []);
 
   const handleFilterChange = (filterType, value) => {
     let newFilters;
@@ -140,7 +219,35 @@ const BrowsePage = () => {
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
+  };
+
+  const handleSearch = (event) => {
+    event.preventDefault();
     setCurrentPage(1);
+
+    // Prepare filter parameters for API
+    const apiFilters = {
+      page: 1,
+      limit: ITEMS_PER_PAGE,
+      priceRange: selectedFilters.priceRange,
+      search: searchTerm.trim(),
+    };
+
+    // Only add non-empty filters
+    if (selectedFilters.brands.length > 0) {
+      apiFilters.brands = selectedFilters.brands;
+    }
+
+    if (selectedFilters.locations.length > 0) {
+      apiFilters.locations = selectedFilters.locations;
+    }
+
+    if (selectedFilters.conditions.length > 0) {
+      apiFilters.conditions = selectedFilters.conditions;
+    }
+
+    // Fetch items with search and filters
+    fetchItems(apiFilters);
   };
 
   const renderContent = () => {
@@ -198,6 +305,10 @@ const BrowsePage = () => {
               condition={item.condition}
               location={item.location}
               image={item.images[0]}
+              onLoginRequired={() => {
+                setLoginFrom("item");
+                setisModalOpen(true);
+              }}
             />
           ))}
         </div>
@@ -213,9 +324,27 @@ const BrowsePage = () => {
   return (
     <div className="min-h-screen bg-[#fefefe]">
       <Header
+        user_state={LoggedIn}
         shadow={true}
         className="text-black !fixed bg-[var(--foreGroundColor)] overflow-hidden fill-[var(--buttonColor)]"
+        onLoginClick={(v) => {
+          setLoginFrom(v);
+          setisModalOpen(!isModalOpen);
+        }}
       />
+      {/* Login and registration modal */}
+      <div className={`login_modal  ${isModalOpen ? "!flex" : ""}`}>
+        <div className={`animate-[comeup_0.1s_ease-in]`}>
+          {isModalOpen ? (
+            <LoginPage
+              from={login_from}
+              login_success={() => setLoggedIn(true)}
+            />
+          ) : (
+            ""
+          )}
+        </div>
+      </div>
       <div className="max-w-7xl mx-auto px-4 py-24">
         <div className="flex flex-col md:flex-row gap-8">
           <div
@@ -231,27 +360,26 @@ const BrowsePage = () => {
             />
           </div>
           <div className="flex flex-col gap-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row gap-4 mb-8">
+              <form onSubmit={handleSearch} className="flex-1">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search items..."
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                  />
+                  <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+                </div>
+              </form>
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="md:hidden flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm"
+                className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors md:w-auto"
               >
-                <Menu size={20} />
-                Filters
+                <Menu className="h-5 w-5" />
+                <span>Filters {hasActiveFilters && "(Active)"}</span>
               </button>
-              <div className="w-full relative">
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={handleSearchChange}
-                  placeholder="Search items..."
-                  className="border w-full rounded-lg py-2 px-4 pl-10 focus:outline-none focus:ring-2 focus:ring-[var(--iconColor)]"
-                />
-                <Search
-                  className="absolute left-3 top-2.5 text-gray-400"
-                  size={20}
-                />
-              </div>
             </div>
             <div>{renderContent()}</div>
           </div>

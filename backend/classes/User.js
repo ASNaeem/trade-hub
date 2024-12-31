@@ -13,7 +13,9 @@ class User extends Person {
     isDocumentVerified = false,
     city = null,
     isEmailVerified = false,
-    favourites = []
+    favourites = [],
+    isBanned = false,
+    isUnderReview = false
   ) {
     super(id, name, email, password, createdAt);
     this._phone = phone;
@@ -24,6 +26,8 @@ class User extends Person {
     this._city = city;
     this._isEmailVerified = isEmailVerified;
     this._favourites = favourites;
+    this._isBanned = isBanned;
+    this._isUnderReview = isUnderReview;
   }
 
   // Getter and Setter for Phone
@@ -98,19 +102,43 @@ class User extends Person {
   set favourites(newFavorites) {
     this._favourites = newFavorites;
   }
+
+  get isBanned() {
+    return this._isBanned;
+  }
+
+  set isBanned(value) {
+    this._isBanned = value;
+  }
+
+  get isUnderReview() {
+    return this._isUnderReview;
+  }
+
+  set isUnderReview(value) {
+    this._isUnderReview = value;
+  }
+
+  get status() {
+    if (this._isBanned) return "banned";
+    if (this._isUnderReview) return "suspended";
+    return "active";
+  }
+
   getSummary() {
+    const personSummary = super.getSummary();
     return {
-      id: this.id,
-      name: this.name,
-      email: this.email,
+      ...personSummary,
       phone: this.phone,
       profilePicture: this.profilePicture,
       govtDocument: this.govtDocument,
       isDocumentVerified: this.isDocumentVerified,
       isEmailVerified: this.isEmailVerified,
       city: this.city,
-      createdAt: this.createdAt,
       favourites: this.favourites,
+      isBanned: this.isBanned,
+      isUnderReview: this.isUnderReview,
+      status: this.status,
     };
   }
 
@@ -119,6 +147,7 @@ class User extends Person {
       id: this.id,
       name: this.name,
       profilePicture: this.profilePicture,
+      status: this.status,
     };
   }
 }

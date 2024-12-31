@@ -122,16 +122,27 @@ const HomePage = ({ trending_items, top_deals }) => {
   const [LoggedIn, setLoggedIn] = useState(false);
   const [login_from, setLoginFrom] = useState("login");
   const [isModalOpen, setisModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const [heroRef, heroInView] = useInView({ triggerOnce: true });
   const [categoriesRef, categoriesInView] = useInView({ triggerOnce: true });
   const [trendingRef, trendingInView] = useInView({ triggerOnce: true });
   const [dealsRef, dealsInView] = useInView({ triggerOnce: true });
   //#endregion
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      window.location.href = `/browse?search=${encodeURIComponent(
+        searchTerm.trim()
+      )}`;
+    }
+  };
+
   return (
     <main className="bg-gray-50">
       <Header
         user_state={LoggedIn}
-        login_clicked={(v) => {
+        onLoginClick={(v) => {
           setLoginFrom(v);
           setisModalOpen(!isModalOpen);
         }}
@@ -190,18 +201,20 @@ const HomePage = ({ trending_items, top_deals }) => {
               transition={{ delay: 0.6, duration: 0.8 }}
               className="mt-10 max-w-xl mx-auto"
             >
-              <div className="relative group">
+              <form onSubmit={handleSearch} className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
                   <Search className="h-5 w-5 text-gray-400 group-hover:text-gray-600 transition-colors" />
                 </div>
                 <input
                   type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   className="block w-full pl-10 pr-3 py-4 border border-transparent rounded-lg 
                            focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white shadow-lg
                            transition-all duration-300 ease-in-out"
                   placeholder="Search for items..."
                 />
-              </div>
+              </form>
             </motion.div>
           </div>
         </div>

@@ -36,19 +36,36 @@ const userSchema = new mongoose.Schema({
     required: true,
     default: [],
   },
-  govtDocument: {
+  verification: {
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: null,
+    },
     documentType: {
       type: String,
-      enum: ["NID", "Birth Certificate"],
+      enum: ["NID", "Birth Certificate", "Passport"],
     },
     documentNumber: {
       type: String,
       unique: true,
       sparse: true,
     },
-    documentImage: {
-      data: Buffer,
-      contentType: String,
+    documentPath: {
+      type: String,
+    },
+    submittedAt: {
+      type: Date,
+    },
+    reviewedAt: {
+      type: Date,
+    },
+    reviewedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Admin",
+    },
+    rejectionReason: {
+      type: String,
     },
   },
   isDocumentVerified: {

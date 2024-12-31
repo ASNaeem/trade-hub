@@ -31,6 +31,16 @@ const UserService = {
       throw error;
     }
   },
+
+  getUserItems: async (userId) => {
+    try {
+      const response = await api.get(`/users/${userId}/items`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching user's items:", error);
+      throw error;
+    }
+  },
 };
 
 export default UserService;

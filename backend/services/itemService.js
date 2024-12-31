@@ -132,9 +132,20 @@ const ItemService = {
         maxPrice,
         conditions = [],
         locations = [],
+        search = "",
       } = filters;
 
       const query = {};
+
+      // Handle search
+      if (search) {
+        query.$or = [
+          { title: { $regex: search, $options: "i" } },
+          { description: { $regex: search, $options: "i" } },
+          { brand: { $regex: search, $options: "i" } },
+          { category: { $regex: search, $options: "i" } },
+        ];
+      }
 
       if (category) {
         query.category = category;
@@ -397,6 +408,30 @@ const ItemService = {
       );
     } catch (error) {
       throw new Error(`Error getting similar items: ${error.message}`);
+    }
+  },
+
+  async getItemsBySellerId(sellerId) {
+    try {
+      const items = await ItemModel.find({ sellerId: sellerId });
+      return items.map((item) =>
+        new ItemClass(
+          item._id,
+          item.title,
+          item.description,
+          item.price,
+          item.brand,
+          item.category,
+          item.condition,
+          item.images,
+          item.location,
+          item.sellerId,
+          item.createdAt
+        ).getSummary()
+      );
+    } catch (error) {
+      console.error("Error getting items by seller ID:", error);
+      throw error;
     }
   },
 };

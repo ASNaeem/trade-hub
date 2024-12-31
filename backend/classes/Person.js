@@ -1,18 +1,10 @@
 class Person {
-  constructor(
-    id,
-    name,
-    email,
-    password,
-    createdAt = new Date(),
-    favourites = []
-  ) {
+  constructor(id, name, email, password, createdAt = new Date()) {
     this._id = id;
     this._name = name;
     this._email = email;
     this._password = password;
     this._createdAt = createdAt;
-    this._favourites = favourites;
   }
 
   // Getter for ID
@@ -55,15 +47,6 @@ class Person {
     return this._createdAt;
   }
 
-  // Getter and Setter for Favourites
-  get favourites() {
-    return this._favourites;
-  }
-
-  set favourites(newFavourites) {
-    this._favourites = newFavourites;
-  }
-
   // Method to return a safe summary of the Person (for logging, etc.)
   getSummary() {
     return {
@@ -71,7 +54,6 @@ class Person {
       name: this._name,
       email: this._email,
       createdAt: this._createdAt,
-      favourites: this._favourites,
     };
   }
 }

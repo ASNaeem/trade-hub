@@ -37,7 +37,12 @@ const UserService = {
         password: hashedPassword,
         isEmailVerified: false,
         favourites: [],
-        profilePicture: "null",
+        profilePicture: null,
+        govtDocument: null,
+        isDocumentVerified: false,
+        city: null,
+        isBanned: false,
+        isUnderReview: false,
       });
 
       await user.save();
@@ -79,26 +84,22 @@ const UserService = {
         throw new Error("Email already registered");
       }
 
-      const userClassInstance = new UserClass(
-        null,
-        name,
-        email,
-        phone,
-        password,
-        favorites,
-        profilePicture
-      );
-
       const salt = await bcrypt.genSalt(10);
-      userClassInstance.password = await bcrypt.hash(password, salt);
+      const hashedPassword = await bcrypt.hash(password, salt);
 
       const userDocument = new UserModel({
-        name: userClassInstance.name,
-        email: userClassInstance.email.toLowerCase(),
-        phone: userClassInstance.phone,
-        password: userClassInstance.password,
-        favorites: userClassInstance.favorites,
-        profilePicture: userClassInstance.profilePicture,
+        name,
+        email: email.toLowerCase(),
+        phone,
+        password: hashedPassword,
+        isEmailVerified: false,
+        favourites: [],
+        profilePicture: null,
+        govtDocument: null,
+        isDocumentVerified: false,
+        city: null,
+        isBanned: false,
+        isUnderReview: false,
       });
 
       const savedUser = await userDocument.save();
@@ -116,7 +117,14 @@ const UserService = {
           savedUser.phone,
           savedUser.password,
           savedUser.createdAt,
-          savedUser.profilePicture
+          savedUser.profilePicture,
+          savedUser.govtDocument,
+          savedUser.isDocumentVerified,
+          savedUser.city,
+          savedUser.isEmailVerified,
+          savedUser.favourites,
+          savedUser.isBanned,
+          savedUser.isUnderReview
         ),
         token,
       };
@@ -149,6 +157,15 @@ const UserService = {
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
         throw new Error("Invalid credentials");
+      }
+
+      // Check if user is banned or suspended
+      if (user.isBanned) {
+        throw new Error("BANNED");
+      }
+
+      if (user.isUnderReview) {
+        throw new Error("SUSPENDED");
       }
 
       // Only check email verification if user exists and password matches
@@ -207,7 +224,9 @@ const UserService = {
         userDocument.isDocumentVerified,
         userDocument.city,
         userDocument.isEmailVerified,
-        userDocument.favourites
+        userDocument.favourites,
+        userDocument.isBanned,
+        userDocument.isUnderReview
       );
     } catch (error) {
       throw new Error(`Error finding user: ${error.message}`);
@@ -230,7 +249,9 @@ const UserService = {
       userDocument.isDocumentVerified,
       userDocument.city,
       userDocument.isEmailVerified,
-      userDocument.favourites
+      userDocument.favourites,
+      userDocument.isBanned,
+      userDocument.isUnderReview
     );
   },
   async updateUser(userId, updates) {
@@ -272,7 +293,9 @@ const UserService = {
         updatedDocument.isDocumentVerified,
         updatedDocument.city,
         updatedDocument.isEmailVerified,
-        userDocument.favourites
+        updatedDocument.favourites,
+        updatedDocument.isBanned,
+        updatedDocument.isUnderReview
       );
     } catch (error) {
       console.error("Error updating user:", error);

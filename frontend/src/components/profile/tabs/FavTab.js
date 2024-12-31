@@ -16,7 +16,7 @@ const getImageSrc = (image) => {
   return image.url || "";
 };
 
-const FavTab = () => {
+const FavTab = ({ onFavoritesUpdate }) => {
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -31,6 +31,7 @@ const FavTab = () => {
           return;
         }
 
+        // First get the list of favorite item IDs
         const favResponse = await axios.get(
           "http://localhost:5000/api/users/my-favourites",
           {
@@ -40,13 +41,52 @@ const FavTab = () => {
           }
         );
 
-        const itemPromises = favResponse.data.map((itemId) =>
-          axios.get(`http://localhost:5000/api/items/${itemId}`)
-        );
+        // Then fetch each item with error handling
+        const favoriteItems = [];
+        const deletedItemIds = [];
 
-        const itemResponses = await Promise.all(itemPromises);
-        const favoriteItems = itemResponses.map((response) => response.data);
+        for (const itemId of favResponse.data) {
+          try {
+            const itemResponse = await axios.get(
+              `http://localhost:5000/api/items/${itemId}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+            favoriteItems.push(itemResponse.data);
+          } catch (itemError) {
+            if (itemError.response?.status === 404) {
+              // Item was deleted, add to cleanup list
+              deletedItemIds.push(itemId);
+            }
+            console.error(`Error fetching item ${itemId}:`, itemError);
+          }
+        }
+
+        // Clean up deleted items from favorites
+        if (deletedItemIds.length > 0) {
+          try {
+            for (const itemId of deletedItemIds) {
+              await axios.delete(
+                "http://localhost:5000/api/users/delete-favorite",
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                  data: { itemId },
+                }
+              );
+            }
+          } catch (cleanupError) {
+            console.error("Error cleaning up deleted favorites:", cleanupError);
+          }
+        }
+
         setFavorites(favoriteItems);
+        // Update the favorites count in the parent component
+        onFavoritesUpdate(favoriteItems.length);
       } catch (error) {
         console.error("Error fetching favorites:", error);
         setError("Failed to load favorite items");
@@ -56,7 +96,7 @@ const FavTab = () => {
     };
 
     fetchFavorites();
-  }, [navigate]);
+  }, [navigate, onFavoritesUpdate]);
 
   return (
     <div

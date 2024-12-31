@@ -7,86 +7,69 @@ const GlobalPolicySetting = require("../models/globalPolicySettingSchema");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const config = require("../config/test.config");
+const UserClass = require("../classes/User");
 
 const AdminService = {
   async createAdmin(name, email, password, role = "admin") {
-    const adminClassInstance = new AdminClass(
-      null,
-      name,
-      email,
-      password,
-      new Date()
-    );
-    adminClassInstance.role = role;
+    try {
+      const existingAdmin = await AdminModel.findOne({
+        email: email.toLowerCase(),
+      });
+      if (existingAdmin) {
+        throw new Error("Email already registered");
+      }
 
-    const salt = await bcrypt.genSalt(10);
-    adminClassInstance.password = await bcrypt.hash(password, salt);
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
 
-    const adminDocument = new AdminModel({
-      name: adminClassInstance.name,
-      email: adminClassInstance.email,
-      password: adminClassInstance.password,
-      role: adminClassInstance.role,
-      createdAt: adminClassInstance.createdAt,
-    });
+      const admin = new AdminModel({
+        name,
+        email: email.toLowerCase(),
+        password: hashedPassword,
+        role,
+      });
 
-    const savedAdmin = await adminDocument.save();
-    return new AdminClass(
-      savedAdmin._id,
-      savedAdmin.name,
-      savedAdmin.email,
-      savedAdmin.password,
-      savedAdmin.createdAt
-    );
+      const savedAdmin = await admin.save();
+      return new AdminClass(
+        savedAdmin._id,
+        savedAdmin.name,
+        savedAdmin.email,
+        savedAdmin.password
+      );
+    } catch (error) {
+      throw error;
+    }
   },
 
   async authenticateAdmin(email, password) {
     try {
-      console.log("Attempting to authenticate admin:", email);
-      const adminDocument = await AdminModel.findOne({
-        email: email.toLowerCase(),
-      });
-
-      if (!adminDocument) {
-        console.log("Admin not found with email:", email);
+      const admin = await AdminModel.findOne({ email: email.toLowerCase() });
+      if (!admin) {
         throw new Error("Invalid credentials");
       }
 
-      console.log("Admin found, verifying password...");
-      const isMatch = await bcrypt.compare(password, adminDocument.password);
-
+      const isMatch = await bcrypt.compare(password, admin.password);
       if (!isMatch) {
-        console.log("Password verification failed");
         throw new Error("Invalid credentials");
       }
 
-      console.log("Password verified, generating token...");
-      const adminClassInstance = new AdminClass(
-        adminDocument._id,
-        adminDocument.name,
-        adminDocument.email,
-        adminDocument.password,
-        adminDocument.createdAt
+      const token = jwt.sign(
+        { id: admin._id, email: admin.email, role: admin.role },
+        config.JWT_SECRET,
+        { expiresIn: "1h" }
       );
 
-      const payload = {
-        id: adminDocument._id,
-        email: adminDocument.email,
-        role: adminDocument.role,
-      };
-
-      const token = jwt.sign(payload, config.JWT_SECRET, {
-        expiresIn: "1h",
-      });
-
-      console.log("Authentication successful for admin:", email);
       return {
-        admin: adminClassInstance,
+        admin: new AdminClass(
+          admin._id,
+          admin.name,
+          admin.email,
+          admin.password
+        ),
         token,
-        role: adminDocument.role,
+        role: admin.role,
       };
     } catch (error) {
-      console.error("Authentication error:", error.message);
       throw error;
     }
   },
@@ -95,67 +78,70 @@ const AdminService = {
     try {
       const admin = await AdminModel.findById(adminId);
       if (!admin) return null;
-
-      const adminInstance = new AdminClass(
-        admin._id,
-        admin.name,
-        admin.email,
-        admin.password,
-        admin.createdAt
-      );
-      adminInstance.role = admin.role;
-
-      return adminInstance;
+      return new AdminClass(admin._id, admin.name, admin.email, admin.password);
     } catch (error) {
-      console.error("Error getting admin by ID:", error.message);
       throw error;
     }
   },
 
   async updateAdmin(adminId, updates) {
-    const admin = await AdminModel.findById(adminId);
-    if (!admin) return null;
+    try {
+      if (updates.password) {
+        const salt = await bcrypt.genSalt(10);
+        updates.password = await bcrypt.hash(updates.password, salt);
+      }
 
-    if (updates.password) {
-      const salt = await bcrypt.genSalt(10);
-      updates.password = await bcrypt.hash(updates.password, salt);
+      const admin = await AdminModel.findByIdAndUpdate(adminId, updates, {
+        new: true,
+      });
+      if (!admin) return null;
+      return new AdminClass(admin._id, admin.name, admin.email, admin.password);
+    } catch (error) {
+      throw error;
     }
-
-    const updatedAdmin = await AdminModel.findByIdAndUpdate(
-      adminId,
-      { $set: updates },
-      { new: true }
-    );
-
-    return new AdminClass(
-      updatedAdmin._id,
-      updatedAdmin.name,
-      updatedAdmin.email,
-      updatedAdmin.password,
-      updatedAdmin.createdAt
-    );
   },
 
   async getAllUsers() {
     try {
-      const users = await UserModel.find().select("-password");
-      return users.map((user) => ({
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        status: user.isBanned
-          ? "banned"
-          : user.isUnderReview
-          ? "suspended"
-          : "active",
-        listings: user.listings || [],
-        profilePicture: user.profilePicture,
-        isDocumentVerified: user.isDocumentVerified,
-        createdAt: user.createdAt,
-      }));
+      const users = await UserModel.find();
+      const usersWithListings = await Promise.all(
+        users.map(async (user) => {
+          const listings = await ItemModel.find({ sellerId: user._id })
+            .select("_id title price condition location")
+            .lean();
+
+          const userInstance = new UserClass(
+            user._id,
+            user.name,
+            user.email,
+            user.phone,
+            user.password,
+            user.createdAt,
+            user.profilePicture,
+            user.govtDocument,
+            user.isDocumentVerified,
+            user.city,
+            user.isEmailVerified,
+            user.favourites,
+            user.isBanned,
+            user.isUnderReview
+          );
+
+          return {
+            ...userInstance.getSummary(),
+            listings: listings.map((listing) => ({
+              id: listing._id,
+              title: listing.title,
+              price: listing.price,
+              condition: listing.condition,
+              location: listing.location,
+            })),
+          };
+        })
+      );
+      return usersWithListings;
     } catch (error) {
-      throw new Error(`Error fetching users: ${error.message}`);
+      throw error;
     }
   },
 
@@ -163,54 +149,54 @@ const AdminService = {
     try {
       const updates = {
         isBanned: status === "ban",
-        isUnderReview: status === "suspended",
+        isUnderReview: status === "suspend",
+        ...(status === "activate" && {
+          isBanned: false,
+          isUnderReview: false,
+        }),
       };
 
-      const user = await UserModel.findByIdAndUpdate(
+      const userDocument = await UserModel.findByIdAndUpdate(
         userId,
         { $set: updates },
         { new: true }
-      ).select("-password");
+      );
 
-      if (!user) {
-        throw new Error("User not found");
-      }
+      if (!userDocument) throw new Error("User not found");
 
-      return {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        status: user.isBanned
-          ? "banned"
-          : user.isUnderReview
-          ? "suspended"
-          : "active",
-      };
+      const userInstance = new UserClass(
+        userDocument._id,
+        userDocument.name,
+        userDocument.email,
+        userDocument.phone,
+        userDocument.password,
+        userDocument.createdAt,
+        userDocument.profilePicture,
+        userDocument.govtDocument,
+        userDocument.isDocumentVerified,
+        userDocument.city,
+        userDocument.isEmailVerified,
+        userDocument.favourites,
+        userDocument.isBanned,
+        userDocument.isUnderReview
+      );
+
+      return userInstance.getSummary();
     } catch (error) {
-      throw new Error(`Error updating user status: ${error.message}`);
+      throw error;
     }
   },
 
   async deleteUserListing(userId, listingId) {
     try {
-      const user = await UserModel.findById(userId);
-      if (!user) {
-        throw new Error("User not found");
-      }
-
-      const listing = await ItemModel.findById(listingId);
-      if (!listing) {
-        throw new Error("Listing not found");
-      }
-
-      if (listing.sellerId.toString() !== userId) {
-        throw new Error("Listing does not belong to user");
-      }
-
-      await ItemModel.findByIdAndDelete(listingId);
-      return true;
+      const listing = await ItemModel.findOneAndDelete({
+        _id: listingId,
+        sellerId: userId,
+      });
+      if (!listing) throw new Error("Listing not found");
+      return { message: "Listing deleted successfully" };
     } catch (error) {
-      throw new Error(`Error deleting listing: ${error.message}`);
+      throw error;
     }
   },
 

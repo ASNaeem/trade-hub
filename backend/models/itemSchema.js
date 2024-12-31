@@ -30,7 +30,7 @@ const itemSchema = new mongoose.Schema(
     condition: {
       type: String,
       required: true,
-      enum: ["New", "Used", "Refurbished"],
+      enum: ["New", "Like New", "Used", "Refurbished"],
     },
     images: [
       {

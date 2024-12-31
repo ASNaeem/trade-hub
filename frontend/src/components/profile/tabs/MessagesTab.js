@@ -31,7 +31,7 @@ const MessagesTab = ({ inbox }) => {
     );
   }
 
-  // Group messages by conversation partner
+  //Group messages by conversation partner
   // const conversations = messages.reduce((acc, message) => {
   //   const partnerId =
   //     message.senderId === localStorage.getItem("userId")
