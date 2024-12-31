@@ -30,6 +30,7 @@ const BrowsePage = () => {
   const [LoggedIn, setLoggedIn] = React.useState(false);
   const [login_from, setLoginFrom] = React.useState("login");
   const [isModalOpen, setisModalOpen] = React.useState(false);
+  const [browse_items, setbrowse_items] = React.useState([]);
 
   // Use our custom hook with initial fetch
   const { items, loading, error, totalPages, fetchItems } = useItems({
@@ -38,6 +39,20 @@ const BrowsePage = () => {
   });
 
   React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const categoryParameter = urlParams.get("category");
+    if (categoryParameter && items.length > 0) {
+      console.log("Category parameter:", categoryParameter);
+      const filteredItems = items.filter(
+        (item) => item.category === categoryParameter
+      );
+
+      console.log("Filtered items:", filteredItems);
+      setbrowse_items(filteredItems);
+    } else {
+      setbrowse_items(items);
+    }
+
     localStorage.getItem("loggedin") != null
       ? setLoggedIn(true)
       : setLoggedIn(false);
@@ -49,7 +64,7 @@ const BrowsePage = () => {
           setisModalOpen(false);
         }
       });
-  }, []);
+  }, [items]);
 
   // Check if any filters are active
   React.useEffect(() => {
@@ -295,7 +310,7 @@ const BrowsePage = () => {
     return (
       <>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {items.map((item) => (
+          {browse_items.map((item) => (
             <ItemCard
               key={item._id}
               id={item._id}

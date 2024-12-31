@@ -155,17 +155,6 @@ export default function ItemEditForm({
             </div>
           </FormField>
 
-          <FormField label="Quantity">
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              className="w-full pl-4 py-2 border text-sm border-none rounded-lg outline-none transition-all duration-200 ease-in-out  placeholder:text-[#71717A] bg-[#F4F4F5] hover:bg-[#FAFAFA]"
-              value={item.quantity}
-              onChange={(e) => setItem({ ...item, quantity: e.target.value })}
-            />
-          </FormField>
-
           <div className="flex items-center space-x-3">
             <label className="text-sm font-medium text-gray-700">
               Visibility
