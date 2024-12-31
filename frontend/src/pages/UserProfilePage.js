@@ -12,7 +12,6 @@ import { initialItem } from "../data/mockdata_itemdetails";
 import ListedItems from "../components/profile/tabs/ListedItems";
 import FavoritesTab from "../components/profile/tabs/FavTab";
 import MessagesTab from "../components/profile/tabs/MessagesTab";
-import Header from "../components/Header";
 import useMessages from "../hooks/useMessages";
 // Keep mock stats since we don't have this data yet
 const mockStats = {
@@ -244,11 +243,29 @@ function UserProfile() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.7 }}
     >
-      <Header
-        shadow={true}
-        className="text-[var(--foreGroundColor)] !fixed bg-transparent overflow-hidden fill-[var(--foreGroundColor)]"
-      />{" "}
-      <div className="bg-gradient-to-r from-[var(--primaryColor)] to-[var(--secondaryColor)] pt-24 pb-32">
+      <div className="bg-gradient-to-r from-[var(--primaryColor)] to-[var(--secondaryColor)] pb-32">
+        <div className="flex justify-start items-center p-4">
+          <a
+            href="/"
+            className="group flex items-center gap-2 text-white hover:text-gray-300 transition-colors duration-200"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 transform transition-transform duration-200 group-hover:-translate-x-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
+            </svg>
+            <span className="text-sm font-normal">Back to Home</span>
+          </a>
+        </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <UserInfo user={user} />
           <div className="mt-6">

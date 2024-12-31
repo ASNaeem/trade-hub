@@ -7,14 +7,12 @@ import {
   Smartphone,
   Car,
   Home,
-  Tv,
+  GemIcon,
   Shirt,
-  Laptop,
+  LucideToyBrick,
   Dumbbell,
   Book,
-  Star,
   MapPin,
-  Tag,
   Clock,
 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -22,11 +20,11 @@ import { useInView } from "react-intersection-observer";
 
 const categories = [
   { name: "Electronics", icon: Smartphone },
-  { name: "Vehicles", icon: Car },
-  { name: "Property", icon: Home },
-  { name: "Appliances", icon: Tv },
-  { name: "Fashion", icon: Shirt },
-  { name: "Computers", icon: Laptop },
+  { name: "Automotive", icon: Car },
+  { name: "Home & Garden", icon: Home },
+  { name: "Jwellery", icon: GemIcon },
+  { name: "Clothing", icon: Shirt },
+  { name: "Toys", icon: LucideToyBrick },
   { name: "Sports", icon: Dumbbell },
   { name: "Books", icon: Book },
 ];
