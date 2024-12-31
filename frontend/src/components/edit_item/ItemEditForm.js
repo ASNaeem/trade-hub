@@ -123,7 +123,7 @@ export default function ItemEditForm({
             <Select
               className="max-w-xs"
               fullWidth
-              selectedKeys={[categories.indexOf(item.category).toString()]}
+              selectedKeys={[item.category]}
               onChange={(e) => setItem({ ...item, category: e.target.value })}
             >
               {categories.map((category, index) => (
