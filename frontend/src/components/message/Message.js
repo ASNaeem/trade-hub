@@ -55,17 +55,6 @@ export function Message({ text, timestamp, imageUrls, isOwn, senderName }) {
             } text-right`}
           >
             {formatMessageTime(timestamp)}
-            <div
-              className={`fixed pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${
-                isOwn ? "bg-gray-700" : "bg-gray-800"
-              } text-white px-2 py-1 rounded text-xs whitespace-nowrap z-50`}
-              style={{
-                left: `${tooltipPosition.x + 10}px`,
-                top: `${tooltipPosition.y - 30}px`,
-              }}
-            >
-              {new Date(timestamp).toLocaleString()}
-            </div>
           </div>
 
           {/* Message Tail */}

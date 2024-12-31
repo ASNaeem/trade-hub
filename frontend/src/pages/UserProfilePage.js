@@ -109,13 +109,20 @@ function UserProfile() {
                 },
               })
               .then((res) => {
+                let lastMessage = "";
+                for (let i = 0; i < messages.length; i++) {
+                  if (messages[i].senderId == res.data.id) {
+                    lastMessage = messages[i];
+                    break;
+                  }
+                }
                 new_inbox_state.push({
                   id: res.data.id,
                   name: res.data.name,
                   profilePicture: !res.data.profilePicture
                     ? "https://files.catbox.moe/k4ao9t.png"
                     : res.data.profilePicture,
-                  lastMessage: filteredMessages[0],
+                  lastMessage: lastMessage,
                 });
               })
               .finally(() => {
@@ -141,8 +148,11 @@ function UserProfile() {
           ...new Set(messages.map((msg) => msg.receiverId)),
         ];
 
-        if (filteredMessages.length <= 0) {
+        if (filteredMessages.length >= 0) {
           UniqueUnReadUserIDs.forEach((receiverId, index) => {
+            if (receiverId == user.id) {
+              return;
+            }
             if (receiverId) {
               axios
                 .get(`http://localhost:5000/api/users/${receiverId}`, {

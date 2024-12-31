@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { WarningBanner } from "../components/message/WarningBanner";
 import { MessageInput } from "../components/message/MessageInput";
@@ -6,19 +6,21 @@ import { Message } from "../components/message/Message";
 import { ChatHeader } from "../components/message/ChatHeader";
 import Header from "../components/Header";
 import useMessages from "../hooks/useMessages";
+import axios from "axios";
 
 export default function InboxPage() {
   const location = useLocation();
   const receiverId = new URLSearchParams(location.search).get("userId");
+  const [current_user, setcurrent_user] = useState("");
   const { messages, loading, error, sendMessage, markAsRead } = useMessages();
-  const messagesEndRef = useRef(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
 
   useEffect(() => {
-    scrollToBottom();
+    axios.get(`http://localhost:5000/api/users/${receiverId}`).then((res) => {
+      if (res.data) {
+        console.log(res.data.name);
+        setcurrent_user(res.data);
+      }
+    });
   }, [messages]);
 
   // Mark messages as read when they are viewed
@@ -72,10 +74,6 @@ export default function InboxPage() {
       );
     }
 
-    const filteredMessages = messages.filter(
-      (msg) => msg.senderId === receiverId || msg.receiverId === receiverId
-    );
-
     return (
       <div className="h-[600px] overflow-x-hidden overflow-y-auto p-4">
         {messages
@@ -93,7 +91,6 @@ export default function InboxPage() {
               senderName={message.senderId === receiverId ? "Them" : "You"}
             />
           ))}
-        <div ref={messagesEndRef} />
       </div>
     );
   };
@@ -107,13 +104,10 @@ export default function InboxPage() {
       <div className="max-w-4xl mx-auto p-4 pt-20">
         <WarningBanner />
 
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div className="bg-white rounded-lg shadow-lg">
           <ChatHeader
-            name={
-              receiverId
-                ? `Chat with ${receiverId.slice(0, 8)}`
-                : "Select a conversation"
-            }
+            name={current_user.name ? current_user.name : "User"}
+            profilePicture={current_user.profilePicture}
             status={receiverId ? "online" : "offline"}
           />
 

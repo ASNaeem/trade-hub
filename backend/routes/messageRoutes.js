@@ -11,6 +11,7 @@ router.post("/", authMiddleware, async (req, res) => {
       receiverId,
       content
     );
+    console.log(message);
     res.status(201).json(message);
   } catch (error) {
     if (error.statusCode) {

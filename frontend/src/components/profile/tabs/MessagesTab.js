@@ -66,7 +66,15 @@ const MessagesTab = ({ inbox }) => {
             <div className="flex-shrink-0">
               <div className="h-12 w-12 bg-gray-200 rounded-full overflow-hidden flex items-center justify-center">
                 {/* User avatar */}
-                <img src={data.profilePicture} />
+                <img
+                  src={
+                    data.profilePicture == "null"
+                      ? "https://files.catbox.moe/aq0wd6.jpg"
+                      : data.profilePicture
+                  }
+                  alt="User avatar"
+                  className="h-full w-full object-cover"
+                />
               </div>
             </div>
             <div className="flex-1 min-w-0">

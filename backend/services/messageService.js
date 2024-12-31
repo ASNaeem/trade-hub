@@ -35,10 +35,9 @@ const MessageService = {
       }
 
       // Check if user has too many disputes
-      const maxDisputesPolicy =
-        await globalPolicySettingsService.getPolicyByName(
-          "maxDisputesBeforeBan"
-        );
+      const maxDisputesPolicy = await globalPolicySettingsService
+        .getPolicyByName("maxDisputesBeforeBan")
+        .catch(() => null);
       if (maxDisputesPolicy) {
         const userDisputes = await DisputeModel.countDocuments({
           reportedId: senderId,
