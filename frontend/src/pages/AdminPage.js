@@ -16,6 +16,8 @@ import {
   ChevronDown,
   FileText,
   Shield,
+  FileCheck,
+  FileX,
 } from "lucide-react";
 import AlertDialog from "../components/AlertDialog";
 import AdminService from "../services/adminService";
@@ -44,6 +46,7 @@ const AdminPage = () => {
     userId: null,
     documentData: null,
   });
+  const [verificationUsers, setVerificationUsers] = useState([]);
 
   useEffect(() => {
     // Check if user is logged in as admin and has admin privileges
@@ -65,7 +68,6 @@ const AdminPage = () => {
         case "users":
           newData.users = await AdminService.getUsers();
           try {
-            // Try to fetch verifications, but don't let it block the main user data
             const verifications = await AdminService.getPendingVerifications();
             setPendingVerifications(verifications);
           } catch (verificationError) {
@@ -78,6 +80,18 @@ const AdminPage = () => {
           break;
         case "policies":
           newData.policies = await AdminService.getPolicies();
+          break;
+        case "verifications":
+          // Fetch all users and filter those with document uploads or under review
+          const allUsers = await AdminService.getUsers();
+          setVerificationUsers(
+            allUsers.filter(
+              (user) =>
+                user.isUnderReview || // Show users under review
+                user.verification?.status === "pending" || // Show users with pending verification
+                user.isDocumentVerified // Show verified users
+            )
+          );
           break;
         default:
           break;
@@ -238,10 +252,7 @@ const AdminPage = () => {
   const handleVerifyDocument = async (userId, isApproved, reason = "") => {
     try {
       await AdminService.verifyDocument(userId, isApproved, reason);
-      setPendingVerifications((prev) =>
-        prev.filter((v) => v.userId !== userId)
-      );
-      fetchData();
+      await fetchData(); // Refresh the data
       setVerificationDialog({
         isOpen: false,
         userId: null,
@@ -277,7 +288,7 @@ const AdminPage = () => {
           {/* Tabs */}
           <div className="mb-6 border-b border-gray-200">
             <nav className="-mb-px flex space-x-8">
-              {["users", "disputes", "policies"].map((tab) => (
+              {["users", "disputes", "policies", "verifications"].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -669,6 +680,107 @@ const AdminPage = () => {
                       </div>
                     );
                   })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* New Verifications Tab */}
+          {activeTab === "verifications" && (
+            <div className="bg-white rounded-lg shadow">
+              <div className="p-4 sm:p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                  Document Verifications
+                </h2>
+                <div className="space-y-4">
+                  {verificationUsers.map((user) => (
+                    <div
+                      key={user.id}
+                      className="bg-gray-50 p-4 rounded-lg border border-gray-200"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-lg font-medium text-gray-900">
+                              {user.name}
+                            </h3>
+                            {user.isDocumentVerified && (
+                              <Shield className="w-4 h-4 text-green-600" />
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-500">{user.email}</p>
+                          <p className="text-sm text-gray-500">
+                            Document Status:{" "}
+                            <span
+                              className={`font-medium ${
+                                user.isDocumentVerified
+                                  ? "text-green-600"
+                                  : "text-yellow-600"
+                              }`}
+                            >
+                              {user.isDocumentVerified
+                                ? "Verified"
+                                : "Pending Verification"}
+                            </span>
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleViewDocument(user.id)}
+                            className="inline-flex items-center gap-2 px-3 py-2 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200"
+                          >
+                            <FileText className="w-4 h-4" />
+                            View Document
+                          </button>
+                          {!user.isDocumentVerified ? (
+                            <>
+                              <button
+                                onClick={() =>
+                                  handleVerifyDocument(user.id, true)
+                                }
+                                className="inline-flex items-center gap-2 px-3 py-2 bg-green-100 text-green-700 rounded-md hover:bg-green-200"
+                              >
+                                <FileCheck className="w-4 h-4" />
+                                Approve
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleVerifyDocument(
+                                    user.id,
+                                    false,
+                                    "Document rejected"
+                                  )
+                                }
+                                className="inline-flex items-center gap-2 px-3 py-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200"
+                              >
+                                <FileX className="w-4 h-4" />
+                                Reject
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              onClick={() =>
+                                handleVerifyDocument(
+                                  user.id,
+                                  false,
+                                  "Verification revoked"
+                                )
+                              }
+                              className="inline-flex items-center gap-2 px-3 py-2 bg-yellow-100 text-yellow-700 rounded-md hover:bg-yellow-200"
+                            >
+                              <Shield className="w-4 h-4" />
+                              Revoke Verification
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {verificationUsers.length === 0 && (
+                    <div className="text-center py-8 text-gray-500">
+                      No document verification requests found.
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

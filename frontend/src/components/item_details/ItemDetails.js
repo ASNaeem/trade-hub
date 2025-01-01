@@ -12,10 +12,38 @@ import AlertDialog from "../AlertDialog";
 import { useNavigate } from "react-router-dom";
 import UserService from "../../services/userService";
 import axios from "axios";
+
 export default function ItemDetails({ item }) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [isCurrentUserSeller, setIsCurrentUserSeller] = useState(false);
+
+  useEffect(() => {
+    async function checkCurrentUser() {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const response = await axios.get(
+          "http://localhost:5000/api/users/profile",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setIsCurrentUserSeller(response.data.id === item.sellerId);
+      } catch (error) {
+        console.error("Error checking current user:", error);
+      }
+    }
+
+    if (item?.sellerId) {
+      checkCurrentUser();
+    }
+  }, [item?.sellerId]);
 
   useEffect(() => {
     async function getFavorites() {
@@ -74,31 +102,19 @@ export default function ItemDetails({ item }) {
     };
 
     fetchSellerDetails();
-  }, [item?.sellerId]); // Only re-run if sellerId changes
+  }, [item?.sellerId]);
 
   const handleReport = () => {
-    // Handle report submission logic here
     setIsReportDialogOpen(false);
   };
 
-  // Helper function to get image source
   const getImageSrc = (image) => {
     if (!image) return "";
 
-    console.log("Processing image in ItemDetails:", {
-      type: image.type,
-      hasData: !!image.data,
-      hasUrl: !!image.url,
-      contentType: image.contentType,
-      dataPreview: image.data?.substring(0, 100) + "...",
-    });
-
     if (image.type === "base64" && image.data) {
-      // If the data is already a complete data URL, return it
       if (image.data.startsWith("data:")) {
         return image.data;
       }
-      // Otherwise, construct the data URL
       return `data:${image.contentType};base64,${image.data}`;
     }
 
@@ -150,7 +166,6 @@ export default function ItemDetails({ item }) {
       }
     } catch (error) {
       console.error("Error toggling favorite:", error);
-      // Add error handling UI if needed
     }
   };
 
@@ -296,10 +311,15 @@ export default function ItemDetails({ item }) {
                   <div className="space-y-3 min-w-[200px]">
                     <button
                       onClick={handleContactSeller}
-                      className="w-full flex items-center justify-center bg-[var(--buttonColor)] text-white px-6 py-2.5 rounded-lg hover:opacity-90 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow-md"
+                      disabled={isCurrentUserSeller}
+                      className={`w-full flex items-center justify-center px-6 py-2.5 rounded-lg font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 ${
+                        isCurrentUserSeller
+                          ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                          : "bg-[var(--buttonColor)] text-white hover:opacity-90"
+                      }`}
                     >
                       <MessageCircleCode className="h-4 w-4 mr-2" />
-                      Contact Seller
+                      {isCurrentUserSeller ? "Your Listing" : "Contact Seller"}
                     </button>
                     <button
                       className="w-full flex items-center justify-center px-6 py-2.5 bg-white border border-gray-200 rounded-lg shadow-sm font-medium text-sm text-gray-700 hover:bg-gray-50 focus:outline-none transition-all duration-200"
