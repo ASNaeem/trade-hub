@@ -15,12 +15,12 @@ import MessagesTab from "../components/profile/tabs/MessagesTab";
 import useMessages from "../hooks/useMessages";
 // Keep mock stats since we don't have this data yet
 const mockStats = {
-  itemsSold: 245,
-  itemsBought: 32,
-  totalEarnings: 12450,
-  totalSpent: 3200,
+  itemsSold: 0,
+  itemsBought: 0,
+  totalEarnings: 0,
+  totalSpent: 0,
   avgRating: 4.9,
-  activeListings: 12,
+  activeListings: 0,
 };
 
 function UserProfile() {
